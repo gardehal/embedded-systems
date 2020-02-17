@@ -1,4 +1,4 @@
-# Arduino projects
+# Arduino Projects
  
 A collection of homemade projects using what's most commonly referred to as ["Arduino"](https://www.arduino.cc/en/guide/introduction).
 
