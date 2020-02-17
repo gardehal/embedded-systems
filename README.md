@@ -1,6 +1,6 @@
 # Arduino projects
  
-A collection of homemade projects using what's most commonly reffered to as ["Arduino"](https://www.arduino.cc/en/guide/introduction).
+A collection of homemade projects using what's most commonly referred to as ["Arduino"](https://www.arduino.cc/en/guide/introduction).
 
 ## Contents
 
@@ -15,8 +15,8 @@ A collection of homemade projects using what's most commonly reffered to as ["Ar
 
 ## Motivation
 
-During college I had recieved the wrong schedule for my classes. It was early in the semester and I walked into a class I was not signed up for, but no one stopped me. The class happened to be on 
-integrated systems and microcontrollers (Arduinos). From the introduction I was gripped by the possibilities contained within the small plastic box the kit was housed in, and although I did not participate
+During college I had received the wrong schedule for my classes. It was early in the semester and I walked into a class I was not signed up for, but no one stopped me. The class happened to be on 
+integrated systems and micro-controllers (Arduinos). From the introduction I was gripped by the possibilities contained within the small plastic box the kit was housed in, and although I did not participate
 in the course I swore to one day continue on the path of exploring micro controllers and simple robotics. After securing a job I ordered a ELEGOO Starter Kit from Amazon for myself for christmas and that is where the adventure starts.
 
 ## Tools
@@ -33,6 +33,6 @@ in the course I swore to one day continue on the path of exploring micro control
 
 Each project should include at least the code and a simple explanation. 
 
-Since these projects has to do with real life electronics, it also makes sense to document the project as **circut diagrams**.
+Since these projects has to do with real life electronics, it also makes sense to document the project as **circuit diagrams**.
 
 As much as possible, a short video as **mp4** of a demo of the finished project. From Uplead or Reset phase, one or more cycles depending on what's needed to show the majority of the features.
