@@ -20,49 +20,31 @@ void setup()
   Serial.begin(9600);
 }
 
-void comments(int pins[], int pinOnValues[], int pinOffValues[])
-{
-  int size = sizeof(pins);
-  if(sizeof(pinOnValues) < size || sizeof(pinOffValues) < size )
-  {
-    for(int i = 0; i < size; i++)
-    {
-      pinOnValues[i] = onValue;
-      pinOffValues[i] = offValue;
-    }
-  }
-  
-  
-  analogWrite(rgbRedPin, onValue);
-  analogWrite(rgbGreenPin, 123);
-  delay(500);
-  analogWrite(rgbRedPin, offValue);
-  analogWrite(rgbGreenPin, offValue);
-  analogWrite(rgbBluePin, offValue);
-  delay(500);
-}
-
 void loop() 
 { 
-  int ons[] = {onValue};
-  int offs[] = {offValue};
-  int reds[1] = {rgbRedPin};
-  blink(rbgPins, ons, offs);
-
-  return;
+  // Turn RBG LED pedestrian light red to tell pedestrians to stop, turn traffic light green so cars can go, wait 8 seconds
+  stopPedestrians();
   startTraffic();
   delay(changeCycleTime);
   
+  // Blink traffic light orange to signal coming red, wait 4 seconds
   haltTraffic();
   delay(changeCycleTime / 2);
   
+  // Turn RGB LED pedestrian light green, turn traffic light red, wait 8 seconds
   stopTraffic();
-  
+  startPedestrians();
   delay(changeCycleTime);
+
+  // Blink RGB LED pedestrian light green to signal coming red. The loop will continue from the top after the last blink.
+  haltPedestrians();
 }
 
 void haltPedestrians()
 {
+  int offs[] = {offValue, offValue, offValue};
+  int ons[] = {offValue, onValue, offValue};
+  blink(rbgPins, offs, ons, 4, blinkCycle);
 }
 
 void stopPedestrians()
@@ -98,19 +80,22 @@ void startTraffic()
   analogWrite(greenPin, onValue);
 }
 
-void blink(int pins[], int pinOnValues[], int pinOffValues[])
+void blink(int pins[], int pinOffValues[], int pinOnValues[], int nBlinks, int cycle)
 {    
-  int size = sizeof(pins);
+  int size = sizeof(pins) + 1;
   
-  for(int i = 0; i < size; i++)
+  for(int i = 0; i < nBlinks; i++)
   {
-    analogWrite(pins[i], pinOffValues[i]);
+    for(int j = 0; j < size; j++)
+    {
+      analogWrite(pins[j], pinOffValues[j]);
+    }
+    delay(cycle / 2);
+    
+    for(int j = 0; j < size; j++)
+    {
+      analogWrite(pins[j], pinOnValues[j]);
+    }
+    delay(cycle / 2);
   }
-  delay(blinkCycle / 2);
-  
-  for(int i = 0; i < size; i++)
-  {
-    analogWrite(pins[i], pinOnValues[i]);
-  }
-  delay(blinkCycle / 2);
 }

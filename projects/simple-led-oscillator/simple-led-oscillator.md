@@ -4,4 +4,8 @@ A simple program for slowly brightening a LED light, the quickly dimming it agai
 
 [Code](./simple-led-oscillator.ino)
 
-[Video](./simple-led-oscillator-video.mp4)
+[Video](./simple-led-oscillator.mp4)
+
+## Circuit Diagram
+
+![Circuit Diagram](./simple-led-oscillator.png)

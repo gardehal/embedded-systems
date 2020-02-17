@@ -12,6 +12,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 ## Projects
 
 1. [Simple LED Oscillator](./projects/simple-led-oscillator/simple-led-oscillator.md)
+1. [Traffic Lights](./projects/traffic-lights/traffic-lights.md)
 
 ## Motivation
 
