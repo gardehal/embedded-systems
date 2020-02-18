@@ -36,4 +36,4 @@ Each project should include at least the code and a simple explanation.
 
 Since these projects has to do with real life electronics, it also makes sense to document the project as **circuit diagrams**.
 
-As much as possible, a short video as **mp4** of a demo of the finished project. From Uplead or Reset phase, one or more cycles depending on what's needed to show the majority of the features.
+As much as possible, a short video as **mp4** of a demo of the finished project. From Upload or Reset phase, one or more cycles depending on what's needed to show the majority of the features.
