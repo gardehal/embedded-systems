@@ -7,7 +7,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [Projects](#project)
 1. [Motivation](#motivation)
 1. [Tools](#tools)
-1. [Project Guide](#project-guide)
+1. [Planned](#planned)
 
 ## Projects
 
@@ -29,11 +29,17 @@ in the course I swore to one day continue on the path of exploring micro control
 - Phone for videos and images
 - [DigiKeys resistor calculator](https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-resistor-color-code-4-band) for finding resistor values
 
+## Planned
 
-## Projects Guide
-
-Each project should include at least the code and a simple explanation. 
-
-Since these projects has to do with real life electronics, it also makes sense to document the project as **circuit diagrams**.
-
-As much as possible, a short video as **mp4** of a demo of the finished project. From Upload or Reset phase, one or more cycles depending on what's needed to show the majority of the features.
+- LCD with side-scrolling message (ex. Stock Ticker)
+- Thermometer with LCD
+- Thermometer that uploads to ex. Firebase hourly
+- Ultrasonic change LED colour based on proximity
+- Infrared toggle light with remote
+- Joystick with 7-segement digit display to display direction
+- Stepper motor
+- Servo motor
+- Fan + small motor
+- Relay
+- Active / passive buzzer
+- Buttons, Ball tilt, other modules
