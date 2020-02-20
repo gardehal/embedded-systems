@@ -43,3 +43,6 @@ in the course I swore to one day continue on the path of exploring micro control
 - Relay
 - Active / passive buzzer
 - Buttons, Ball tilt, other modules
+- Control Lego computer though arduino?
+- Integrate other electronics
+- Send data over Bluetooth
