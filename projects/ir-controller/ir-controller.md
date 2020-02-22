@@ -21,9 +21,12 @@ For best result, have a direct line of sight from controller to the reciever, 1 
 
 [Video](./ir-controller.mp4)
 
-## Segment Layout
+## 7-Segment Layout
 
 ![Segment Layout](./segment-layout.png)
+![Pin Layout](./pin-layout.png)
+
+[Source (circuitbasics.com)](https://www.circuitbasics.com/arduino-7-segment-display-tutorial/)
 
 ## Circuit Diagram
 
