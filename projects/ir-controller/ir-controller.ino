@@ -52,7 +52,7 @@ void loop()
     {
       case keyPower:
         Serial.print("Power");
-        segmentOff();
+        displayOff();
         break;
       case keyVolPluss:
         Serial.print("VOL+");
@@ -94,27 +94,35 @@ void loop()
         break;
       case key2:
         Serial.print("2");
+        display2();
         break;
       case key3:
         Serial.print("3");
+        display3();
         break;
       case key4:
         Serial.print("4");
+        display4();
         break;
       case key5:
         Serial.print("5");
+        display5();
         break;
       case key6:
         Serial.print("6");
+        display6();
         break;
       case key7:
         Serial.print("7");
+        display7();
         break;
       case key8:
         Serial.print("8");
+        display8();
         break;
       case key9:
         Serial.print("9");
+        display9();
         break;
       default:
         Serial.print(" - value: ");
@@ -125,41 +133,155 @@ void loop()
   }
 }
 
-void segmentOff()
+// Turn all segments off
+void displayOff()
 {
-  digitalWrite(segementNorthGPin, LOW);
-  digitalWrite(segementNorthFPin, LOW);
   digitalWrite(segementNorthAPin, LOW);
   digitalWrite(segementNorthBPin, LOW);
-  digitalWrite(segementSouthEPin, LOW);
-  digitalWrite(segementSouthDPin, LOW);
   digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
   digitalWrite(segementSouthDPPin, LOW);
 }
 
+// Turn all off, turn A, B, C, D, E, F on
 void display0()
 {
   digitalWrite(segementNorthGPin, LOW);
   digitalWrite(segementSouthDPPin, LOW);
   
-  digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthAPin, HIGH);
   digitalWrite(segementNorthBPin, HIGH);
-  digitalWrite(segementSouthEPin, HIGH);
-  digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementSouthCPin, HIGH); 
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
 }
 
+// Turn all off, turn B, C on
 void display1()
 {
-  digitalWrite(segementNorthGPin, LOW);
-  digitalWrite(segementNorthFPin, LOW);
   digitalWrite(segementNorthAPin, LOW);
-  digitalWrite(segementSouthEPin, LOW);
   digitalWrite(segementSouthDPin, LOW);
-  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
   digitalWrite(segementSouthDPPin, LOW);
   
   digitalWrite(segementNorthBPin, HIGH);
   digitalWrite(segementSouthCPin, HIGH);
+}
+
+// Turn all off, turn A, B, D, E, G on
+void display2()
+{
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, B, C, D, G on
+void display3()
+{
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn B, C, F, G, on
+void display4()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH); 
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, C, D, F, G on
+void display5()
+{
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH); 
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, C, D, E, F, G on
+void display6()
+{
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH); 
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, D, E on
+void display7()
+{
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+}
+
+// Turn all off, turn A, B, C, D, E, F, G on
+void display8()
+{
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, B, C, D, F, G on
+void display9()
+{
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
 }
