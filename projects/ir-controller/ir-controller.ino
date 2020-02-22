@@ -85,9 +85,29 @@ void loop()
         break;
       case key1:
         Serial.print("1");
+        if(led1On)
+        {
+          digitalWrite(ledPin1, LOW);
+          led1On = false;
+        }
+        else
+        {
+          digitalWrite(ledPin1, HIGH);
+          led1On = true;
+        }
         break;
       case key2:
         Serial.print("2");
+        if(led2On)
+        {
+          digitalWrite(ledPin2, LOW);
+          led2On = false;
+        }
+        else
+        {
+          digitalWrite(ledPin2, HIGH);
+          led2On = true;
+        }
         break;
       case key3:
         Serial.print("3");
@@ -117,36 +137,4 @@ void loop()
 
       irrecv.resume(); 
   }
-}
-
-void comments()
-{
-  
-    switch(results.value)
-    {
-      case key1: //Keypad button "5"
-        if(led1On)
-        {
-          digitalWrite(ledPin1, LOW);
-          led1On = false;
-        }
-        else
-        {
-          digitalWrite(ledPin1, HIGH);
-          led1On = true;
-        }
-        break;
-      case 0xFF18E7: //Keypad button "2"
-        if(led2On)
-        {
-          digitalWrite(ledPin2, LOW);
-          led2On = false;
-        }
-        else
-        {
-          digitalWrite(ledPin2, HIGH);
-          led2On = true;
-        }
-        break;
-    }
 }
