@@ -15,7 +15,9 @@ Without any modifications it seems to have:
 
 For best result, have a direct line of sight from controller to the reciever, 1 meter or less.
 
-![Signal Output](./singal-output.png =200x)
+![Signal Output](./signal-output.png)
+
+<img src="./signal-output.png" width="200">
 
 [Code](./ir-controller.ino)
 
