@@ -22,7 +22,6 @@ const long key7 = 16728765;
 const long key8 = 16730805;
 const long key9 = 16732845;
 
-
 const int irRecPin = 2;
 const int segementNorthGPin = 3;
 const int segementNorthFPin = 4;
@@ -36,11 +35,15 @@ const int segementSouthDPPin = 10;
 IRrecv irrecv(irRecPin);
 decode_results results;
 
+int currentNumber = 0;
+
 void setup()
 {
   irrecv.enableIRIn();
   irrecv.blink13(true);
   Serial.begin(9600);
+
+  display0();
 }
 
 void loop()
@@ -71,16 +74,18 @@ void loop()
         break;
       case keyDown:
         Serial.print("Down");
+        decrement();
         break;
       case keyVolMinus:
         Serial.print("VOL-");
         break;
       case keyUp:
         Serial.print("Up");
+        increment();
         break;
       case key0:
         Serial.print("0");
-        display0();
+        setNumber(0);
         break;
       case keyEq:
         Serial.print("EQ");
@@ -90,39 +95,39 @@ void loop()
         break;
       case key1:
         Serial.print("1");
-        display1();
+        setNumber(1);
         break;
       case key2:
         Serial.print("2");
-        display2();
+        setNumber(2);
         break;
       case key3:
         Serial.print("3");
-        display3();
+        setNumber(3);
         break;
       case key4:
         Serial.print("4");
-        display4();
+        setNumber(4);
         break;
       case key5:
         Serial.print("5");
-        display5();
+        setNumber(5);
         break;
       case key6:
         Serial.print("6");
-        display6();
+        setNumber(6);
         break;
       case key7:
         Serial.print("7");
-        display7();
+        setNumber(7);
         break;
       case key8:
         Serial.print("8");
-        display8();
+        setNumber(8);
         break;
       case key9:
         Serial.print("9");
-        display9();
+        setNumber(9);
         break;
       default:
         Serial.print(" - value: ");
@@ -131,6 +136,64 @@ void loop()
 
       irrecv.resume(); 
   }
+}
+
+void setNumber(int number)
+{
+  if(number < 0 || number > 9)
+    number = 0;
+    
+  switch(number)
+  {
+    case 0:
+      display0();
+      break;
+    case 1:
+      display1();
+      break;
+    case 2:
+      display2();
+      break;
+    case 3:
+      display3();
+      break;
+    case 4:
+      display4();
+      break;
+    case 5:
+      display5();
+      break;
+    case 6:
+      display6();
+      break;
+    case 7:
+      display7();
+      break;
+    case 8:
+      display8();
+      break;
+    case 9:
+      display9();
+      break;
+  }
+}
+
+void increment()
+{
+  int increment = currentNumber + 1;
+  if(increment > 9)
+    increment = 0;
+    
+  setNumber(increment);
+}
+
+void decrement()
+{
+  int decrement = currentNumber - 1;
+  if(decrement < 0)
+    decrement = 9;
+    
+  setNumber(decrement);
 }
 
 // Turn all segments off
@@ -144,6 +207,8 @@ void displayOff()
   digitalWrite(segementNorthFPin, LOW);
   digitalWrite(segementNorthGPin, LOW);
   digitalWrite(segementSouthDPPin, LOW);
+
+  currentNumber = 0;
 }
 
 // Turn all off, turn A, B, C, D, E, F on
@@ -158,6 +223,8 @@ void display0()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
+  
+  currentNumber = 0;
 }
 
 // Turn all off, turn B, C on
@@ -172,6 +239,8 @@ void display1()
   
   digitalWrite(segementNorthBPin, HIGH);
   digitalWrite(segementSouthCPin, HIGH);
+  
+  currentNumber = 1;
 }
 
 // Turn all off, turn A, B, D, E, G on
@@ -186,6 +255,8 @@ void display2()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+  
+  currentNumber = 2;
 }
 
 // Turn all off, turn A, B, C, D, G on
@@ -200,6 +271,8 @@ void display3()
   digitalWrite(segementSouthCPin, HIGH);
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+  
+  currentNumber = 3;
 }
 
 // Turn all off, turn B, C, F, G, on
@@ -214,6 +287,8 @@ void display4()
   digitalWrite(segementSouthCPin, HIGH); 
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+  
+  currentNumber = 4;
 }
 
 // Turn all off, turn A, C, D, F, G on
@@ -228,6 +303,8 @@ void display5()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+  
+  currentNumber = 5;
 }
 
 // Turn all off, turn A, C, D, E, F, G on
@@ -242,6 +319,8 @@ void display6()
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+  
+  currentNumber = 6;
 }
 
 // Turn all off, turn A, D, E on
@@ -256,6 +335,8 @@ void display7()
   digitalWrite(segementNorthAPin, HIGH);
   digitalWrite(segementNorthBPin, HIGH);
   digitalWrite(segementSouthCPin, HIGH);
+  
+  currentNumber = 7;
 }
 
 // Turn all off, turn A, B, C, D, E, F, G on
@@ -270,6 +351,8 @@ void display8()
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+  
+  currentNumber = 8;
 }
 
 // Turn all off, turn A, B, C, D, F, G on
@@ -284,4 +367,6 @@ void display9()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+  
+  currentNumber = 9;
 }
