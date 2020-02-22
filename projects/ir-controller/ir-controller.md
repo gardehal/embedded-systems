@@ -17,11 +17,13 @@ For best result, have a direct line of sight from controller to the reciever, 1 
 
 ![Signal Output](./signal-output.png)
 
-<img src="./signal-output.png" width="200">
-
 [Code](./ir-controller.ino)
 
 [Video](./ir-controller.mp4)
+
+## Segment Layout
+
+![Segment Layout](./segment-layout.png)
 
 ## Circuit Diagram
 

@@ -2,7 +2,7 @@
  
 A collection of homemade projects using what's most commonly referred to as ["Arduino"](https://www.arduino.cc/en/guide/introduction).
 
-## Contents
+## Content
 
 1. [Projects](#project)
 1. [Motivation](#motivation)
@@ -13,6 +13,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 
 1. [Simple LED Oscillator](./projects/simple-led-oscillator/simple-led-oscillator.md)
 1. [Traffic Lights](./projects/traffic-lights/traffic-lights.md)
+1. [IR Controller/7-Segment](./projects/ir-controller/ir-controller.md)
 
 ## Motivation
 

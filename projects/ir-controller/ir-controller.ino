@@ -22,21 +22,24 @@ const long key7 = 16728765;
 const long key8 = 16730805;
 const long key9 = 16732845;
 
-const int ledPin1 = 2;
-const int ledPin2 = 3;
-const int RECV_PIN = 4;
-IRrecv irrecv(RECV_PIN);
-decode_results results;
 
-boolean led1On = false;
-boolean led2On = false;
+const int irRecPin = 2;
+const int segementNorthGPin = 3;
+const int segementNorthFPin = 4;
+const int segementNorthAPin = 5;
+const int segementNorthBPin = 6;
+const int segementSouthEPin = 7;
+const int segementSouthDPin = 8;
+const int segementSouthCPin = 9;
+const int segementSouthDPPin = 10;
+
+IRrecv irrecv(irRecPin);
+decode_results results;
 
 void setup()
 {
   irrecv.enableIRIn();
   irrecv.blink13(true);
-  pinMode(ledPin1, OUTPUT);
-  pinMode(ledPin2, OUTPUT);
   Serial.begin(9600);
 }
 
@@ -49,6 +52,7 @@ void loop()
     {
       case keyPower:
         Serial.print("Power");
+        segmentOff();
         break;
       case keyVolPluss:
         Serial.print("VOL+");
@@ -76,6 +80,7 @@ void loop()
         break;
       case key0:
         Serial.print("0");
+        display0();
         break;
       case keyEq:
         Serial.print("EQ");
@@ -85,29 +90,10 @@ void loop()
         break;
       case key1:
         Serial.print("1");
-        if(led1On)
-        {
-          digitalWrite(ledPin1, LOW);
-          led1On = false;
-        }
-        else
-        {
-          digitalWrite(ledPin1, HIGH);
-          led1On = true;
-        }
+        display1();
         break;
       case key2:
         Serial.print("2");
-        if(led2On)
-        {
-          digitalWrite(ledPin2, LOW);
-          led2On = false;
-        }
-        else
-        {
-          digitalWrite(ledPin2, HIGH);
-          led2On = true;
-        }
         break;
       case key3:
         Serial.print("3");
@@ -137,4 +123,43 @@ void loop()
 
       irrecv.resume(); 
   }
+}
+
+void segmentOff()
+{
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+}
+
+void display0()
+{
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH); 
+}
+
+void display1()
+{
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
 }
