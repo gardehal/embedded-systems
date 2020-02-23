@@ -13,7 +13,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 
 1. [Simple LED Oscillator](./projects/simple-led-oscillator/simple-led-oscillator.md)
 1. [Traffic Lights](./projects/traffic-lights/traffic-lights.md)
-1. [IR Controller/7-Segment](./projects/ir-controller/ir-controller.md)
+1. [IR Controller/7-Segment](./projects/ir-controller-seven-segment/ir-controller-seven-segment.md)
 
 ## Motivation
 
@@ -36,8 +36,7 @@ in the course I swore to one day continue on the path of exploring micro control
 - Thermometer with LCD
 - Thermometer that uploads to ex. Firebase hourly
 - Ultrasonic change LED colour based on proximity
-- Infrared toggle light with remote
-- Joystick with 7-segement digit display to display direction
+- Joystick and display direction
 - Stepper motor
 - Servo motor
 - Fan + small motor

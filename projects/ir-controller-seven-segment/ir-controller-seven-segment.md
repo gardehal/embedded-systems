@@ -1,4 +1,4 @@
-# IR Controller
+# IR Controller/7-Segment Display
 
 Some basics on how the IR reciever is set up can how it can be controlled with the remote, as well as basics of a simgle digit 7-Segment LED display. 
 Display shows 0-9, letters ABCEFGHIJLOPSU, "-", and "." Use number keys to display numbers, up and down arrows to increment and decriment numbers, VOL+ to show decimal point ("."), VOL- to display minus/dash, Play/Pause button to show all symbols included, and Power to turn display off.
@@ -18,9 +18,9 @@ For best result, have a direct line of sight from controller to the reciever, 1 
 
 ![Signal Output](./signal-output.png)
 
-[Code](./ir-controller.ino)
+[Code](./ir-controller-seven-segment.ino)
 
-[Video](./ir-controller.mp4)
+[Video](./ir-controller-seven-segment.mp4)
 
 ## 7-Segment Layout
 
@@ -31,4 +31,4 @@ For best result, have a direct line of sight from controller to the reciever, 1 
 
 ## Circuit Diagram
 
-![Circuit Diagram](./ir-controller.png)
+![Circuit Diagram](./ir-controller-seven-segment.png)

@@ -209,6 +209,78 @@ void decrement()
   setNumber(decrement);
 }
 
+// Loop though all symbols
+void displayAll()
+{
+  int delayTime = 500;
+
+  // Initiate
+  displayOff();
+  delay(delayTime);
+
+  // Numbers
+  setNumber(0);
+  delay(delayTime);
+  setNumber(1);
+  delay(delayTime);
+  setNumber(2);
+  delay(delayTime);
+  setNumber(3);
+  delay(delayTime);
+  setNumber(4);
+  delay(delayTime);
+  setNumber(5);
+  delay(delayTime);
+  setNumber(6);
+  delay(delayTime);
+  setNumber(7);
+  delay(delayTime);
+  setNumber(8);
+  delay(delayTime);
+  setNumber(9);
+  delay(delayTime);
+
+  // Symbols
+  displayDotPoint();
+  delay(delayTime);
+  displayMinus();
+  delay(delayTime);
+
+  // Letters
+  displayA();
+  delay(delayTime);
+  displayB();
+  delay(delayTime);
+  displayC();
+  delay(delayTime);
+  displayE();
+  delay(delayTime);
+  displayF();
+  delay(delayTime);
+  displayG();
+  delay(delayTime);
+  displayH();
+  delay(delayTime);
+  displayI();
+  delay(delayTime);
+  displayJ();
+  delay(delayTime);
+  displayL();
+  delay(delayTime);
+  displayO();
+  delay(delayTime);
+  displayP();
+  delay(delayTime);
+  displayS();
+  delay(delayTime);
+  displayU();
+  delay(delayTime);
+
+  // Reset
+  setNumber(0);
+  displayOff();
+}
+
 // Turn all segments off
 void displayOff()
 {
