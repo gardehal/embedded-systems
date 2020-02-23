@@ -1,6 +1,7 @@
 # IR Controller
 
-Some basics on how the IR reciever is set up can how it can be controlled with the remote. 
+Some basics on how the IR reciever is set up can how it can be controlled with the remote, as well as basics of a simgle digit 7-Segment LED display. 
+Display shows 0-9, letters ABCEFGHIJLOPSU, "-", and "." Use number keys to display numbers, up and down arrows to increment and decriment numbers, VOL+ to show decimal point ("."), VOL- to display minus/dash, Play/Pause button to show all symbols included, and Power to turn display off.
 
 Without any modifications it seems to have:
 - a 5 meter range, but the signals cannot be interperated (IR Reciever will blink when recieving a signal)

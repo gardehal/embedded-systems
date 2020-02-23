@@ -59,6 +59,7 @@ void loop()
         break;
       case keyVolPluss:
         Serial.print("VOL+");
+        displayDotPoint();
         break;
       case keyFunc:
         Serial.print("FUNC/STOP");
@@ -68,6 +69,7 @@ void loop()
         break;
       case keyPlay:
         Serial.print("Play/Pause");
+        displayAll();
         break;
       case keyRight:
         Serial.print("Right");
@@ -78,6 +80,7 @@ void loop()
         break;
       case keyVolMinus:
         Serial.print("VOL-");
+        displayMinus();
         break;
       case keyUp:
         Serial.print("Up");
@@ -147,33 +150,43 @@ void setNumber(int number)
   {
     case 0:
       display0();
+      currentNumber = 0;
       break;
     case 1:
       display1();
+      currentNumber = 1;
       break;
     case 2:
       display2();
+      currentNumber = 2;
       break;
     case 3:
       display3();
+      currentNumber = 3;
       break;
     case 4:
       display4();
+      currentNumber = 4;
       break;
     case 5:
       display5();
+      currentNumber = 5;
       break;
     case 6:
       display6();
+      currentNumber = 6;
       break;
     case 7:
       display7();
+      currentNumber = 7;
       break;
     case 8:
       display8();
+      currentNumber = 8;
       break;
     case 9:
       display9();
+      currentNumber = 9;
       break;
   }
 }
@@ -207,8 +220,6 @@ void displayOff()
   digitalWrite(segementNorthFPin, LOW);
   digitalWrite(segementNorthGPin, LOW);
   digitalWrite(segementSouthDPPin, LOW);
-
-  currentNumber = 0;
 }
 
 // Turn all off, turn A, B, C, D, E, F on
@@ -223,8 +234,6 @@ void display0()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
-  
-  currentNumber = 0;
 }
 
 // Turn all off, turn B, C on
@@ -239,8 +248,6 @@ void display1()
   
   digitalWrite(segementNorthBPin, HIGH);
   digitalWrite(segementSouthCPin, HIGH);
-  
-  currentNumber = 1;
 }
 
 // Turn all off, turn A, B, D, E, G on
@@ -255,8 +262,6 @@ void display2()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
-  
-  currentNumber = 2;
 }
 
 // Turn all off, turn A, B, C, D, G on
@@ -271,8 +276,6 @@ void display3()
   digitalWrite(segementSouthCPin, HIGH);
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
-  
-  currentNumber = 3;
 }
 
 // Turn all off, turn B, C, F, G, on
@@ -287,8 +290,6 @@ void display4()
   digitalWrite(segementSouthCPin, HIGH); 
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
-  
-  currentNumber = 4;
 }
 
 // Turn all off, turn A, C, D, F, G on
@@ -303,8 +304,6 @@ void display5()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
-  
-  currentNumber = 5;
 }
 
 // Turn all off, turn A, C, D, E, F, G on
@@ -319,8 +318,6 @@ void display6()
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
-  
-  currentNumber = 6;
 }
 
 // Turn all off, turn A, D, E on
@@ -335,8 +332,6 @@ void display7()
   digitalWrite(segementNorthAPin, HIGH);
   digitalWrite(segementNorthBPin, HIGH);
   digitalWrite(segementSouthCPin, HIGH);
-  
-  currentNumber = 7;
 }
 
 // Turn all off, turn A, B, C, D, E, F, G on
@@ -351,8 +346,6 @@ void display8()
   digitalWrite(segementSouthEPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
-  
-  currentNumber = 8;
 }
 
 // Turn all off, turn A, B, C, D, F, G on
@@ -367,6 +360,228 @@ void display9()
   digitalWrite(segementSouthDPin, HIGH);
   digitalWrite(segementNorthFPin, HIGH);
   digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn DP on
+void displayDotPoint()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
   
-  currentNumber = 9;
+  digitalWrite(segementSouthDPPin, HIGH);
+}
+
+// Turn all off, turn G on
+void displayMinus()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, B, C, E, F, G on
+void displayA()
+{
+  digitalWrite(segementSouthDPPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, B, C, D, E, F, G on
+void displayB()
+{
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, D, E, F on
+void displayC()
+{
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+}
+
+// Turn all off, turn A, D, E, F, G on
+void displayE()
+{
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, E, F, G on
+void displayF()
+{
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, C, D, E, F, G on
+void displayG()
+{
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH); 
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn B, C, E, F, G on
+void displayH()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn B, C on
+void displayI()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+}
+
+// Turn all off, turn B, C, D on
+void displayJ()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementNorthFPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+}
+
+// Turn all off, turn D, E, F on
+void displayL()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+}
+
+// Turn all off, turn A, B, C, D, E, F on
+void displayO()
+{
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH); 
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+}
+
+// Turn all off, turn A, B, E, F, G on
+void displayP()
+{
+  digitalWrite(segementSouthCPin, LOW);
+  digitalWrite(segementSouthDPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn A, C, D, F, G on
+void displayS()
+{
+  digitalWrite(segementNorthBPin, LOW);
+  digitalWrite(segementSouthEPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+
+  digitalWrite(segementNorthAPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH); 
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
+  digitalWrite(segementNorthGPin, HIGH);
+}
+
+// Turn all off, turn B, C, D, E, F on
+void displayU()
+{
+  digitalWrite(segementNorthAPin, LOW);
+  digitalWrite(segementNorthGPin, LOW);
+  digitalWrite(segementSouthDPPin, LOW);
+  
+  digitalWrite(segementNorthBPin, HIGH);
+  digitalWrite(segementSouthCPin, HIGH);
+  digitalWrite(segementSouthDPin, HIGH);
+  digitalWrite(segementSouthEPin, HIGH);
+  digitalWrite(segementNorthFPin, HIGH);
 }
