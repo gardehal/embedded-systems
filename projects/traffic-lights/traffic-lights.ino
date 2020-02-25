@@ -24,6 +24,9 @@ void loop()
 { 
   // Turn RBG LED pedestrian light red to tell pedestrians to stop, turn traffic light green so cars can go, wait 8 seconds
   stopPedestrians();
+  stopTraffic();
+  delay(changeCycleTime / 4);
+  
   startTraffic();
   delay(changeCycleTime);
   
@@ -33,6 +36,8 @@ void loop()
   
   // Turn RGB LED pedestrian light green, turn traffic light red, wait 8 seconds
   stopTraffic();
+  delay(changeCycleTime / 4);
+
   startPedestrians();
   delay(changeCycleTime);
 
