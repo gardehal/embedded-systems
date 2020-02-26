@@ -6,9 +6,12 @@ const int rgbGreenPin = 3;
 const int rgbBluePin = 2;
 const int rbgPins[] = {rgbRedPin, rgbGreenPin, rgbBluePin};
 
-const int redPin = 9;
-const int yellowPin = 10;
-const int greenPin = 11;
+const int redPin = 5;
+const int yellowPin = 6;
+const int greenPin = 7;
+
+const int buttonPin = 8;
+int buttonState = 0; 
 
 int onValue = 255;
 int offValue = 0;
@@ -18,10 +21,23 @@ int changeCycleTime = 8000;
 void setup() 
 {
   Serial.begin(9600);
+  
+  pinMode(buttonPin, INPUT);
 }
 
 void loop() 
 { 
+  buttonState = digitalRead(buttonPin);
+  Serial.print(buttonState);
+  
+  if (buttonState == HIGH) 
+  {
+    // TODO: Delay, ignore multiple pushes, abort linear flow on push
+    toggleHaltTraffic();
+  }
+  return;
+
+  
   // Turn RBG LED pedestrian light red to tell pedestrians to stop, turn traffic light green so cars can go, wait 8 seconds
   stopPedestrians();
   stopTraffic();
@@ -43,6 +59,11 @@ void loop()
 
   // Blink RGB LED pedestrian light green to signal coming red. The loop will continue from the top after the last blink.
   haltPedestrians();
+}
+
+void triggerHaltTraffic()
+{
+  
 }
 
 void haltPedestrians()
