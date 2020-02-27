@@ -1,16 +1,13 @@
-
-
-
-const int rgbRedPin = 4;
-const int rgbGreenPin = 3;
-const int rgbBluePin = 2;
+const int rgbBluePin = 3;
+const int rgbGreenPin = 4;
+const int rgbRedPin = 5;
 const int rbgPins[] = {rgbRedPin, rgbGreenPin, rgbBluePin};
 
-const int redPin = 5;
-const int yellowPin = 6;
-const int greenPin = 7;
+const int redPin = 6;
+const int yellowPin = 7;
+const int greenPin = 8;
 
-const int buttonPin = 8;
+const int buttonPin = 2;
 int buttonState = 0; 
 
 int onValue = 255;
@@ -23,20 +20,13 @@ void setup()
   Serial.begin(9600);
   
   pinMode(buttonPin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(buttonPin), buttonTrigger, CHANGE);
 }
 
 void loop() 
 { 
   buttonState = digitalRead(buttonPin);
   Serial.print(buttonState);
-  
-  if (buttonState == HIGH) 
-  {
-    // TODO: Delay, ignore multiple pushes, abort linear flow on push
-    toggleHaltTraffic();
-  }
-  return;
-
   
   // Turn RBG LED pedestrian light red to tell pedestrians to stop, turn traffic light green so cars can go, wait 8 seconds
   stopPedestrians();
@@ -61,9 +51,21 @@ void loop()
   haltPedestrians();
 }
 
+void buttonTrigger()
+{
+  Serial.print("Button press");
+
+  triggerHaltTraffic();
+}
+
+// Because delay() cannot be invoked in a interrupt, the timing is off and will continue on the loop in loop()
 void triggerHaltTraffic()
 {
+  haltTraffic();
   
+  stopTraffic();
+  
+  startPedestrians();
 }
 
 void haltPedestrians()
