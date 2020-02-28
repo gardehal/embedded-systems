@@ -32,7 +32,6 @@ in the course I swore to one day continue on the path of exploring micro control
 
 ## Planned
 
-- Traffic light button that changes the light after 2 seconds
 - LCD with side-scrolling message (ex. Stock Ticker)
 - Thermometer with LCD
 - Thermometer that uploads to ex. Firebase hourly
