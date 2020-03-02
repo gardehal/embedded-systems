@@ -14,6 +14,8 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [Simple LED Oscillator](./projects/simple-led-oscillator/simple-led-oscillator.md)
 1. [Traffic Lights](./projects/traffic-lights/traffic-lights.md)
 1. [IR Controller/7-Segment](./projects/ir-controller-seven-segment/ir-controller-seven-segment.md)
+1. [LCD Stock Ticker](./projects/stock-ticker/stock-ticker.md)
+1. [LCD Rock, Paper, Scissors](./projects/rock-paper-scissors/rock-paper-scissors.md)
 
 ## Motivation
 
@@ -32,7 +34,6 @@ in the course I swore to one day continue on the path of exploring micro control
 
 ## Planned
 
-- LCD with side-scrolling message (ex. Stock Ticker)
 - Thermometer with LCD
 - Thermometer that uploads to ex. Firebase hourly
 - Ultrasonic change LED colour based on proximity

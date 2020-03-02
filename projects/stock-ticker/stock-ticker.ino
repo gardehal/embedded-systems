@@ -7,6 +7,8 @@ const int d7LcdPin = 5;
 const int eLcdPin = 11;
 const int rsLcdPin = 12;
 
+const int msDelay = 500;
+
 LiquidCrystal lcd(rsLcdPin, eLcdPin, d7LcdPin, d6LcdPin, d5LcdPin, d4LcdPin);
 
 void setup() 
@@ -25,22 +27,27 @@ void loop()
   masterString.concat(getAlphabetStock());
   masterString.concat(" ");
 
-  for(int i = 0; i < masterString.length(); i++)
+  scrollMessage(masterString, msDelay);
+}
+
+void scrollMessage(String message, int msDelay)
+{
+  for(int i = 0; i < message.length(); i++)
   {
     String displaySegment = "";
     for(int j = i; j < i + 16; j++)
     {
-      if(j >= masterString.length())
-        displaySegment.concat(masterString[j - masterString.length()]);  
+      if(j >= message.length())
+        displaySegment.concat(message[j - message.length()]);  
       else
-        displaySegment.concat(masterString[j]);
+        displaySegment.concat(message[j]);
         
       lcd.print(displaySegment);
     }
 
     lcd.clear();
     lcd.print(displaySegment);
-    delay(500);
+    delay(msDelay);
   }
 }
 
