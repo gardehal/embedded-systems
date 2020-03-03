@@ -7,13 +7,21 @@ const int d7LcdPin = 5;
 const int eLcdPin = 11;
 const int rsLcdPin = 12;
 
+const int rockPin = 12;
+const int paperPin = 12;
+const int scissorPin = 12;
+
 const char *rps[] = {"Rock", "Paper", "Scissor"};
 const String WELCOME = "Rock, Paper, Scissors! Please press a button... ";
+const String SCORE = "Score";
 const String BOT = "Bot";
 const String USER = "User";
 const String WON = "won!";
 const String LOST = "lost!";
 const int msDelay = 500;
+
+int botScore = 0;
+int userScore = 0;
 
 LiquidCrystal lcd(rsLcdPin, eLcdPin, d7LcdPin, d6LcdPin, d5LcdPin, d4LcdPin);
 
@@ -45,15 +53,15 @@ void loop()
   // Rock, Paper, Scissors! Please press a button... // scroll
   // Score B: 1, U: 0
 
-  scrollMessage(WELCOME, msDelay);
+  scrollMessage(0, WELCOME, msDelay);
 }
 
 int botPickRandom()
 {
-  // get random int 0, 1, 2, return index
+  return random(0, sizeof(rps) - 1);
 }
 
-void scrollMessage(String message, int msDelay)
+void scrollMessage(int line, String message, int msDelay)
 {
   for(int i = 0; i < message.length(); i++)
   {
@@ -64,11 +72,20 @@ void scrollMessage(String message, int msDelay)
         displaySegment.concat(message[j - message.length()]);  
       else
         displaySegment.concat(message[j]);
-        
-      lcd.print(displaySegment);
     }
 
     lcd.clear();
+    
+    lcd.setCursor(0, 1);
+    String s = SCORE;
+    s.concat(" ");
+    s.concat("B: ");
+    s.concat(botScore);
+    s.concat(", U: ");
+    s.concat(userScore);
+    lcd.print(s);
+  
+    lcd.setCursor(0, 0);
     lcd.print(displaySegment);
     delay(msDelay);
   }
