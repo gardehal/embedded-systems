@@ -18,10 +18,12 @@ const String BOT = "Bot";
 const String USER = "User";
 const String WON = "won!";
 const String LOST = "lost!";
+const String DRAW = "Game draw!";
 const int msDelay = 500;
 
 int botScore = 0;
 int userScore = 0;
+boolean botWon = false;
 
 LiquidCrystal lcd(rsLcdPin, eLcdPin, d7LcdPin, d6LcdPin, d5LcdPin, d4LcdPin);
 
@@ -33,12 +35,7 @@ void setup()
 void loop() 
 {
   //TODO buttons, code, diagram, video
-  
-  // write some stuff to lcd
-  // wait for user input
-  // pick random index of rps
-  // compare user pick and bot pick
-  // update score on the right
+  // buttons, interrupt, reset round, reset game/program after 9 wins
   
   // ex.:
   // Rock, Paper, Scissors! Please press a button... // scroll
@@ -53,12 +50,80 @@ void loop()
   // Rock, Paper, Scissors! Please press a button... // scroll
   // Score B: 1, U: 0
 
-  scrollMessage(0, WELCOME, msDelay);
+  //scrollMessage(0, WELCOME, msDelay);
+  // register interrupt by user picking
+  int userPick = 1;
+  int botPick = botPickRandom();
+
+  String botPickString = BOT;
+  botPickString.concat(": ");
+  botPickString.concat(rps[botPick]);
+  botPickString.concat("-");
+  botPickString.concat(botPick);
+  String userPickString = USER;
+  userPickString.concat(": ");
+  userPickString.concat(rps[userPick]);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(botPickString);
+  lcd.setCursor(0, 1);
+  lcd.print(userPickString);
+  
+  delay(1000);
+  
+  if(userPick == botPick) // Draw
+  {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(DRAW);
+  }
+  else
+  {
+    if((userPick == 0 && botPick == 1) // U: Rock, B: Paper
+       || (userPick == 1 && botPick == 2) // U: Papere, B: Scissor
+       || (userPick == 2 && botPick == 0)) // U: Scissor, B: Rock
+    {
+      botWon = true;
+      botScore++;
+    }
+    else
+    {
+      botWon = false;
+      userScore++;
+    }
+
+    String botResult = LOST;
+    if(botWon)
+      botResult = WON;
+    String userResult = WON;
+    if(botWon)
+      userResult = LOST;
+    
+    String botResultString = BOT;
+    botResultString.concat(" ");
+    botResultString.concat(botResult);
+    String userResultString = USER;
+    userResultString.concat(" ");
+    userResultString.concat(userResult);
+    
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(botResultString);
+    lcd.setCursor(14, 0);
+    lcd.print(botScore);
+    lcd.setCursor(0, 1);
+    lcd.print(userResultString);
+    lcd.setCursor(14, 1);
+    lcd.print(userScore);
+  }
+  
+  delay(1000);
 }
 
 int botPickRandom()
 {
-  return random(0, sizeof(rps) - 1);
+  return random(0, sizeof(rps) / sizeof(rps[0]));
 }
 
 void scrollMessage(int line, String message, int msDelay)
