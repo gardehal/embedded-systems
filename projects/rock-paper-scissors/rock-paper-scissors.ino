@@ -1,15 +1,16 @@
 #include <LiquidCrystal.h>
+#include "PinChangeInt.h"
 
-const int d4LcdPin = 2;
-const int d5LcdPin = 3;
-const int d6LcdPin = 4;
-const int d7LcdPin = 5;
-const int eLcdPin = 11;
-const int rsLcdPin = 12;
+const int d4LcdPin = 5;
+const int d5LcdPin = 6;
+const int d6LcdPin = 7;
+const int d7LcdPin = 8;
+const int eLcdPin = 9;
+const int rsLcdPin = 10;
 
-const int rockPin = 12;
-const int paperPin = 12;
-const int scissorPin = 12;
+const int rockPin = 2;
+const int paperPin = 3;
+const int scissorPin = 4;
 
 const char *rps[] = {"Rock", "Paper", "Scissor"};
 const String WELCOME = "Rock, Paper, Scissors! Please press a button... ";
@@ -21,6 +22,7 @@ const String LOST = "lost!";
 const String DRAW = "Game draw!";
 const int msDelay = 500;
 
+int buttonState = 0; 
 int botScore = 0;
 int userScore = 0;
 boolean botWon = false;
@@ -29,12 +31,21 @@ LiquidCrystal lcd(rsLcdPin, eLcdPin, d7LcdPin, d6LcdPin, d5LcdPin, d4LcdPin);
 
 void setup() 
 {
+  Serial.begin(9600);
   lcd.begin(16, 2);
+  
+  pinMode(rockPin, INPUT_PULLUP);
+  pinMode(paperPin, INPUT_PULLUP);
+  pinMode(scissorPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(rockPin), userPick, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(paperPin), userPick, CHANGE);
+  attachPinChangeInterrupt(scissorPin, userPick, CHANGE);
 }
 
 void loop() 
 {
-  //TODO buttons, code, diagram, video
+  buttonState = digitalRead(rockPin);
+  // TODO buttons, code, diagram, video
   // buttons, interrupt, reset round, reset game/program after 9 wins
   
   // ex.:
@@ -124,6 +135,11 @@ void loop()
 int botPickRandom()
 {
   return random(0, sizeof(rps) / sizeof(rps[0]));
+}
+
+int userPick()
+{
+    lcd.clear();
 }
 
 void scrollMessage(int line, String message, int msDelay)
