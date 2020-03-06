@@ -20,12 +20,14 @@ const String USER = "User";
 const String WON = "won!";
 const String LOST = "lost!";
 const String DRAW = "Game draw!";
-const int msDelay = 500;
+const int msDelay = 2000;
 
 int buttonState = 0; 
 int botScore = 0;
 int userScore = 0;
 boolean botWon = false;
+boolean interrupt = false;
+int userPick = 0;
 
 LiquidCrystal lcd(rsLcdPin, eLcdPin, d7LcdPin, d6LcdPin, d5LcdPin, d4LcdPin);
 
@@ -37,40 +39,57 @@ void setup()
   pinMode(rockPin, INPUT_PULLUP);
   pinMode(paperPin, INPUT_PULLUP);
   pinMode(scissorPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(rockPin), userPick, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(paperPin), userPick, CHANGE);
-  attachPinChangeInterrupt(scissorPin, userPick, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(rockPin), userPickRock, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(paperPin), userPickPaper, CHANGE);
+  attachPinChangeInterrupt(scissorPin, userPickScissor, CHANGE);
 }
 
 void loop() 
 {
   buttonState = digitalRead(rockPin);
-  // TODO buttons, code, diagram, video
-  // buttons, interrupt, reset round, reset game/program after 9 wins
-  
-  // ex.:
-  // Rock, Paper, Scissors! Please press a button... // scroll
-  // Score B: 0, U: 0
-  // .. 
-  // Bot: Rock      0
-  // User: Scissor  0
-  // ...
-  // Bot won!       1
-  // User lost!     0
-  // ...
-  // Rock, Paper, Scissors! Please press a button... // scroll
-  // Score B: 1, U: 0
+  scrollMessage(0, WELCOME, msDelay);
+  if(interrupt)
+  {
+    startGame(userPick);
+    interrupt = false;
+  }
+}
 
-  //scrollMessage(0, WELCOME, msDelay);
-  // register interrupt by user picking
-  int userPick = 1;
+void doInterrupt()
+{
+  interrupt = true;
+}
+
+void userPickRock()
+{
+  userPick = 0;
+  doInterrupt();
+}
+
+void userPickPaper()
+{
+  userPick = 1;
+  doInterrupt();
+}
+
+void userPickScissor()
+{
+  userPick = 2;
+  doInterrupt();
+}
+
+int botPickRandom()
+{
+  return random(0, sizeof(rps) / sizeof(rps[0]));
+}
+
+int startGame(int userPick)
+{
   int botPick = botPickRandom();
-
+  
   String botPickString = BOT;
   botPickString.concat(": ");
   botPickString.concat(rps[botPick]);
-  botPickString.concat("-");
-  botPickString.concat(botPick);
   String userPickString = USER;
   userPickString.concat(": ");
   userPickString.concat(rps[userPick]);
@@ -80,9 +99,14 @@ void loop()
   lcd.print(botPickString);
   lcd.setCursor(0, 1);
   lcd.print(userPickString);
+
+  delay(msDelay);
   
-  delay(1000);
-  
+  calculateWinner(userPick, botPick);
+}
+
+void calculateWinner(int userPick, int botPick)
+{
   if(userPick == botPick) // Draw
   {
     lcd.clear();
@@ -104,6 +128,33 @@ void loop()
       userScore++;
     }
 
+    if(userScore > 9)
+    {
+      userScore = 0;
+      botScore = 0;
+      
+      lcd.clear();
+      lcd.setCursor(4, 0);
+      lcd.print("User won");
+      lcd.setCursor(4 , 1);
+      lcd.print("the game!");
+      delay(msDelay * 2);
+      return;
+    }
+    else if(botScore > 9)
+    {
+      userScore = 0;
+      botScore = 0;
+      
+      lcd.clear();
+      lcd.setCursor(5, 0);
+      lcd.print("Bot won");
+      lcd.setCursor(4 , 1);
+      lcd.print("the game!");
+      delay(msDelay * 2);
+      return;
+    }
+
     String botResult = LOST;
     if(botWon)
       botResult = WON;
@@ -121,31 +172,24 @@ void loop()
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(botResultString);
-    lcd.setCursor(14, 0);
+    lcd.setCursor(15, 0);
     lcd.print(botScore);
     lcd.setCursor(0, 1);
     lcd.print(userResultString);
-    lcd.setCursor(14, 1);
+    lcd.setCursor(15, 1);
     lcd.print(userScore);
+    
+    delay(msDelay);
   }
-  
-  delay(1000);
-}
-
-int botPickRandom()
-{
-  return random(0, sizeof(rps) / sizeof(rps[0]));
-}
-
-int userPick()
-{
-    lcd.clear();
 }
 
 void scrollMessage(int line, String message, int msDelay)
 {
   for(int i = 0; i < message.length(); i++)
   {
+    if(interrupt)
+      return;
+    
     String displaySegment = "";
     for(int j = i; j < i + 16; j++)
     {
@@ -168,6 +212,6 @@ void scrollMessage(int line, String message, int msDelay)
   
     lcd.setCursor(0, 0);
     lcd.print(displaySegment);
-    delay(msDelay);
+    delay(msDelay / 2);
   }
 }
