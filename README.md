@@ -17,6 +17,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [IR Controller/7-Segment](./projects/ir-controller-seven-segment/ir-controller-seven-segment.md)
 1. [LCD Stock Ticker](./projects/stock-ticker/stock-ticker.md)
 1. [LCD Rock, Paper, Scissors](./projects/rock-paper-scissors/rock-paper-scissors.md)
+1. [Joystick Stepper Motor](./projects/joystick-stepper-motor.md)
 
 ## Libraries
 
@@ -40,16 +41,13 @@ in the course I swore to one day continue on the path of exploring micro control
 
 ## Planned
 
-- Thermometer with LCD
+- Thermometer that activates fan when 22 C +
 - Thermometer that uploads to ex. Firebase hourly
 - Ultrasonic change LED colour based on proximity
-- Joystick and display direction
-- Stepper motor
 - Servo motor
-- Fan + small motor
 - Relay
 - Active / passive buzzer
-- Buttons, Ball tilt, other modules
+- Ball tilt, other modules
 - Control Lego computer though arduino?
 - Integrate other electronics
 - Send data over Bluetooth
