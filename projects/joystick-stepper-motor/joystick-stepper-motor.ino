@@ -2,16 +2,16 @@
 
 // https://create.arduino.cc/projecthub/MisterBotBreak/how-to-use-a-joystick-with-serial-monitor-1f04f0
 
-#define STEPS 64
+#define STEPS 128
 
-int VRx = A0;
-int VRy = A1;
-int SW = 2;
+const int VRx = A0;
+const int VRy = A1;
+const int SW = 2;
 
-int stepper1 = 10;
-int stepper2 = 11;
-int stepper3 = 12;
-int stepper4 = 13;
+const int stepper1 = 10;
+const int stepper2 = 11;
+const int stepper3 = 12;
+const int stepper4 = 13;
 
 Stepper stepper (STEPS, 10, 12, 11, 13);
 
@@ -29,12 +29,11 @@ void setup()
   pinMode(VRy, INPUT);
   pinMode(SW, INPUT_PULLUP); 
 
-  stepper.setSpeed(200);
+  stepper.setSpeed(256);
 }
 
 void loop() 
 {
-  
   xPosition = analogRead(VRx);
   yPosition = analogRead(VRy);
   SW_state = digitalRead(SW);
@@ -49,14 +48,19 @@ void loop()
   Serial.println(SW_state);
 
   int val = 0; 
-  
-  if (mapX > 20 || mapX < -20)
-  {
-    val = mapX;
-    stepper.step(val);
-    Serial.println(val); //for debugging
-  }
 
-  delay(1);
-  
+  // Half rotation
+  if (mapY > 256)
+    stepper.step(1024);
+    
+  // Full rotation
+  else if (mapY < -256)
+    stepper.step(2048);
+
+  // Rotation based on the tilt of the joystick
+  // Minimum is 32 to prevent interference from wires wiggling
+  else if (mapX > 32 || mapX < -32)
+    stepper.step(mapX);
+
+  delay(10);
 }
