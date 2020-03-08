@@ -17,7 +17,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [IR Controller/7-Segment](./projects/ir-controller-seven-segment/ir-controller-seven-segment.md)
 1. [LCD Stock Ticker](./projects/stock-ticker/stock-ticker.md)
 1. [LCD Rock, Paper, Scissors](./projects/rock-paper-scissors/rock-paper-scissors.md)
-1. [Joystick Stepper Motor](./projects/joystick-stepper-motor.md)
+1. [Joystick Stepper Motor](./projects/joystick-stepper-motor/joystick-stepper-motor.md)
 
 ## Libraries
 
