@@ -18,6 +18,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [LCD Stock Ticker](./projects/stock-ticker/stock-ticker.md)
 1. [LCD Rock, Paper, Scissors](./projects/rock-paper-scissors/rock-paper-scissors.md)
 1. [Joystick Stepper Motor](./projects/joystick-stepper-motor/joystick-stepper-motor.md)
+1. [Thermometer Activated Fan](./projects/thermometer-activated-fan/thermometer-activated-fan.md)
 
 ## Libraries
 
@@ -41,7 +42,7 @@ in the course I swore to one day continue on the path of exploring micro control
 
 ## Planned
 
-- Thermometer that activates fan when 22 C +
+- Hey Jude (Beatles) karaoke on LCD with LED or speaker for beat (from flowchart)
 - Thermometer that uploads to ex. Firebase hourly
 - Ultrasonic change LED colour based on proximity
 - Servo motor
