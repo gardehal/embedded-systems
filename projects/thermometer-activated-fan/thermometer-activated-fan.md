@@ -15,3 +15,5 @@ In the video you may see the piece of string I used to keep the relay on the M t
 ## Circuit Diagram
  
 ![Circuit Diagram](./thermometer-activated-fan.png)
+
+![Relay Schematics](relay-schematics.gif) [Source](https://circuitdigest.com/article/relay-working-types-operation-applications)
