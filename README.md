@@ -19,6 +19,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [LCD Rock, Paper, Scissors](./projects/rock-paper-scissors/rock-paper-scissors.md)
 1. [Joystick Stepper Motor](./projects/joystick-stepper-motor/joystick-stepper-motor.md)
 1. [Thermometer Activated Fan](./projects/thermometer-activated-fan/thermometer-activated-fan.md)
+1. [12-Step Led Clock](./projects/12-step-led-clock/12-step-led-clock.md)
 
 ## Libraries
 
@@ -46,7 +47,7 @@ in the course I swore to one day continue on the path of exploring micro control
 - Thermometer that uploads to ex. Firebase hourly
 - Ultrasonic change LED colour based on proximity
 - Servo motor
-- Relay
+- Stepper motor / 7 segment clock
 - Active / passive buzzer
 - Ball tilt, other modules
 - Control Lego computer though arduino?
