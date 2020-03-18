@@ -13,56 +13,87 @@ const int digitalTwelve = 12;
 const int digitalThirteen = 13;
 
 void setup() 
-{
+{  
   Serial.begin(9600);
 }
 
 void loop() 
 {
-  reset();
   lightTopLeft();
+  delay(1000);
+  lightTopRight();
+  delay(1000);
+  lightMiddleLeft();
+  delay(1000);
+  lightMiddleRight();
+  delay(1000);
+  lightBottomLeft();
+  delay(1000);
+  lightBottomRight();
+  delay(1000);
 }
 
-void reset()
+void test()
 {
-  for(int i = 2; i < 14; i++)
-  {
-    pinMode(i, OUTPUT);
-  }
+  test();
+  // digitalEleven
+  // digitalTwelve
+  // digitalThirteen
+  pinMode(digitalThirteen, INPUT);
+  pinMode(digitalTwelve, OUTPUT);
+  pinMode(digitalEleven, OUTPUT);
+  digitalWrite(digitalTwelve, HIGH);
+  digitalWrite(digitalEleven, LOW);
 }
 
 void lightTopLeft()
 {
-  digitalWrite(digitalThirteen, HIGH);
-  digitalWrite(digitalTwelve, LOW);
-}
-
-void lightTopRight()
-{
+  pinMode(digitalTwelve, INPUT);
+  pinMode(digitalEleven, OUTPUT);
+  pinMode(digitalThirteen, OUTPUT);
   digitalWrite(digitalEleven, HIGH);
   digitalWrite(digitalThirteen, LOW);
 }
 
-void lightMiddleLeft()
+void lightTopRight()
 {
-  digitalWrite(digitalThirteen, HIGH);
-  digitalWrite(digitalTwelve, LOW);
-}
-
-void lightMiddleRight()
-{
-  digitalWrite(digitalTwelve, HIGH);
-  digitalWrite(digitalThirteen, LOW);
-}
-
-void lightBottomLeft()
-{
+  pinMode(digitalTwelve, INPUT);
   digitalWrite(digitalThirteen, HIGH);
   digitalWrite(digitalEleven, LOW);
 }
 
-void lightBottomRight()
+void lightMiddleLeft()
 {
+  pinMode(digitalEleven, INPUT);
+  pinMode(digitalTwelve, OUTPUT);
+  pinMode(digitalThirteen, OUTPUT);
   digitalWrite(digitalTwelve, HIGH);
   digitalWrite(digitalThirteen, LOW);
+}
+
+void lightMiddleRight()
+{
+  pinMode(digitalThirteen, INPUT);
+  pinMode(digitalEleven, OUTPUT);
+  pinMode(digitalTwelve, OUTPUT);
+  digitalWrite(digitalEleven, HIGH);
+  digitalWrite(digitalTwelve, LOW);
+}
+
+void lightBottomLeft()
+{
+  pinMode(digitalEleven, INPUT);
+  pinMode(digitalThirteen, OUTPUT);
+  pinMode(digitalTwelve, OUTPUT);
+  digitalWrite(digitalThirteen, HIGH);
+  digitalWrite(digitalTwelve, LOW);
+}
+
+void lightBottomRight()
+{
+  pinMode(digitalThirteen, INPUT);
+  pinMode(digitalTwelve, OUTPUT);
+  pinMode(digitalEleven, OUTPUT);
+  digitalWrite(digitalTwelve, HIGH);
+  digitalWrite(digitalEleven, LOW);
 }
