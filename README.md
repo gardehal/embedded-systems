@@ -20,6 +20,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [Joystick Stepper Motor](./projects/joystick-stepper-motor/joystick-stepper-motor.md)
 1. [Thermometer Activated Fan](./projects/thermometer-activated-fan/thermometer-activated-fan.md)
 1. [12-Step Led Clock](./projects/12-step-led-clock/12-step-led-clock.md)
+1. [Charlieplexing Leds](./projects/charlieplexing-leds/charlieplexing-leds.md)
 
 ## Libraries
 
