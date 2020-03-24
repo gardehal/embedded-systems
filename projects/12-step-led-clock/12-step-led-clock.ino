@@ -17,29 +17,177 @@ const int digitalTwelve = 12;
 const int digitalThirteen = 13;
 
 const int delayMinute = 60000; // 60 000 milliseconds = 1 minute
+int hours = 0;
+int minutes = 0;
 
 void setup() 
 {  
   Serial.begin(9600);
-
-  reset();
 }
+
 void loop() 
 {
-  // Hours = (DateTime.Hour,DEC);
-  // Minutes = DateTime.Minute;
-  // Seconds = DateTime.Second;
-  //Serial.print((DateTime.Hour,DEC));
-  
-  blinkAll();
+  // blinkAll();
+  lightHourLeds(hours);
+  lightMinuteLeds(minutes);
 
+  hours++;
+  minutes++;
+  delay(500);
+
+  if(hours > 11)
+    hours = 0;
+    
+  if(minutes > 11)
+    minutes = 0;
+  
   // Get time of day?
   // set hour to current hour
   // set minutes to closes minute in 5 minute steps, set difference as delay time
   // enter infinite loop where every 5 minutes, increment minute led steps, every hour (12 minute steps) increment hours and set minutes back to 0
 }
 
+void reset()
+{
+  for(int i = 0; i < 14; i++)
+  {
+    pinMode(i, INPUT);
+  }
+}
 
+void resetMinuteLeds()
+{
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
+  pinMode(6, INPUT);
+  pinMode(7, INPUT);
+}
+
+void resetHourLeds()
+{
+  pinMode(8, INPUT);
+  pinMode(9, INPUT);
+  pinMode(10, INPUT);
+  pinMode(11, INPUT);
+  pinMode(12, INPUT);
+  pinMode(13, INPUT);
+}
+
+void lightLed(int firstPin, int secondPin, boolean doReset = false)
+{
+  if(doReset)
+    reset();
+  
+  pinMode(firstPin, OUTPUT);
+  pinMode(secondPin, OUTPUT);
+  digitalWrite(firstPin, HIGH);
+  digitalWrite(secondPin, LOW);
+}
+
+void lightHourLeds(int hour)
+{
+  // digitalEight
+  // digitalNine
+  // digitalTen
+  // digitalEleven
+  // digitalTwelve
+  // digitalThirteen
+  resetHourLeds();
+  
+  switch(hour)
+  {
+    case(0):
+      lightLed(digitalEight, digitalTen);
+      break;
+    case(1):
+      lightLed(digitalNine, digitalTen);
+      break;
+    case(2):
+      lightLed(digitalTen, digitalNine);
+      break;
+    case(3):
+      lightLed(digitalThirteen, digitalTwelve);
+      break;
+    case(4):
+      lightLed(digitalTwelve, digitalThirteen);
+      break;
+    case(5):
+      lightLed(digitalEleven, digitalThirteen);
+      break;
+    case(6):
+      lightLed(digitalTen, digitalEight);
+      break;
+    case(7):
+      lightLed(digitalEight, digitalNine);
+      break;
+    case(8):
+      lightLed(digitalNine, digitalEight);
+      break;
+    case(9):
+      lightLed(digitalTwelve, digitalEleven);
+      break;
+    case(10):
+      lightLed(digitalEleven, digitalTwelve);
+      break;
+    case(11):
+      lightLed(digitalThirteen, digitalEleven);
+      break;
+  }
+}
+
+void lightMinuteLeds(int minuteStep)
+{
+  // digitalTwo
+  // digitalThree
+  // digitalFour
+  // digitalFive
+  // digitalSix
+  // digitalSeven
+
+  resetMinuteLeds();
+  
+  switch(minuteStep)
+  {
+    case(0):
+      lightLed(digitalFive, digitalSeven);
+      break;
+    case(1):
+      lightLed(digitalSix, digitalSeven);
+      break;
+    case(2):
+      lightLed(digitalSeven, digitalSix);
+      break;
+    case(3):
+      lightLed(digitalFour, digitalThree);
+      break;
+    case(4):
+      lightLed(digitalThree, digitalFour);
+      break;
+    case(5):
+      lightLed(digitalTwo, digitalFour);
+      break;
+    case(6):
+      lightLed(digitalSeven, digitalFive);
+      break;
+    case(7):
+      lightLed(digitalFive, digitalSix);
+      break;
+    case(8):
+      lightLed(digitalSix, digitalFive);
+      break;
+    case(9):
+      lightLed(digitalThree, digitalTwo);
+      break;
+    case(10):
+      lightLed(digitalTwo, digitalThree);
+      break;
+    case(11):
+      lightLed(digitalFour, digitalTwo);
+      break;
+  }
+}
 
 void blinkAll()
 {
@@ -58,74 +206,57 @@ void blinkAll()
   
   // Top left cluster
   delay(1000);
-  lightLed(digitalEight, digitalTen); // Grid 0, 0
+  lightLed(digitalEight, digitalTen, true); // Grid 0, 0
   delay(1000);
-  lightLed(digitalTen, digitalEight); // Grid 0, 1
+  lightLed(digitalTen, digitalEight, true); // Grid 0, 1
   delay(1000);
-  lightLed(digitalNine, digitalTen); // Grid 1, 0
+  lightLed(digitalNine, digitalTen, true); // Grid 1, 0
   delay(1000);
-  lightLed(digitalEight, digitalNine); // Grid 1, 1
+  lightLed(digitalEight, digitalNine, true); // Grid 1, 1
   delay(1000);
-  lightLed(digitalTen, digitalNine); // Grid 2, 0
+  lightLed(digitalTen, digitalNine, true); // Grid 2, 0
   delay(1000);
-  lightLed(digitalNine, digitalEight); // Grid 2, 1
+  lightLed(digitalNine, digitalEight, true); // Grid 2, 1
 
   // Bottom left cluster
   delay(1000);
-  lightLed(digitalThirteen, digitalTwelve); // Grid 3, 0
+  lightLed(digitalThirteen, digitalTwelve, true); // Grid 3, 0
   delay(1000);
-  lightLed(digitalTwelve, digitalEleven); // Grid 3, 1
+  lightLed(digitalTwelve, digitalEleven, true); // Grid 3, 1
   delay(1000);
-  lightLed(digitalTwelve, digitalThirteen); // Grid 4, 0
+  lightLed(digitalTwelve, digitalThirteen, true); // Grid 4, 0
   delay(1000);
-  lightLed(digitalEleven, digitalTwelve); // Grid 4, 1
+  lightLed(digitalEleven, digitalTwelve, true); // Grid 4, 1
   delay(1000);
-  lightLed(digitalEleven, digitalThirteen); // Grid 5, 0
+  lightLed(digitalEleven, digitalThirteen, true); // Grid 5, 0
   delay(1000);
-  lightLed(digitalThirteen, digitalEleven); // Grid 5, 1
+  lightLed(digitalThirteen, digitalEleven, true); // Grid 5, 1
 
   // Top right cluster
   delay(1000);
-  lightLed(digitalFive, digitalSeven); // Grid 0, 2
+  lightLed(digitalFive, digitalSeven, true); // Grid 0, 2
   delay(1000);
-  lightLed(digitalSeven, digitalFive); // Grid 0, 3
+  lightLed(digitalSeven, digitalFive, true); // Grid 0, 3
   delay(1000);
-  lightLed(digitalSix, digitalSeven); // Grid 1, 2
+  lightLed(digitalSix, digitalSeven, true); // Grid 1, 2
   delay(1000);
-  lightLed(digitalFive, digitalSix); // Grid 1, 3
+  lightLed(digitalFive, digitalSix, true); // Grid 1, 3
   delay(1000);
-  lightLed(digitalSeven, digitalSix); // Grid 2, 2
+  lightLed(digitalSeven, digitalSix, true); // Grid 2, 2
   delay(1000);
-  lightLed(digitalSix, digitalFive); // Grid 2, 3
+  lightLed(digitalSix, digitalFive, true); // Grid 2, 3
 
   // Bottom rightt cluster
   delay(1000);
-  lightLed(digitalFour, digitalThree); // Grid 3, 2
+  lightLed(digitalFour, digitalThree, true); // Grid 3, 2
   delay(1000);
-  lightLed(digitalThree, digitalTwo); // Grid 3, 3
+  lightLed(digitalThree, digitalTwo, true); // Grid 3, 3
   delay(1000);
-  lightLed(digitalThree, digitalFour); // Grid 4, 2
+  lightLed(digitalThree, digitalFour, true); // Grid 4, 2
   delay(1000);
-  lightLed(digitalTwo, digitalThree); // Grid 4, 3
+  lightLed(digitalTwo, digitalThree, true); // Grid 4, 3
   delay(1000);
-  lightLed(digitalTwo, digitalFour); // Grid 5, 2
+  lightLed(digitalTwo, digitalFour, true); // Grid 5, 2
   delay(1000);
-  lightLed(digitalFour, digitalTwo); // Grid 5, 3
-}
-
-void reset()
-{
-  for(int i = 0; i < 14; i++)
-  {
-    pinMode(i, INPUT);
-  }
-}
-
-void lightLed(int firstPin, int secondPin)
-{
-  reset();
-  pinMode(firstPin, OUTPUT);
-  pinMode(secondPin, OUTPUT);
-  digitalWrite(firstPin, HIGH);
-  digitalWrite(secondPin, LOW);
+  lightLed(digitalFour, digitalTwo, true); // Grid 5, 3
 }
