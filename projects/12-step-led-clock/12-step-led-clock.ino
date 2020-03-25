@@ -1,7 +1,3 @@
-
-#include <Time.h>
-
-#define TIME_HEADER 255
 // Pins for charlieplexing
 const int digitalTwo = 2;
 const int digitalThree = 3;
@@ -16,35 +12,56 @@ const int digitalEleven = 11;
 const int digitalTwelve = 12;
 const int digitalThirteen = 13;
 
-const int delayMinute = 60000; // 60 000 milliseconds = 1 minute
+const long delayTime = 60000; // 60 000 milliseconds = 1 minute
 int hours = 0;
 int minutes = 0;
 
 void setup() 
 {  
   Serial.begin(9600);
+
+  // TODO Get time programtically
+  // Adjust time on startup due to lack of synchronization  to computer clock or RTC module
+  hours = 19; // Current hour value, 0 to 23
+  minutes = 43; // Current minute value, 0 to 59
+
+  int startupMinutesAdjust = minutes % 5; // Calculate modulo of minutes
+  if(hours > 11) // Adjust 24 hour times to 12
+    hours = hours - 12;
+  //minutes = map(minutes, 0, 59, 0, 11);
+  minutes = minutes / 5;
+  
+  lightHourLeds(hours);
+  lightMinuteLeds(minutes);
+  
+  // On startup, adjust minutes to 5 minute steps but waiting until
+  if(startupMinutesAdjust > 0)
+    delay(delayTime * (5 - startupMinutesAdjust)); // Use modulo to figure out how long to wait to syncronize 5 minute step value
 }
 
 void loop() 
 {
   // blinkAll();
-  lightHourLeds(hours);
-  lightMinuteLeds(minutes);
+  clockLoop();
+}
 
-  hours++;
+void clockLoop()
+{
   minutes++;
-  delay(500);
-
-  if(hours > 11)
-    hours = 0;
     
   if(minutes > 11)
-    minutes = 0;
+  {
+    minutes = 0; 
+    hours++;
+    
+    if(hours > 11)
+      hours = 0;
+  }
   
-  // Get time of day?
-  // set hour to current hour
-  // set minutes to closes minute in 5 minute steps, set difference as delay time
-  // enter infinite loop where every 5 minutes, increment minute led steps, every hour (12 minute steps) increment hours and set minutes back to 0
+  lightHourLeds(hours);
+  lightMinuteLeds(minutes);
+  
+  delay(delayTime * 5);
 }
 
 void reset()
