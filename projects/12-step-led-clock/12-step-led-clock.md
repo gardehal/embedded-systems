@@ -4,6 +4,7 @@ A clock consisting of 24 leds, the left columns represents hours, one hour per s
 
 Originally I had planned to do 2 columns, and have an indicator for AM/PM, but ran out of pins. I could have charlieplexed with more pins, doing 2 clusters of 12 leds would only have cost me 8 pints total, leave plenty for other features, but the complexity was already fairly high and I doubt I have the wires for that.
 
+Due to lack of resistors, pins 2 and 13 have two 220 Ω resistors in parallel which result in halving the resistors Ohm value (220 Ohm devided by 2 resistors = 110 Ohm). If one have the resourses, one could use a single 100 Ω resistor for both instances.
  
 [Code](./12-step-led-clock.ino)
  
