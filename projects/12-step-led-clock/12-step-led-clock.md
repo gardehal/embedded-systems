@@ -8,9 +8,10 @@ Due to lack of resistors, pins 2 and 13 have two 220 Ω resistors in parallel wh
  
 [Code](./12-step-led-clock.ino)
  
-Note that the video is **not** sped up, but that the delay time is altered (1 minute = 1 second).
+Note that the video is **not** sped up, but that the delay time is altered (1 minute = 1 second). The video start at the time 00:00.
 
-[Video](./12-step-led-clock.mp4)
+[Video, Part 1](./12-step-led-clock-1.mp4)
+[Video, Part 2](./12-step-led-clock-2.mp4)
  
 ## Circuit Diagram
  

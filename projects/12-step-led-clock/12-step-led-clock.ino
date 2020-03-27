@@ -22,8 +22,8 @@ void setup()
 
   // TODO Get time programtically
   // Adjust time on startup due to lack of synchronization  to computer clock or RTC module
-  hours = 19; // Current hour value, 0 to 23
-  minutes = 43; // Current minute value, 0 to 59
+  hours = 0; // Current hour value, 0 to 23
+  minutes = 1; // Current minute value, 0 to 59
 
   int startupMinutesAdjust = minutes % 5; // Calculate modulo of minutes
   if(hours > 11) // Adjust 24 hour times to 12
