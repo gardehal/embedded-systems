@@ -21,6 +21,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [Thermometer Activated Fan](./projects/thermometer-activated-fan/thermometer-activated-fan.md)
 1. [12-Step Led Clock](./projects/12-step-led-clock/12-step-led-clock.md)
 1. [Charlieplexing Six Leds](./projects/charlieplexing-six-leds/charlieplexing-six-leds.md)
+1. [Ultrasonic Led](./projects/ultrasonic-led/ultrasonic-led.md)
 
 ## Libraries
 
@@ -46,7 +47,6 @@ in the course I swore to one day continue on the path of exploring micro control
 
 - Hey Jude (Beatles) karaoke on LCD with LED or speaker for beat (from flowchart)
 - Thermometer that uploads to ex. Firebase hourly
-- Ultrasonic change LED colour based on proximity
 - Servo motor
 - Stepper motor / 7 segment clock
 - Active / passive buzzer
