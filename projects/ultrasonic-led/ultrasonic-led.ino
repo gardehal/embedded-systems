@@ -6,7 +6,8 @@ const int ledGreenPin = 12;
 const int ledBluePin = 13;
 
 long duration;
-int distance;
+int distance = 0;
+int maxDistance = 64;
 
 void setup() 
 {
@@ -20,6 +21,22 @@ void setup()
 }
 
 void loop() 
+{
+  mainLoop();
+  //displayColours();
+}
+
+void displayColours()
+{
+  colourShift(distance);
+  distance += 1;
+
+  if(distance > maxDistance)
+    distance = 0;
+  delay(500);
+}
+
+void mainLoop()
 {
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
@@ -39,9 +56,51 @@ void loop()
 
   if(distance < 100)
   {
-    digitalWrite(ledBluePin, HIGH);
-    delay(distance * 10);
-    digitalWrite(ledBluePin, LOW);
-    delay(distance * 10);
+    //blinkLed();
+    colourShift(distance);
   }
+  
+  delay(100);
+}
+
+float limit(float value)
+{
+  if(value < 0)
+    return 0;
+  else if(value > 255)
+    return 255;
+  else
+    return value;
+}
+
+void colourShift(float x)
+{  
+  float redValue = abs((0.25 * ((x - 32) * (x - 32))));
+  float greenValue = abs((-0.25 * ((x - 32) * (x - 32))) + 255);
+  float blueValue = abs((x * -4) + 255);
+
+  redValue = limit(redValue);
+  greenValue = limit(greenValue);
+  blueValue = limit(blueValue);
+  
+  Serial.print("redValue: ");
+  Serial.println(redValue);
+  Serial.print("greenValue: ");
+  Serial.println(greenValue);
+  Serial.print("blueValue: ");
+  Serial.println(blueValue);
+  Serial.println(" ");
+
+  // Using analog with 255 iinstead of 125 because digitalWrite only does white and primary colours
+  analogWrite(ledRedPin, redValue);
+  analogWrite(ledGreenPin, greenValue);
+  analogWrite(ledBluePin, blueValue);
+}
+
+void blinkLed()
+{
+  digitalWrite(ledBluePin, HIGH);
+  delay(distance * 10);
+  digitalWrite(ledBluePin, LOW);
+  delay(distance * 10);
 }

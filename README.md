@@ -36,6 +36,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 - [Citcut.io's app](https://www.circuito.io/app) for diagrams
 - Phone for videos and images
 - [DigiKeys resistor calculator](https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-resistor-color-code-4-band) for finding resistor values
+- [GeoGebras online tools](https://www.geogebra.org/download) for graphs and equations
 
 ## Motivation
 
