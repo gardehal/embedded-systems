@@ -1,7 +1,7 @@
 
 const int pResistorPin = A0;
 const int tiltSwitchPin = A1;
-const int passiveBuzzerPin = 12;
+// const int passiveBuzzerPin = 12; // Unused
 const int activeBuzzerPin = 13;
 
 const long delayTime = 60000; // 60 seconds
@@ -16,7 +16,7 @@ void setup()
 
   pinMode(pResistorPin, INPUT);
   pinMode(tiltSwitchPin, INPUT);
-  pinMode(passiveBuzzerPin, OUTPUT);
+  // pinMode(passiveBuzzerPin, OUTPUT);
   pinMode(activeBuzzerPin, OUTPUT);
 
   // Synchronize time
@@ -24,7 +24,7 @@ void setup()
 }
 
 void loop() 
-{  
+{
   Serial.println("currentTime ");
   Serial.println(currentTime);
   
@@ -62,14 +62,21 @@ void soundAlarm()
 {
   // analogWrite
   // digitalWrite
-  digitalWrite(activeBuzzerPin, HIGH);
-  delay(500);
-  digitalWrite(activeBuzzerPin, LOW);
-  delay(500);
+
+  for(int i = 0; i < 3; i++)
+  {
+    digitalWrite(activeBuzzerPin, HIGH);
+    delay(100);
+    digitalWrite(activeBuzzerPin, LOW);
+    delay(100);
+  }
+  
+  delay(1000);
 }
 
 long syncTime()
 {
+  // Return whatever is the current real time
   return 0;
 }
 
