@@ -23,6 +23,7 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 1. [Charlieplexing Six Leds](./projects/charlieplexing-six-leds/charlieplexing-six-leds.md)
 1. [Ultrasonic Led](./projects/ultrasonic-led/ultrasonic-led.md)
 1. [Morning Alarm](./projects/morning-alarm/morning-alarm.md)
+1. [Buzzer Music](./projects/buzzer-music/buzzer-music.md)
 
 ## Libraries
 
