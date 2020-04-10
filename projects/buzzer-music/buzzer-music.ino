@@ -2,22 +2,30 @@
 // https://roboticsbackend.com/arduino-object-oriented-programming-oop/
 
 #include "./melody.h"
+#include "./notes.h"
 
 int speakerPin = 13;
 
 // Register melodies
-char ttlsNotes[] = "ccggaagffeeddc "; // a space represents a rest
-int ttlsBeats[] = { 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 4 };
+int ttlsNotes[] = { NOTE_C6, NOTE_C6, NOTE_G6, NOTE_G6, NOTE_A6, NOTE_A6, NOTE_G6, 
+                    NOTE_F6, NOTE_F6, NOTE_E6, NOTE_E6, NOTE_D6, NOTE_D6, NOTE_C6, 0 }; // Zero ( 0 ) represents a rest
+int ttlsBeats[] = { 1, 1, 1, 1, 1, 1, 2, 
+                    1, 1, 1, 1, 1, 1, 2, 4 };
 int ttlsTempo = 300;
-Melody ttls = Melody("Twinkle Twinkle Little Star", ttlsNotes, ttlsBeats, ttlsTempo);
+Melody ttls = Melody("Twinkle Twinkle Little Star", 15,  ttlsNotes, ttlsBeats, ttlsTempo);
 
-char hbtyNotes[] = "ddedgf ddedag ddDbgfe CCbgag ";
-int hbtyBeats[] = { 1, 1, 1, 1, 1, 2, 1, 
-                  1, 1, 1, 1, 1, 2, 1, 
-                  1, 1, 1, 1, 1, 1, 1, 1, 
-                  1, 1, 1, 1, 1, 2, 4 };
+int hbtyNotes[] = { NOTE_C6, NOTE_C6, NOTE_D6, NOTE_C6, NOTE_F6, NOTE_E6,
+                    NOTE_C6, NOTE_C6, NOTE_D6, NOTE_C6, NOTE_G6, NOTE_E6, // E7?
+                    NOTE_C6, NOTE_C6, NOTE_C7, NOTE_A6, NOTE_F6, NOTE_E6, NOTE_D6,
+                    NOTE_AS6, NOTE_AS6, NOTE_A6, NOTE_F6, NOTE_G6, NOTE_F6, 0 };
+//char hbtyNotes[] = "ddedgf ddedag ddDbgfe CCbgag ";
+int hbtyBeats[] = { 1, 1, 1, 1, 1, 2,
+                    1, 1, 1, 1, 1, 2,
+                    1, 1, 1, 1, 1, 1, 2, 
+                    1, 1, 1, 1, 1, 2, 4 };
 int hbtyTempo = 300;
-Melody hbty = Melody("Happy Birthday To You", hbtyNotes, hbtyBeats, hbtyTempo);
+Melody hbty = Melody("Happy Birthday To You", 26, hbtyNotes, hbtyBeats, hbtyTempo);
+
 
 void setup() 
 {
@@ -28,7 +36,7 @@ void setup()
 
 void loop() 
 {
-  //play(ttls);
+  play(ttls);
   play(hbty);
 }
 
@@ -36,19 +44,26 @@ void play(Melody m)
 {
   String mName = m.getMelodyName();
   int mLength = m.getMelodyLength();
-  char* notes = m.getNotes();
+  int* notes = m.getNotes();
   int* beats = m.getBeats();
   int tempo = m.getTempo();
-
+  
   Serial.print("Now playing: ");
   Serial.println(mName);
-  
+
   for (int i = 0; i < mLength; i++) 
   {
-    if (notes[i] == ' ') 
-      delay(beats[i] * tempo); // rest
-    else
-      playNote(notes[i], beats[i] * tempo);
+    // Rest/Pause
+    if (notes[i] == 0) 
+    {
+      delay(beats[i] * tempo);
+      continue;
+    }
+
+    // Play tone, wait, stop tone
+    tone(speakerPin, notes[i], 1000 / beats[i]);
+    delay(beats[i] * tempo);
+    noTone(speakerPin);
 
     // pause between notes
     delay(tempo / 2); 
@@ -63,20 +78,5 @@ void playTone(int tone, int duration)
     delayMicroseconds(tone);
     digitalWrite(speakerPin, LOW);
     delayMicroseconds(tone);
-  }
-}
-
-void playNote(char note, int duration) 
-{
-  char names[] = { 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'C', 'D' };
-  int tones[] = { 1915, 1700, 1519, 1432, 1275, 1136, 1014, 956, 900 };
-
-  // play the tone corresponding to the note name
-  for (int i = 0; i < 8; i++) 
-  {
-    if (names[i] == note) 
-    {
-      playTone(tones[i], duration);
-    }
   }
 }

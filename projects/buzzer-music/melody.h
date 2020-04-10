@@ -6,15 +6,15 @@ class Melody
   private:
     String melodyName;
     int melodyLength;
-    char* notes;
+    int* notes;
     int* beats;
     int tempo;
     
   public:
-    Melody(String melodyName, char* notes, int* beats, int tempo)
+    Melody(String melodyName, int melodyLength, int* notes, int* beats, int tempo)
     {
       this->melodyName = melodyName;
-      this->melodyLength = strlen(notes);
+      this->melodyLength = melodyLength;
       this->notes = notes;
       this->beats = beats;
       this->tempo = tempo;
@@ -40,12 +40,12 @@ class Melody
       return this->melodyLength;
     }
 
-    void setNotes(char* notes)
+    void setNotes(int* notes)
     {
       this->notes = notes;
     }
 
-    char* getNotes()
+    int* getNotes()
     {
       return this->notes;
     }
