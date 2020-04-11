@@ -18,7 +18,6 @@ int hbtyNotes[] = { NOTE_C6, NOTE_C6, NOTE_D6, NOTE_C6, NOTE_F6, NOTE_E6,
                     NOTE_C6, NOTE_C6, NOTE_D6, NOTE_C6, NOTE_G6, NOTE_E6, // E7?
                     NOTE_C6, NOTE_C6, NOTE_C7, NOTE_A6, NOTE_F6, NOTE_E6, NOTE_D6,
                     NOTE_AS6, NOTE_AS6, NOTE_A6, NOTE_F6, NOTE_G6, NOTE_F6, 0 };
-//char hbtyNotes[] = "ddedgf ddedag ddDbgfe CCbgag ";
 int hbtyBeats[] = { 1, 1, 1, 1, 1, 2,
                     1, 1, 1, 1, 1, 2,
                     1, 1, 1, 1, 1, 1, 2, 
@@ -26,6 +25,12 @@ int hbtyBeats[] = { 1, 1, 1, 1, 1, 2,
 int hbtyTempo = 300;
 Melody hbty = Melody("Happy Birthday To You", 26, hbtyNotes, hbtyBeats, hbtyTempo);
 
+int jvedtNotes[] = { NOTE_F4, NOTE_DS4, NOTE_D4, NOTE_C4, NOTE_AS3, NOTE_C4, NOTE_D4, 
+                      NOTE_DS4, NOTE_F4, NOTE_F4, NOTE_F4, NOTE_DS4, NOTE_D4, 0 };
+int jvedtBeats[] = { 3, 1, 2, 2, 2, 2, 2, 
+                      2, 3, 1, 2, 2, 4, 4 };
+int jvedtTempo = 300;
+Melody jvedt = Melody("Ja Vi Elsker Dette Landet (National Anthem of Norway)", 14, jvedtNotes, jvedtBeats, jvedtTempo);
 
 void setup() 
 {
@@ -38,6 +43,7 @@ void loop()
 {
   play(ttls);
   play(hbty);
+  play(jvedt);
 }
 
 void play(Melody m)
@@ -61,7 +67,7 @@ void play(Melody m)
     }
 
     // Play tone, wait, stop tone
-    tone(speakerPin, notes[i], 1000 / beats[i]);
+    tone(speakerPin, notes[i], beats[i] * tempo);
     delay(beats[i] * tempo);
     noTone(speakerPin);
 
