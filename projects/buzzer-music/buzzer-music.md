@@ -13,9 +13,12 @@ Melodies, in order:
 1. Twinkle Twinkle Little Star
 1. Happy Birthday To You
 1. Ja Vi Elsker Dette Landet (National Anthem of Norway)
-1. Take On Me (National Anthem of Noray, international version)
+1. Take On Me by Aha (National Anthem of Noray, international version)
+1. All Star by Smash Mouth
 
 No copyright infringement intended.
+
+Since I only have one buzzer, melodies or songs with multiple notes played at the same time (ex. treble and bass, see All Star - Smash Mouth) must be played, recorded, and then synced in audio editing software. I noticed while combining the bass and treble for All Star that it didn't completely sync up though I should have added the notes and beats correctly.
 
 - YouTube channel which has some easy to follow piano tutorials, used to make some of the melodies: https://www.youtube.com/channel/UCbaY6IEY0-pRHBU_qCswoNQ
 - Base for melody class: https://www.arduino.cc/en/tutorial/melody
