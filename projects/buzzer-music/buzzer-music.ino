@@ -1,6 +1,7 @@
 
 #include "./melody.h"
 #include "./notes.h"
+#include "./all-star.h"
 
 int speakerPin = 13;
 
@@ -45,39 +46,6 @@ int tomBeats[] = { 1, 1, 1, 1, 1, 1,
 int tomTempo = 135;
 Melody tom = Melody("Take On Me", 32, tomNotes, tomBeats, tomTempo);
 
-int asTrebNotes[] = { NOTE_C6, 0, // Signal start and synchronization
-                      NOTE_FS4, NOTE_CS5, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_FS4, 
-                      NOTE_FS4, NOTE_B4, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, 
-                      NOTE_FS4, NOTE_FS4, NOTE_CS5, NOTE_AS4, NOTE_AS4, NOTE_GS4, 
-                      NOTE_FS4, NOTE_FS4, NOTE_DS4, NOTE_CS4, 0, NOTE_FS4, 
-                      NOTE_FS4, NOTE_CS5, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, 
-                      NOTE_FS4, NOTE_FS4, NOTE_B4, NOTE_AS4, NOTE_AS4, NOTE_GS4, 
-                      NOTE_GS4, NOTE_FS4, NOTE_FS4, NOTE_CS5, NOTE_AS4, NOTE_AS4, 
-                      NOTE_GS4, NOTE_FS4, NOTE_FS4, NOTE_GS4, NOTE_DS4, 0 };
-int asTrebBeats[] = { 1, 4, 
-                      2, 1, 1, 2, 1, 1, 
-                      1, 2, 1, 1, 1, 1, 
-                      2, 1, 1, 1, 2, 1,
-                      1, 1, 2, 3, 2, 1,
-                      1, 1, 1, 1, 1, 1,
-                      1, 1, 2, 1, 1, 1,
-                      1, 1, 1, 2, 1, 1, 
-                      2, 1, 1, 2, 3, 4 };
-int asTempo = 250;
-Melody asTreb = Melody("All Star (Treble)", 50, asTrebNotes, asTrebBeats, asTempo);
-
-int asBassNotes[] = { NOTE_C6, 0, // Signal start and synchronization
-                      0, NOTE_FS2, NOTE_CS3, NOTE_GS2, NOTE_B2, 
-                      NOTE_FS2, NOTE_CS3, NOTE_GS2, NOTE_B2, 
-                      NOTE_FS2, NOTE_CS3, NOTE_GS2, NOTE_B2, 
-                      NOTE_FS2, NOTE_CS3, NOTE_GS2, 0 };
-int asBassBeats[] = { 1, 4, 
-                      2, 4, 4, 4, 4,
-                      4, 4, 4, 4, 
-                      4, 4, 4, 4,
-                      4, 4, 4, 4 };
-Melody asBass = Melody("All Star (Bass)", 18, asBassNotes, asBassBeats, asTempo);
-
 void setup() 
 {
   Serial.begin(9600);
@@ -87,6 +55,9 @@ void setup()
 
 void loop() 
 {
+  play(asTreb);
+  delay(1000);
+  return;
   play(ttls);
   delay(1000);
   play(hbty);

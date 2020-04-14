@@ -14,7 +14,7 @@ Melodies, in order:
 1. Happy Birthday To You
 1. Ja Vi Elsker Dette Landet (National Anthem of Norway)
 1. Take On Me by Aha (National Anthem of Noray, international version)
-1. All Star by Smash Mouth
+1. All Star by Smash Mouth ([MP3-file](./audacity/all-star-mix.mp4))
 
 No copyright infringement intended.
 
