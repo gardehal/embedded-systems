@@ -26,8 +26,8 @@ int asTrebNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       NOTE_DS4, 0,
                       // Chorus
                       0 };
-int asTrebBeats[] = { 1, 8, // 2 notes
-                      // Verse 1 - 47 notes
+int asTrebBeats[] = { 1, 8, // Signal start and synchronization
+                      // Verse 1
                       4, 2, 2, 4, 2, 2, 
                       2, 4, 2, 2, 2, 2, 
                       4, 2, 2, 2, 4, 2,
@@ -36,7 +36,7 @@ int asTrebBeats[] = { 1, 8, // 2 notes
                       2, 2, 4, 2, 2, 2,
                       2, 2, 2, 4, 2, 2,
                       4, 2, 2, 4, 6,
-                      // Pre chorus - 80 notes
+                      // Pre chorus
                       4, 3, 1, 2, 2, 1, 
                       1, 1, 1, 2, 2, 1, 
                       3, 2, 1, 1, 2, 1, 
@@ -52,9 +52,9 @@ int asTrebBeats[] = { 1, 8, // 2 notes
                       1, 1, 2, 1, 1, 2,
                       4, 4,
                       // Chorus
-                      8 }; // 2 + 47 + 80 + 1 = 130 notes
+                      8, 0 };
 int asTempo = 120;
-Melody asTreb = Melody("All Star (Treble)", 130, asTrebNotes, asTrebBeats, asTempo);
+Melody asTreb = Melody("All Star (Treble)", asTrebNotes, asTrebBeats, asTempo);
 
 int asBassNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       // Verse 1
@@ -69,4 +69,4 @@ int asBassBeats[] = { 1, 8,
                       8, 8, 8, 
                       // Pre chorus
                       8 };
-Melody asBass = Melody("All Star (Bass)", 18, asBassNotes, asBassBeats, asTempo);
+Melody asBass = Melody("All Star (Bass)", asBassNotes, asBassBeats, asTempo);

@@ -11,10 +11,17 @@ class Melody
     int tempo;
     
   public:
-    Melody(String melodyName, int melodyLength, int* notes, int* beats, int tempo)
+    Melody(String melodyName, int* notes, int* beats, int tempo)
     {
       this->melodyName = melodyName;
-      this->melodyLength = melodyLength;
+
+      int len = 0;
+      for(len; true; len++)
+        if(beats[len] == 0)
+          break;
+      
+      this->melodyLength = len;
+      
       this->notes = notes;
       this->beats = beats;
       this->tempo = tempo;
