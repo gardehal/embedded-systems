@@ -31,3 +31,12 @@ Since I only have one buzzer, melodies or songs with multiple notes played at th
 ## Circuit Diagram
 
 ![Circuit Diagram](./buzzer-music.png)
+
+## Add a song
+
+1. Find either the sheet music or a tutorial (Piano tutorals can be made in a program called [Synthesia](https://synthesiagame.com), which will display the keys and length to hold down each key if sheet music is too hard to read).
+1. Note down all the notes played in order. Notes can be found in [notes.h](./notes.h) and are prefixed with "NOTE_", followed by the letter of the note ("A", "B", etc.) and finally the octave number. For black keys, only sharp keys work, which need an "S" after the letter, before the number. Zeros ("0") can be used if there is a break where no notes should be played.
+1. Write down the length each note should be held, use 1 for the shortest notes, then 2 for the second shortest, etc. Finish with a zero to mark the end of the beats array so the system can count the number of beats. 
+1. By this step you should have one long list of refrences to note integer values, and one list of beats (how long the note is played for). These lists should be equally long EXCEPT the zero you added to the end of the beats list. Make these lists into int arrays (ex. `int notes[] = { NOTE_C4, NOTE_CS4, NOTE_D4 }` and `int beats[] = { 1, 2, 3, 0 };`).
+1. Add the tempo (depends on the beats, tempo is likely to be somewhere between 100 and 300) and song name.
+1. Finally use the function `play(Melody m)` function to play the song in either setup or loop. 
