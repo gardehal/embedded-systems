@@ -25,6 +25,15 @@ int asTrebNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_DS4, NOTE_DS4, 
                       NOTE_DS4, 0,
                       // Chorus
+                      NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_DS4, NOTE_FS4, NOTE_FS4, 
+                      NOTE_FS4, NOTE_DS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_AS4, 
+                      NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_DS4, NOTE_FS4, NOTE_FS4, 
+                      NOTE_FS4, NOTE_DS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_AS4, 
+                      0, NOTE_AS4, NOTE_CS5, NOTE_B4, NOTE_CS5, NOTE_DS5, 
+                      NOTE_FS5, NOTE_GS5, NOTE_FS5, NOTE_FS4, NOTE_FS4, NOTE_GS4, 
+                      NOTE_FS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, NOTE_FS4, NOTE_GS4, 
+                      NOTE_AS4, NOTE_DS4, 0,
+                      // Verse 2
                       0 };
 int asTrebBeats[] = { 1, 8, // Signal start and synchronization
                       // Verse 1
@@ -52,6 +61,15 @@ int asTrebBeats[] = { 1, 8, // Signal start and synchronization
                       1, 1, 2, 1, 1, 2,
                       4, 4,
                       // Chorus
+                      2, 4, 1, 1, 2, 4, 
+                      1, 1, 2, 4, 4, 6,
+                      2, 4, 1, 1, 2, 4, 
+                      1, 1, 2, 4, 4, 4,
+                      2, 4, 4, 2, 2, 2,
+                      4, 2, 4, 2, 2, 2, 
+                      2, 2, 4, 4, 4, 4,
+                      2, 10, 1,
+                      // Verse 2
                       8, 0 };
 int asTempo = 120;
 Melody asTreb = Melody("All Star (Treble)", asTrebNotes, asTrebBeats, asTempo);
