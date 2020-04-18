@@ -1,7 +1,7 @@
 
 #include "./melody.h"
 #include "./notes.h"
-#include "./songs.h"
+//#include "./songs.h"
 #include "./all-star.h"
 
 int speakerPin = 13;
@@ -15,14 +15,14 @@ void setup()
 
 void loop() 
 {
-  play(ttls);
-  delay(1000);
-  play(hbty);
-  delay(1000);
-  play(jvedt);
-  delay(1000);
-  play(tom);
-  delay(1000);
+  // play(ttls);
+  // delay(1000);
+  // play(hbty);
+  // delay(1000);
+  // play(jvedt);
+  // delay(1000);
+  // play(tom);
+  // delay(1000);
   play(asTreb);
   delay(1000);
   play(asBass);

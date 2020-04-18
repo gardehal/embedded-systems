@@ -12,7 +12,7 @@ int asTrebNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       // Pre chorus
                       0, NOTE_FS4, NOTE_DS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 
                       NOTE_FS4, NOTE_DS4, NOTE_CS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 
-                      NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 
+                      NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, // sounds somewhat flat
                       NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_AS4, NOTE_FS4, 
                       NOTE_AS4, NOTE_AS4, NOTE_CS5, NOTE_B4, NOTE_AS4, NOTE_FS4, 
                       NOTE_GS4, NOTE_GS4, NOTE_GS4, NOTE_GS4, NOTE_AS4, NOTE_FS4, 
@@ -34,6 +34,21 @@ int asTrebNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       NOTE_FS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, NOTE_FS4, NOTE_GS4, 
                       NOTE_AS4, NOTE_DS4, 0,
                       // Verse 2
+                      NOTE_DS4, NOTE_DS4, NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_DS4, 
+                      NOTE_FS4, NOTE_DS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_DS4, 
+                      NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 
+                      NOTE_FS4, NOTE_FS4, NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 
+                      NOTE_AS4, NOTE_AS4, NOTE_CS5, NOTE_B4, NOTE_AS4, NOTE_FS4, 
+                      NOTE_GS4, NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_GS4, 
+                      NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_GS4, NOTE_DS4, NOTE_DS4, 
+                      NOTE_DS4, NOTE_CS4, NOTE_CS4, NOTE_AS4, NOTE_CS5, NOTE_DS5, 
+                      NOTE_CS5, NOTE_AS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 
+                      NOTE_FS4, NOTE_AS4, NOTE_AS4, NOTE_CS5, NOTE_CS5, NOTE_B4,
+                      NOTE_AS4, NOTE_AS4, NOTE_AS4, NOTE_DS4, NOTE_DS4, NOTE_DS4, 
+                      NOTE_CS4, NOTE_DS5, NOTE_CS5, NOTE_CS5, NOTE_AS4, NOTE_FS4, 
+                      NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_GS4, NOTE_AS4, 
+                      NOTE_GS4, NOTE_FS4, NOTE_GS4, NOTE_AS4, NOTE_DS4, NOTE_DS4, 
+                      NOTE_DS4, 0,
                       0 };
 int asTrebBeats[] = { 1, 8, // Signal start and synchronization
                       // Verse 1
@@ -70,8 +85,23 @@ int asTrebBeats[] = { 1, 8, // Signal start and synchronization
                       2, 2, 4, 4, 4, 4,
                       2, 10, 1,
                       // Verse 2
+                      1, 1, 2, 4, 1, 1, 
+                      1, 1, 2, 1, 2, 1, 
+                      1, 1, 2, 2, 2, 1, 
+                      1, 2, 1, 1, 1, 1, 
+                      1, 1, 1, 2, 2, 1, 
+                      1, 3, 1, 1, 1, 1, 
+                      2, 1, 1, 1, 1, 2, 
+                      1, 2, 1, 2, 2, 3, 
+                      1, 1, 1, 1, 1, 3, 
+                      1, 1, 1, 1, 1, 2, 
+                      1, 1, 1, 1, 2, 3, 
+                      1, 2, 2, 4, 1, 2,
+                      6, 1, 1, 1, 1, 1, 
+                      1, 1, 1, 1, 1, 2, 
+                      2, 6,
                       8, 0 };
-int asTempo = 120;
+int asTempo = 125;
 Melody asTreb = Melody("All Star (Treble)", asTrebNotes, asTrebBeats, asTempo);
 
 int asBassNotes[] = { NOTE_C6, 0, // Signal start and synchronization
