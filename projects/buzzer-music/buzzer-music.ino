@@ -2,7 +2,9 @@
 #include "./melody.h"
 #include "./notes.h"
 //#include "./songs.h"
-#include "./all-star.h"
+#include "./all-star-bass.h"
+// #include "./all-star-treble-1.h"
+#include "./all-star-treble-2.h"
 
 int speakerPin = 13;
 
@@ -23,10 +25,12 @@ void loop()
   // delay(1000);
   // play(tom);
   // delay(1000);
-  play(asTreb);
+  // play(asTreb1);
+  // delay(1000);
+  play(asTreb2);
   delay(1000);
-  play(asBass);
-  delay(1000);
+  // play(asBass);
+  // delay(1000);
 }
 
 void play(Melody m)

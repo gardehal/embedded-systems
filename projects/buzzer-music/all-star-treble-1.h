@@ -1,5 +1,5 @@
 
-int asTrebNotes[] = { NOTE_C6, 0, // Signal start and synchronization
+int asTrebNotes1[] = { NOTE_C6, 0, // Signal start and synchronization
                       // Verse 1
                       NOTE_FS4, NOTE_CS5, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_FS4, 
                       NOTE_FS4, NOTE_B4, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, 
@@ -76,7 +76,7 @@ int asTrebNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       NOTE_FS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, NOTE_FS4, NOTE_GS4, 
                       NOTE_AS4, NOTE_DS4, 0,
                       0 };
-int asTrebBeats[] = { 1, 8, // Signal start and synchronization
+int asTrebBeats1[] = { 1, 8, // Signal start and synchronization
                       // Verse 1
                       4, 2, 2, 4, 2, 2, 
                       2, 4, 2, 2, 2, 2, 
@@ -153,21 +153,6 @@ int asTrebBeats[] = { 1, 8, // Signal start and synchronization
                       2, 2, 4, 4, 4, 4,
                       2, 10, 1,
                       // Verse 3
+                      // see all-star-treble-2.h
                       8, 0 };
-int asTempo = 114;
-Melody asTreb = Melody("All Star (Treble)", asTrebNotes, asTrebBeats, asTempo);
-
-int asBassNotes[] = { NOTE_C6, 0, // Signal start and synchronization
-                      // Verse 1
-                      0, NOTE_FS2, NOTE_CS3, NOTE_GS2, NOTE_B2, 
-                      NOTE_FS2, NOTE_CS3, NOTE_GS2, NOTE_B2, 
-                      NOTE_FS2, NOTE_CS3, NOTE_GS2, NOTE_B2, 
-                      NOTE_FS2, NOTE_CS3, NOTE_GS2, 0 };
-int asBassBeats[] = { 1, 8, 
-                      4, 8, 8, 8, 8,
-                      8, 8, 8, 8, 
-                      8, 8, 8, 8,
-                      8, 8, 8, 
-                      // Pre chorus
-                      8 };
-Melody asBass = Melody("All Star (Bass)", asBassNotes, asBassBeats, asTempo);
+Melody asTreb1 = Melody("All Star (Treble 1)", asTrebNotes1, asTrebBeats1, asTempo);
