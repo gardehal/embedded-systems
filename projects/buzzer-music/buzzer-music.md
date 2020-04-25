@@ -40,3 +40,11 @@ Since I only have one buzzer, melodies or songs with multiple notes played at th
 1. By this step you should have one long list of refrences to note integer values, and one list of beats (how long the note is played for). These lists should be equally long EXCEPT the zero you added to the end of the beats list. Make these lists into int arrays (ex. `int notes[] = { NOTE_C4, NOTE_CS4, NOTE_D4 }` and `int beats[] = { 1, 2, 3, 0 };`).
 1. Add the tempo (depends on the beats, tempo is likely to be somewhere between 100 and 300) and song name.
 1. Finally use the function `play(Melody m)` function to play the song in either setup or loop. 
+
+## TODO
+
+Found a way to send data to arduino from computer though a Python library, plan is to use script to read .h song files and send bits of data to Arduino, this way there's no need to worry about storage.
+- Flow: Start Parduino, python script, Serial Monitor tool must be closed?. Python finds file (id? name? index in folder?) send song title as displayable data and tempo as "hidden" data. Send array og single beat and note at a time tempo/speed controlled by Arduino? Might need a response function to ask for next data, otherwise functionality will be duplicated...   
+- Python script for getting notes or music data
+- Configure arduino to recieve serial data
+- Optional: implement functionality to play either from serial or .h (status quo)

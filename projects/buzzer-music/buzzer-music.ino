@@ -15,8 +15,15 @@ void setup()
   pinMode(speakerPin, OUTPUT);
 }
 
-void loop() 
+void serialEvent() 
 {
+  Serial.println((char)Serial.read());
+}
+
+void loop() 
+{ 
+  Serial.print(analogRead(3));
+  return;
   // play(ttls);
   // delay(1000);
   // play(hbty);
