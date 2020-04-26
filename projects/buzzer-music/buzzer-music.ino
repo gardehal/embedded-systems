@@ -6,23 +6,32 @@
 // #include "./all-star-treble-1.h"
 #include "./all-star-treble-2.h"
 
-int speakerPin = 13;
+const int speakerPin = 13;
 
 void setup() 
 {
   Serial.begin(9600);
   
   pinMode(speakerPin, OUTPUT);
+  
+  tone(speakerPin, 400, 1000);
+  delay(500);
+  noTone(speakerPin);
 }
 
 void serialEvent() 
 {
-  Serial.println((char)Serial.read());
+  char t = (char)Serial.read();
+  Serial.print(t);
+  Serial.print((int)t);
+  tone(speakerPin, t*10, 1000);
+  delay(500);
+  noTone(speakerPin);
 }
 
 void loop() 
 { 
-  Serial.print(analogRead(3));
+  //Serial.print(analogRead(3));
   return;
   // play(ttls);
   // delay(1000);
@@ -71,16 +80,5 @@ void play(Melody m)
 
     // pause between notes
     delay(tempo / 2); 
-  }
-} 
-
-void playTone(int tone, int duration) 
-{
-  for (long i = 0; i < duration * 1000L; i += tone * 2) 
-  {
-    digitalWrite(speakerPin, HIGH);
-    delayMicroseconds(tone);
-    digitalWrite(speakerPin, LOW);
-    delayMicroseconds(tone);
   }
 }
