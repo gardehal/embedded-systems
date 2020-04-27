@@ -14,7 +14,7 @@ void setup()
   
   pinMode(speakerPin, OUTPUT);
   
-  tone(speakerPin, 400, 1000);
+  tone(speakerPin, 650, 1000);
   delay(500);
   noTone(speakerPin);
 }
