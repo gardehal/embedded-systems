@@ -6,9 +6,10 @@ import unicodedata
 
 melodiesArgs = ["-melodies", "-m", "-songs", "-s"]
 helpArgs = ["-help", "-h"]
+initializeArgs = ["-initialize", "-init", "-i"] # add to help print
 
 class Main:
-    def main():            
+    def Main():            
         argC = len(sys.argv)
         argIndex = 1
         while argIndex < argC:
@@ -27,6 +28,24 @@ class Main:
                 Main.PrintHelp()
 
                 argIndex += 1
+                continue
+
+            # Initialize
+            if(arg in initializeArgs):
+                if(argC - argIndex < 2):
+                    print("Missing an argument: .h class path to initialize.")
+                    argIndex += 1
+                    continue
+
+                filepath = Main.GetFullFilePath("", sys.argv[argIndex + 1])
+                if(not os.path.exists(filepath)):
+                    print("File does not exist: '" + str(filepath) + "'.")
+                    argIndex += 2
+                    continue
+
+                Main.PyCopyHClass(filepath)
+
+                argIndex += 2
                 continue
 
             # If else - argument was not a flag defined above, check for int or default to search string
@@ -58,8 +77,21 @@ class Main:
             appendPath = os.path.join(dirName, fileName)
 
         return os.path.join(sys.path[0], appendPath)
-        
-    def Play():
+
+    def GetMelodies():
+        """
+        Get a list of all melodies.
+        """
+        return os.listdir(Main.GetFullFilePath("melodies"))
+
+    # def PlayMelody(melody):
+    #     print(melody.)
+
+
+    def SendToSerial():
+        """
+        Send data to serial port using PySerial.
+        """
         ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1)
 
         while 1:
@@ -78,16 +110,18 @@ class Main:
         A simple console print of songs in the melodies folder.
         """
 
+        a = Main.GetMelodies()
+        i = 0
+
         print("--- Melodies ---")
-        
-        a = os.listdir(Main.GetFullFilePath("melodies"))
 
         if(len(a) < 1):
             print("No melodies found. See README.md for guide to add melodies.")
             return
 
         for filename in a:
-            print(filename)
+            i += 1
+            print(str(i) + ": " + filename)
 
     def PrintHelp():
         """
@@ -108,14 +142,59 @@ class Main:
         print("string" + ": searches songs for similar name ............") # TODO
 
     def IsInt(s):
+        """
+        Determine wether the string can be parse to int.
+        string s
+        """
         try: 
             int(s)
             return True
         except ValueError:
             return False
+    
+    def PyCopyHClass(filepath):
+        """
+        Copy a single Arduino OOP .h class in filepath to a simplified Python class.
+        string filepath (relative to where code was called from) 
+        """
+        pyClassString = ""
+        classname = ""
 
+        with open(filepath) as f:
+            for line in f:
+                if(line.find("class", 0 , 5) is 0):
+                    print(line)
+                    pyClassString += ("\n" + line.rstrip() + ":")
+                    classname = line.split(" ")[1].rstrip()
+                    print("\tPyCopyHClass: Added class declaration.")
+                if(line.find(classname + "(") >= 0):
+                    print(line)
+                    constructorDef = "\n\tdef __init__(self"
+                    constructorBlock = ""
+                    args = line.split("(")[1].split(")")[0].split(", ")
+
+                    for argDef in args:
+                        arg = argDef.split(" ")[1]
+                        constructorDef += (", " + arg)
+                        constructorBlock += ("\n\t\tself." + arg + " = " + arg)
+                        print("\tPyCopyHClass: Added field: '" + str(arg) + "'.")
+
+                    constructorDef += ("):")
+                    constructor = constructorDef + constructorBlock
+                    pyClassString += (constructor)
+                    print("\tPyCopyHClass: Added constructor.")
+
+        # print("pyClassString")
+        # print(pyClassString)
+
+        w = open(Main.GetFullFilePath(str(classname.lower())) + ".py", "w")
+        w.write(pyClassString)
+
+        # Save to py file and import it
+        # os.close(f)
+            
 if __name__ == "__main__":
-    Main.main()
+    Main.Main()
 
 
 
