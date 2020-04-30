@@ -4,6 +4,8 @@ import serial
 import time
 import unicodedata
 
+import melody
+
 melodiesArgs = ["-melodies", "-m", "-songs", "-s"]
 helpArgs = ["-help", "-h"]
 initializeArgs = ["-initialize", "-init", "-i"] # add to help print
@@ -51,8 +53,9 @@ class Main:
             # If else - argument was not a flag defined above, check for int or default to search string
             # Play song by index (see -melodies flag)
             if(Main.IsInt(arg)):
-                # select song and play
-                print("int")
+                fn = Main.GetMelodies()[int(arg) - 1]
+                m = Main.LoadPyMelody(Main.GetFullFilePath("melodies", fn))
+                print("Now playing: \n\t" + arg + ": " + m)
 
                 argIndex += 1
                 continue
@@ -86,6 +89,48 @@ class Main:
 
     # def PlayMelody(melody):
     #     print(melody.)
+
+    def LoadPyMelody(filepath):
+        """ 
+        Reads the filepath.h file and translates to python version of melody.
+        string filepath
+        """
+        name = ""
+        notes = []
+        beats = []
+        tempo = 0
+
+        # For line
+        # Find var declaration
+        # match var name with assigned var name
+        # If var is notes, get values after =
+        # For each line in file until end var assignment ;
+        # Split line on ", "
+        # for notes only: lookup note var name and get int value in notes.h
+        # if notes is found (optinal: and can be parsed to int)
+        # add note to notes array
+        # Skip non-note/non int values
+        # optional save to file to avoid doing this again 
+
+        with open(filepath) as f:
+            for line in f:
+                if(line.lower().find("=") > 0): # Get assignment of a variable
+                    if(line.split("=")[0].lower().find("note") > 0): # Get note array
+                        while(line.find(";") is -1): # Read untill end of declaration (;)
+                            noteLine = line.split(", ")
+                            for n in noteLine:
+                                print("note " + str(n))
+                                try:
+                                    int(n)
+                                    notes.append(n)
+                                except: # Comment or non-int value
+                                    continue
+
+
+        print("notes")
+        print(notes)
+        # m = melody.Melody(name, notes, beats, tempo)
+        return "WIP"
 
 
     def SendToSerial():
@@ -136,6 +181,7 @@ class Main:
         print("\te.g.: $ python todo.py -add \"This is a sentence.\"")
         print("\n")
 
+        print(str(initializeArgs) + " + [string filename]: translates an Arduino class from the filename.h to a python class filename.h.")
         print(str(melodiesArgs) + ": prints a list of melodies available.")
         print(str(helpArgs) + ": prints this information about input arguments.")
         print("int" + ": plays the song with number..........") # TODO
@@ -189,9 +235,9 @@ class Main:
 
         w = open(Main.GetFullFilePath(str(classname.lower())) + ".py", "w")
         w.write(pyClassString)
-
-        # Save to py file and import it
-        # os.close(f)
+        
+        # close(f)
+        # close(w)
             
 if __name__ == "__main__":
     Main.Main()
