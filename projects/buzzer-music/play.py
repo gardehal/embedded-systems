@@ -111,21 +111,38 @@ class Main:
         # add note to notes array
         # Skip non-note/non int values
         # optional save to file to avoid doing this again 
+        
+        f = open(filepath)
+        lines = f.readlines()
+        i = 0
 
-        with open(filepath) as f:
-            for line in f:
-                if(line.lower().find("=") > 0): # Get assignment of a variable
-                    if(line.split("=")[0].lower().find("note") > 0): # Get note array
-                        while(line.find(";") is -1): # Read untill end of declaration (;)
-                            noteLine = line.split(", ")
-                            for n in noteLine:
-                                print("note " + str(n))
-                                try:
-                                    int(n)
-                                    notes.append(n)
-                                except: # Comment or non-int value
-                                    continue
+        print(lines[len(lines) - 1])
 
+        for line in lines:
+            if(line.find("=") >= 0 and (line.split("=")[1][0] is "{" or line.split("=")[1][1] is "{")): # Get assignment of a variable
+                if(line.split("=")[0].lower().find("note") >= 0): # Get note array declaration
+                    
+                    j = i
+                    while 1: # Continue until the current lines has a ; (end of code line)
+                        tempLine = lines[j]
+                        if(tempLine.find("{") >= 0):
+                            tempLine = tempLine.split("{")[1]
+                        if(tempLine.find("}") >= 0):
+                            tempLine = tempLine.split("}")[0]
+
+                        values = tempLine.split(" ")
+
+                        for value in values: # TODO lets some comments though, add // and # check before v?
+                            v = value.split(",")[0]
+                            if(v.find("#") < 0 and v.find("//") < 0 
+                            and v.find("\n") < 0 and v.find("\t") < 0 
+                            and len(v) > 0 and v != "0"): # Ignore comments or empty values
+                                notes.append(v)
+
+                        if(lines[j].find(";") >= 0):
+                            break
+                        j += 1
+            i += 1
 
         print("notes")
         print(notes)
