@@ -1,10 +1,9 @@
 
 #include "./melody.h"
 #include "./notes.h"
+
+// Melodies
 //#include "./songs.h"
-#include "./all-star-bass.h"
-// #include "./all-star-treble-1.h"
-#include "./all-star-treble-2.h"
 
 const int speakerPin = 13;
 
@@ -30,9 +29,7 @@ void serialEvent()
 }
 
 void loop() 
-{ 
-  //Serial.print(analogRead(3));
-  return;
+{
   // play(ttls);
   // delay(1000);
   // play(hbty);
@@ -41,11 +38,7 @@ void loop()
   // delay(1000);
   // play(tom);
   // delay(1000);
-  // play(asTreb1);
-  // delay(1000);
-  play(asTreb2);
-  delay(1000);
-  // play(asBass);
+  // play(as);
   // delay(1000);
 }
 

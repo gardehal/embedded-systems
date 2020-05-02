@@ -1,5 +1,5 @@
 
-int asTrebNotes1[] = { NOTE_C6, 0, // Signal start and synchronization
+int asNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       // Verse 1
                       NOTE_FS4, NOTE_CS5, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_FS4, 
                       NOTE_FS4, NOTE_B4, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, 
@@ -76,7 +76,7 @@ int asTrebNotes1[] = { NOTE_C6, 0, // Signal start and synchronization
                       NOTE_FS4, NOTE_AS4, NOTE_GS4, NOTE_GS4, NOTE_FS4, NOTE_GS4, 
                       NOTE_AS4, NOTE_DS4, 0,
                       0 };
-int asTrebBeats1[] = { 1, 8, // Signal start and synchronization
+int asBeats[] = { 1, 8, // Signal start and synchronization
                       // Verse 1
                       4, 2, 2, 4, 2, 2, 
                       2, 4, 2, 2, 2, 2, 
@@ -155,4 +155,6 @@ int asTrebBeats1[] = { 1, 8, // Signal start and synchronization
                       // Verse 3
                       // see all-star-treble-2.h
                       8, 0 };
-Melody asTreb1 = Melody("All Star (Treble 1)", asTrebNotes1, asTrebBeats1, asTempo);
+int asTempo = 114;
+String asName = "All Star - Smash Mouth"
+Melody as = Melody(asName, asNotes, asBeats, asTempo);

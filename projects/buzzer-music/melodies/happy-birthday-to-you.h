@@ -9,4 +9,5 @@ int hbtyBeats[] = { 1, 1, 1, 1, 1, 2,
                     1, 1, 1, 1, 1, 2, 4,
                     0 };
 int hbtyTempo = 300;
-Melody hbty = Melody("Happy Birthday To You", hbtyNotes, hbtyBeats, hbtyTempo);
+String name = "Happy Birthday To You";
+Melody hbty = Melody(name, hbtyNotes, hbtyBeats, hbtyTempo);

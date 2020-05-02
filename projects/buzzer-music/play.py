@@ -55,7 +55,7 @@ class Main:
             if(Main.IsInt(arg)):
                 fn = Main.GetMelodies()[int(arg) - 1]
                 m = Main.LoadPyMelody(Main.GetFullFilePath("melodies", fn))
-                print("Now playing: \n\t" + arg + ": " + m)
+                print("Now playing: \n\t" + arg + ": " + m.melodyName)
 
                 argIndex += 1
                 continue
@@ -119,35 +119,63 @@ class Main:
         print(lines[len(lines) - 1])
 
         for line in lines:
-            if(line.find("=") >= 0 and (line.split("=")[1][0] is "{" or line.split("=")[1][1] is "{")): # Get assignment of a variable
-                if(line.split("=")[0].lower().find("note") >= 0): # Get note array declaration
+            if(line.find("=") >= 0): # Get assignment of a variable
+                if(line.split("=")[1][0:1] is "{" or line.split("=")[1][1] is "{"): # Get assignment of arrays
+                    if(line.split("=")[0].lower().find("note") >= 0): # Get note array declaration
+                        notes = Main.GetIntArrayFromCFile(lines[i:])
+                        continue
+                            
+                    if(line.split("=")[0].lower().find("beat") >= 0): # Get beats array declaration
+                        beats = Main.GetIntArrayFromCFile(lines[i:])
+                        continue
                     
-                    j = i
-                    while 1: # Continue until the current lines has a ; (end of code line)
-                        tempLine = lines[j]
-                        if(tempLine.find("{") >= 0):
-                            tempLine = tempLine.split("{")[1]
-                        if(tempLine.find("}") >= 0):
-                            tempLine = tempLine.split("}")[0]
+                if(line.split("=")[0].lower().find("tempo") >= 0): # Get tempo int declaration
+                    tempo = line.split("=")[1].strip().replace(";", "")
+                    continue
 
-                        values = tempLine.split(" ")
-
-                        for value in values: # TODO lets some comments though, add // and # check before v?
-                            v = value.split(",")[0]
-                            if(v.find("#") < 0 and v.find("//") < 0 
-                            and v.find("\n") < 0 and v.find("\t") < 0 
-                            and len(v) > 0 and v != "0"): # Ignore comments or empty values
-                                notes.append(v)
-
-                        if(lines[j].find(";") >= 0):
-                            break
-                        j += 1
+                if(line.split("=")[0].lower().find("name") >= 0): # Get name string declaration
+                    name = line.split("=")[1].lstrip().replace(";", "").replace("\"", "")
+                    continue
+                    
             i += 1
 
-        print("notes")
-        print(notes)
-        # m = melody.Melody(name, notes, beats, tempo)
-        return "WIP"
+        # print("notes")
+        # print(notes)
+        # print("beats")
+        # print(beats)
+        # print("tempo")
+        # print(tempo)
+        # print("name")
+        # print(name)
+        m = melody.Melody(name, notes, beats, tempo)
+        return m
+
+    def GetIntArrayFromCFile(fileLines):
+        array = []
+        i = 0
+        while 1: # Continue until the current lines has a ; (end of code line)
+            tempLine = fileLines[i]
+            if(tempLine.find("{") >= 0):
+                tempLine = tempLine.split("{")[1]
+            if(tempLine.find("}") >= 0):
+                tempLine = tempLine.split("}")[0]
+
+            values = tempLine.split(",")
+
+            for value in values:
+                if(value.find("#") >= 0 or value.find("//") >= 0): # Ignore comments
+                    continue
+
+                v = value.strip()
+                if(len(v) > 0): # Ignore empty values
+                    array.append(v)
+
+            if(fileLines[i].find(";") >= 0):
+                break
+            i += 1
+
+        return array
+        
 
 
     def SendToSerial():
