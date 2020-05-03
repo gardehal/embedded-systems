@@ -3,6 +3,7 @@ import sys
 import serial
 import time
 import unicodedata
+import re
 
 import melody
 
@@ -53,7 +54,13 @@ class Main:
             # If else - argument was not a flag defined above, check for int or default to search string
             # Play song by index (see -melodies flag)
             if(Main.IsInt(arg)):
-                fn = Main.GetMelodies()[int(arg) - 1]
+                melodies = Main.GetMelodies()
+                if(int(arg) > len(melodies)):
+                    print("Selected song is out of range of song list, must be 1 - " + str(len(melodies)))
+                    argIndex += 1
+                    continue
+
+                fn = melodies[int(arg) - 1]
                 m = Main.LoadPyMelody(Main.GetFullFilePath("melodies", fn))
                 print("Now playing: \n\t" + arg + ": " + m.melodyName)
 
@@ -122,11 +129,31 @@ class Main:
             if(line.find("=") >= 0): # Get assignment of a variable
                 if(line.split("=")[1][0:1] is "{" or line.split("=")[1][1] is "{"): # Get assignment of arrays
                     if(line.split("=")[0].lower().find("note") >= 0): # Get note array declaration
-                        notes = Main.GetIntArrayFromCFile(lines[i:])
-                        continue
+                        notesVals = Main.GetArrayFromFileLines(lines[i:])
+
+                        # melody file only contains variables in 
+                        notesH = open("notes.h")
+                        for noteVal in notesVals:
+                            if(noteVal is "0"): # Skip looking for 0 notes (pause/no note)
+                                notes.append(int(noteVal))
+                                continue
+
+                            notesH.seek(0)
+                            for hLine in notesH:
+                                hLineArr = re.split("\s+", hLine)
+                                hName = hLineArr[1]
+                                hVal = hLineArr[2]
+
+                                if(noteVal == hName):
+                                    notes.append(int(hVal))
+                        
+                        notesH.close()
                             
                     if(line.split("=")[0].lower().find("beat") >= 0): # Get beats array declaration
-                        beats = Main.GetIntArrayFromCFile(lines[i:])
+                        beatVals = Main.GetArrayFromFileLines(lines[i:])
+                        
+                        for beatVal in beatVals:
+                            beats.append(int(beatVal))
                         continue
                     
                 if(line.split("=")[0].lower().find("tempo") >= 0): # Get tempo int declaration
@@ -138,19 +165,22 @@ class Main:
                     continue
                     
             i += 1
+        
+        f.close()
 
-        # print("notes")
-        # print(notes)
-        # print("beats")
-        # print(beats)
-        # print("tempo")
-        # print(tempo)
-        # print("name")
-        # print(name)
+        # print("notes: " + str(len(notes)))
+        Main.PrintS("notes: ", len(notes))
+        Main.PrintS(notes)
+        Main.PrintS("beats: ", len(beats))
+        Main.PrintS(beats)
+        Main.PrintS("tempo")
+        Main.PrintS(tempo)
+        Main.PrintS("name")
+        Main.PrintS(name)
         m = melody.Melody(name, notes, beats, tempo)
         return m
 
-    def GetIntArrayFromCFile(fileLines):
+    def GetArrayFromFileLines(fileLines):
         array = []
         i = 0
         while 1: # Continue until the current lines has a ; (end of code line)
@@ -242,6 +272,19 @@ class Main:
             return True
         except ValueError:
             return False
+
+    def PrintS(*params):
+        """
+        Format all parameters *params as string in print() so there's no need to surround everything with str().
+        splat params
+        """
+
+        s = ""
+        for p in params:
+            s += str(p)
+
+        print(s)
+
     
     def PyCopyHClass(filepath):
         """
@@ -281,8 +324,8 @@ class Main:
         w = open(Main.GetFullFilePath(str(classname.lower())) + ".py", "w")
         w.write(pyClassString)
         
-        # close(f)
-        # close(w)
+        f.close()
+        w.close()
             
 if __name__ == "__main__":
     Main.Main()
