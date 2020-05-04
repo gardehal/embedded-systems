@@ -5,4 +5,5 @@ int jvedtBeats[] = { 3, 1, 2, 2, 2, 2, 2,
                      2, 3, 1, 2, 2, 4, 4,
                      0 };
 int jvedtTempo = 300;
-Melody jvedt = Melody("Ja Vi Elsker Dette Landet (National Anthem of Norway)", jvedtNotes, jvedtBeats, jvedtTempo);
+String jvedtName = "Ja Vi Elsker Dette Landet (National Anthem of Norway)";
+Melody jvedt = Melody(jvedtName, jvedtNotes, jvedtBeats, jvedtTempo);

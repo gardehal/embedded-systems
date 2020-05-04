@@ -12,4 +12,5 @@ int tomBeats[] = { 1, 1, 1, 1, 1, 1,
                    1, 1, 1, 1, 1, 1,
                    1, 1, 0 };
 int tomTempo = 135;
-Melody tom = Melody("Take On Me", tomNotes, tomBeats, tomTempo);
+String tomName = "Take On Me - A-ha";
+Melody tom = Melody(tomName, tomNotes, tomBeats, tomTempo);

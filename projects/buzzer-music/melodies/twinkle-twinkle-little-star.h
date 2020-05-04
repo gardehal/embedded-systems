@@ -5,4 +5,5 @@ int ttlsBeats[] = { 1, 1, 1, 1, 1, 1, 2,
                     1, 1, 1, 1, 1, 1, 2, 4,
                     0 };
 int ttlsTempo = 300;
-Melody ttls = Melody("Twinkle Twinkle Little Star", ttlsNotes, ttlsBeats, ttlsTempo);
+String ttlsName = "Twinkle Twinkle Little Star";
+Melody ttls = Melody(ttlsName, ttlsNotes, ttlsBeats, ttlsTempo);

@@ -12,7 +12,12 @@ helpArgs = ["-help", "-h"]
 initializeArgs = ["-initialize", "-init", "-i"] # add to help print
 
 class Main:
-    def Main():            
+    def Main():     
+        """
+        Main function. Parses arguments from terminal and executes relevant code.
+
+        array of any sys.argv
+        """       
         argC = len(sys.argv)
         argIndex = 1
         while argIndex < argC:
@@ -21,7 +26,7 @@ class Main:
 
             # List contents of melodies directory
             if(argC < 2 or arg in melodiesArgs):
-                Main.PrintMelodies()
+                Main.PrintAllMelodies()
 
                 argIndex += 1
                 continue
@@ -55,14 +60,14 @@ class Main:
             # Play song by index (see -melodies flag)
             if(Main.IsInt(arg)):
                 melodies = Main.GetMelodies()
-                if(int(arg) > len(melodies)):
+                if(int(arg) < 1 or int(arg) > len(melodies)):
                     print("Selected song is out of range of song list, must be 1 - " + str(len(melodies)))
                     argIndex += 1
                     continue
 
                 fn = melodies[int(arg) - 1]
                 m = Main.LoadPyMelody(Main.GetFullFilePath("melodies", fn))
-                print("Now playing: \n\t" + arg + ": " + m.melodyName)
+                Main.PlayMelody(m)
 
                 argIndex += 1
                 continue
@@ -77,7 +82,8 @@ class Main:
             
     def GetFullFilePath(dirName, fileName = None):
         """
-        A method for getting the full path from root file the script is called from and a sub-directory with optional file. \n
+        A method for getting the full path from root file the script is called from and a sub-directory with optional file.
+
         string dirName \n
         string fileName(optional)
         """
@@ -94,42 +100,28 @@ class Main:
         """
         return os.listdir(Main.GetFullFilePath("melodies"))
 
-    # def PlayMelody(melody):
-    #     print(melody.)
-
     def LoadPyMelody(filepath):
         """ 
         Reads the filepath.h file and translates to python version of melody.
+
         string filepath
         """
         name = ""
         notes = []
         beats = []
         tempo = 0
-
-        # For line
-        # Find var declaration
-        # match var name with assigned var name
-        # If var is notes, get values after =
-        # For each line in file until end var assignment ;
-        # Split line on ", "
-        # for notes only: lookup note var name and get int value in notes.h
-        # if notes is found (optinal: and can be parsed to int)
-        # add note to notes array
-        # Skip non-note/non int values
-        # optional save to file to avoid doing this again 
         
         f = open(filepath)
         lines = f.readlines()
         i = 0
 
-        print(lines[len(lines) - 1])
+        # print(lines[len(lines) - 1]) # .h melody class declaration
 
         for line in lines:
             if(line.find("=") >= 0): # Get assignment of a variable
                 if(line.split("=")[1][0:1] is "{" or line.split("=")[1][1] is "{"): # Get assignment of arrays
                     if(line.split("=")[0].lower().find("note") >= 0): # Get note array declaration
-                        notesVals = Main.GetArrayFromFileLines(lines[i:])
+                        notesVals = Main.GetArrayFromFileLines(lines[i:], False)
 
                         # melody file only contains variables in 
                         notesH = open("notes.h")
@@ -150,11 +142,7 @@ class Main:
                         notesH.close()
                             
                     if(line.split("=")[0].lower().find("beat") >= 0): # Get beats array declaration
-                        beatVals = Main.GetArrayFromFileLines(lines[i:])
-                        
-                        for beatVal in beatVals:
-                            beats.append(int(beatVal))
-                        continue
+                        beats = Main.GetArrayFromFileLines(lines[i:], True)
                     
                 if(line.split("=")[0].lower().find("tempo") >= 0): # Get tempo int declaration
                     tempo = line.split("=")[1].strip().replace(";", "")
@@ -168,19 +156,24 @@ class Main:
         
         f.close()
 
-        # print("notes: " + str(len(notes)))
-        Main.PrintS("notes: ", len(notes))
-        Main.PrintS(notes)
-        Main.PrintS("beats: ", len(beats))
-        Main.PrintS(beats)
-        Main.PrintS("tempo")
-        Main.PrintS(tempo)
-        Main.PrintS("name")
-        Main.PrintS(name)
+        # Main.PrintS("notes: ", len(notes))
+        # Main.PrintS(notes)
+        # Main.PrintS("beats: ", len(beats))
+        # Main.PrintS(beats)
+        # Main.PrintS("tempo")
+        # Main.PrintS(tempo)
+        # Main.PrintS("name")
+        # Main.PrintS(name)
         m = melody.Melody(name, notes, beats, tempo)
         return m
 
-    def GetArrayFromFileLines(fileLines):
+    def GetArrayFromFileLines(fileLines, parseInt):
+        """
+        Gets an array from array of string fileLines. fileLines should start at array declaration, as it will read untill the first ;
+
+        array of string fileLines
+        boolean parseInt 
+        """
         array = []
         i = 0
         while 1: # Continue until the current lines has a ; (end of code line)
@@ -198,15 +191,34 @@ class Main:
 
                 v = value.strip()
                 if(len(v) > 0): # Ignore empty values
-                    array.append(v)
+                    if(parseInt):
+                        array.append(int(v))
+                    else:
+                        array.append(str(v))
 
             if(fileLines[i].find(";") >= 0):
                 break
             i += 1
 
         return array
-        
 
+    def PlayMelody(melody):
+        """
+        Plays Melody melody by sending unicode characters over serial (USB) to Arduino that's is listenening, configured after buzzer-melody.png and running buzzer-melody.ino code.
+
+        Melody melody
+        """
+        Main.PrintS("Now playing: \n\t", melody.melodyName)
+
+        # TODO
+        # 0. Print "now playing.. x"
+        # 1. use python time.sleep(y) where y is the seconds-version of tempo, need to translate first
+        # 2. get unicode characters for note and beat
+        # 3. send note
+        # 4. send beat
+        # 5. repeat for notes and beats
+        # 6. send 0 as beat to end? special char?
+        # NB: Arduino code must understand that 2 serial values are needed to make a sound
 
     def SendToSerial():
         """
@@ -225,11 +237,10 @@ class Main:
             print("---")
             ser.write(enc)
 
-    def PrintMelodies():
+    def PrintAllMelodies():
         """
         A simple console print of songs in the melodies folder.
         """
-
         a = Main.GetMelodies()
         i = 0
 
@@ -276,6 +287,7 @@ class Main:
     def PrintS(*params):
         """
         Format all parameters *params as string in print() so there's no need to surround everything with str().
+
         splat params
         """
 
@@ -289,6 +301,7 @@ class Main:
     def PyCopyHClass(filepath):
         """
         Copy a single Arduino OOP .h class in filepath to a simplified Python class.
+
         string filepath (relative to where code was called from) 
         """
         pyClassString = ""
