@@ -156,5 +156,5 @@ int asBeats[] = { 1, 8, // Signal start and synchronization
                       // see all-star-treble-2.h
                       8, 0 };
 int asTempo = 114;
-String asName = "All Star - Smash Mouth"
+String asName = "All Star - Smash Mouth";
 Melody as = Melody(asName, asNotes, asBeats, asTempo);

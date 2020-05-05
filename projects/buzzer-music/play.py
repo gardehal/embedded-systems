@@ -18,6 +18,8 @@ class Main:
 
         array of any sys.argv
         """       
+        ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1)
+
         argC = len(sys.argv)
         argIndex = 1
         while argIndex < argC:
@@ -208,11 +210,25 @@ class Main:
 
         Melody melody
         """
+        tempoInSeconds = melody.tempo * 0.1
+        notes = melody.notes
+        beats = melody.beats
         Main.PrintS("Now playing: \n\t", melody.melodyName)
+
+        i = 0
+        while 1:
+            if(i > len(notes)):
+                break
+
+            time.sleep(tempoInSeconds)
+            Main.SendToSerial(notes[i])
+            Main.SendToSerial(beats[i])
+            i += 1
 
         # TODO
         # 0. Print "now playing.. x"
-        # 1. use python time.sleep(y) where y is the seconds-version of tempo, need to translate first
+        # 1. use python time.sleep(y) where y is the seconds-version of tempo, need to translate first 
+        #       - Tempo seems to bethe pause between the notes, beats is the multiplication of tempo, ie. tempo 100 and beat 10 means note will be played for 10 * 100 ms = 1000 ms = 1 second, with a 100 ms pause before and after
         # 2. get unicode characters for note and beat
         # 3. send note
         # 4. send beat
@@ -220,22 +236,25 @@ class Main:
         # 6. send 0 as beat to end? special char?
         # NB: Arduino code must understand that 2 serial values are needed to make a sound
 
-    def SendToSerial():
+    def SendToSerial(data):
         """
         Send data to serial port using PySerial.
-        """
-        ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1)
+        """        
+        # ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1) # serial initiation "restarts" Arduino board
 
-        while 1:
-            time.sleep(1)
-            # ser.write("A".encode()) # Unicode A = 65
-            val = "\u0041"
-            # val = "\u028A"
-            enc = val.encode()
-            print(val)
-            print(enc)
-            print("---")
-            ser.write(enc)
+        encoded = data.encode()
+        ser.write(encoded)
+
+        # while 1:
+        #     time.sleep(1)
+        #     # ser.write("A".encode()) # Unicode A = 65
+        #     val = "\u0041"
+        #     # val = "\u028A"
+        #     enc = val.encode()
+        #     print(val)
+        #     print(enc)
+        #     print("---")
+        #     ser.write(enc)
 
     def PrintAllMelodies():
         """

@@ -3,7 +3,13 @@
 #include "./notes.h"
 
 // Melodies
-//#include "./songs.h"
+#include "melodies/all-star.h"
+
+String exName = "Example Melody";
+int exNotes[] = { NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 0 };
+int exBeats[] = { 10, 10, 10, 10, 0 };
+int exTempo = 100;
+Melody ex = Melody(exName, exNotes, exBeats, exTempo);
 
 const int speakerPin = 13;
 
@@ -13,23 +19,20 @@ void setup()
   
   pinMode(speakerPin, OUTPUT);
   
-  tone(speakerPin, 650, 1000);
-  delay(500);
-  noTone(speakerPin);
+  //tone(speakerPin, 650, 1000);
 }
 
 void serialEvent() 
 {
   char t = (char)Serial.read();
-  Serial.print(t);
-  Serial.print((int)t);
-  tone(speakerPin, t*10, 1000);
-  delay(500);
-  noTone(speakerPin);
+  char b = (char)Serial.read();
+  tone(speakerPin, t, b);
 }
 
 void loop() 
 {
+  // play(ex);
+  // delay(1000);
   // play(ttls);
   // delay(1000);
   // play(hbty);
