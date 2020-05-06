@@ -1,4 +1,5 @@
 
+String name = "Happy Birthday To You";
 int hbtyNotes[] = { NOTE_C6, NOTE_C6, NOTE_D6, NOTE_C6, NOTE_F6, NOTE_E6,
                     NOTE_C6, NOTE_C6, NOTE_D6, NOTE_C6, NOTE_G6, NOTE_E6, // E7?
                     NOTE_C6, NOTE_C6, NOTE_C7, NOTE_A6, NOTE_F6, NOTE_E6, NOTE_D6,
@@ -9,5 +10,4 @@ int hbtyBeats[] = { 1, 1, 1, 1, 1, 2,
                     1, 1, 1, 1, 1, 2, 4,
                     0 };
 int hbtyTempo = 300;
-String name = "Happy Birthday To You";
 Melody hbty = Melody(name, hbtyNotes, hbtyBeats, hbtyTempo);

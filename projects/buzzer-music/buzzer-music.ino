@@ -3,13 +3,7 @@
 #include "./notes.h"
 
 // Melodies
-#include "melodies/all-star.h"
-
-String exName = "Example Melody";
-int exNotes[] = { NOTE_FS4, NOTE_FS4, NOTE_FS4, NOTE_FS4, 0 };
-int exBeats[] = { 10, 10, 10, 10, 0 };
-int exTempo = 100;
-Melody ex = Melody(exName, exNotes, exBeats, exTempo);
+// #include "melodies/all-star.h"
 
 const int speakerPin = 13;
 
@@ -26,7 +20,7 @@ void serialEvent()
 {
   char t = (char)Serial.read();
   char b = (char)Serial.read();
-  tone(speakerPin, t, b);
+  tone(speakerPin, t, 1000);
 }
 
 void loop() 

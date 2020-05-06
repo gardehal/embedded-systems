@@ -18,7 +18,6 @@ class Main:
 
         array of any sys.argv
         """       
-        ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1)
 
         argC = len(sys.argv)
         argIndex = 1
@@ -148,24 +147,22 @@ class Main:
                     
                 if(line.split("=")[0].lower().find("tempo") >= 0): # Get tempo int declaration
                     tempo = line.split("=")[1].strip().replace(";", "")
-                    continue
 
                 if(line.split("=")[0].lower().find("name") >= 0): # Get name string declaration
                     name = line.split("=")[1].lstrip().replace(";", "").replace("\"", "")
-                    continue
                     
             i += 1
         
         f.close()
 
-        # Main.PrintS("notes: ", len(notes))
-        # Main.PrintS(notes)
-        # Main.PrintS("beats: ", len(beats))
-        # Main.PrintS(beats)
-        # Main.PrintS("tempo")
-        # Main.PrintS(tempo)
-        # Main.PrintS("name")
-        # Main.PrintS(name)
+        Main.PrintS("notes: ", len(notes))
+        Main.PrintS(notes)
+        Main.PrintS("beats: ", len(beats))
+        Main.PrintS(beats)
+        Main.PrintS("tempo")
+        Main.PrintS(tempo)
+        Main.PrintS("name")
+        Main.PrintS(name)
         m = melody.Melody(name, notes, beats, tempo)
         return m
 
@@ -210,20 +207,38 @@ class Main:
 
         Melody melody
         """
-        tempoInSeconds = melody.tempo * 0.1
+        tempo = int(melody.tempo)
+        tempoInSeconds = tempo * 0.001
         notes = melody.notes
         beats = melody.beats
         Main.PrintS("Now playing: \n\t", melody.melodyName)
+        
+        ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1)
 
+        notesLen = len(notes)
+        print("Playing")
+        print("tempo")
+        print(tempo)
+        print("tempo s")
+        print(tempoInSeconds)
         i = 0
-        while 1:
-            if(i > len(notes)):
-                break
+        
+        # Test: try arduino code to read x bytes?
+        time.sleep(1)
+        ser.write(b"650") # Unicode A = 65
+        
+        # while 1:
+        #     Main.PrintS(" --- ", i, "/", notesLen, " --- ")
+        #     if(i == notesLen):
+        #         break
 
-            time.sleep(tempoInSeconds)
-            Main.SendToSerial(notes[i])
-            Main.SendToSerial(beats[i])
-            i += 1
+        #     time.sleep(tempoInSeconds)
+        #     Main.SendToSerial(ser, str(notes[i]))
+        #     Main.SendToSerial(ser, str(beats[i] * tempo))
+        #     time.sleep(beats[i] * tempoInSeconds)
+        #     i += 1
+
+        Main.PrintS("Finished playing: \n\t", melody.melodyName)
 
         # TODO
         # 0. Print "now playing.. x"
@@ -236,7 +251,7 @@ class Main:
         # 6. send 0 as beat to end? special char?
         # NB: Arduino code must understand that 2 serial values are needed to make a sound
 
-    def SendToSerial(data):
+    def SendToSerial(ser, data):
         """
         Send data to serial port using PySerial.
         """        
@@ -247,7 +262,7 @@ class Main:
 
         # while 1:
         #     time.sleep(1)
-        #     # ser.write("A".encode()) # Unicode A = 65
+        #     ser.write("A".encode()) # Unicode A = 65
         #     val = "\u0041"
         #     # val = "\u028A"
         #     enc = val.encode()

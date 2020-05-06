@@ -1,4 +1,5 @@
 
+String asName = "All Star - Smash Mouth";
 int asNotes[] = { NOTE_C6, 0, // Signal start and synchronization
                       // Verse 1
                       NOTE_FS4, NOTE_CS5, NOTE_AS4, NOTE_AS4, NOTE_GS4, NOTE_FS4, 
@@ -156,5 +157,4 @@ int asBeats[] = { 1, 8, // Signal start and synchronization
                       // see all-star-treble-2.h
                       8, 0 };
 int asTempo = 114;
-String asName = "All Star - Smash Mouth";
 Melody as = Melody(asName, asNotes, asBeats, asTempo);
