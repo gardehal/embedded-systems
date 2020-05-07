@@ -18,13 +18,15 @@ void setup()
 
 void serialEvent() 
 {
-  char t = (char)Serial.read();
-  char b = (char)Serial.read();
-  tone(speakerPin, t, 1000);
+    String in = Serial.readString();
+    int t = in.substring(0, 4).toInt();
+    int b = in.substring(5).toInt();
+    
+    tone(speakerPin, t, b);
 }
 
 void loop() 
-{
+{  
   // play(ex);
   // delay(1000);
   // play(ttls);
