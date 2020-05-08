@@ -208,7 +208,7 @@ class Main:
         Melody melody
         """
         tempo = int(melody.tempo)
-        tempoInSeconds = tempo * 0.001
+        tempoInSeconds = tempo / 1000
         notes = melody.notes
         beats = melody.beats
         Main.PrintS("Now playing: \n\t", melody.melodyName)
@@ -222,21 +222,25 @@ class Main:
         print("tempo s")
         print(tempoInSeconds)
         i = 0
-        
-        # Test: try arduino code to read x bytes?
-        time.sleep(1)
-        ser.write(b"650") # Unicode A = 65
-        
-        # while 1:
-        #     Main.PrintS(" --- ", i, "/", notesLen, " --- ")
-        #     if(i == notesLen):
-        #         break
 
-        #     time.sleep(tempoInSeconds)
-        #     Main.SendToSerial(ser, str(notes[i]))
-        #     Main.SendToSerial(ser, str(beats[i] * tempo))
-        #     time.sleep(beats[i] * tempoInSeconds)
-        #     i += 1
+        print("TODO play Melody")
+        # sollution: send a string of 0000@0000 to serial, python uses substring but can use @ as delim later:
+        ser.write("0650@1000".encode()) # Plays note 650 for 1000 ms, rememper to sleep for that time to avoid trying to play multiple tones at once 
+        
+        while 1:
+            Main.PrintS(" --- ", i, "/", notesLen, " --- ")
+            if(i == notesLen):
+                break
+
+            time.sleep(tempoInSeconds)
+            print(tempoInSeconds)
+            data = str(notes[i]).zfill(4) + "@" + str(beats[i] * tempo).zfill(4) # zFill adds leading zeros until the length of the string is argument, in this case 4. Format "xxxx@yyyy"
+            print(data)
+            Main.SendToSerial(ser, data)
+            # time.sleep(float(float(beats[i]) * float(tempoInSeconds)))
+            time.sleep(0.9) # Timing issues, can't send more frequently than 1000 ms? doesn't seem to ahve anything to do with serials timeout
+            print("end")
+            i += 1
 
         Main.PrintS("Finished playing: \n\t", melody.melodyName)
 
@@ -259,17 +263,6 @@ class Main:
 
         encoded = data.encode()
         ser.write(encoded)
-
-        # while 1:
-        #     time.sleep(1)
-        #     ser.write("A".encode()) # Unicode A = 65
-        #     val = "\u0041"
-        #     # val = "\u028A"
-        #     enc = val.encode()
-        #     print(val)
-        #     print(enc)
-        #     print("---")
-        #     ser.write(enc)
 
     def PrintAllMelodies():
         """
