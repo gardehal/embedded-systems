@@ -155,14 +155,14 @@ class Main:
         
         f.close()
 
-        Main.PrintS("notes: ", len(notes))
-        Main.PrintS(notes)
-        Main.PrintS("beats: ", len(beats))
-        Main.PrintS(beats)
-        Main.PrintS("tempo")
-        Main.PrintS(tempo)
-        Main.PrintS("name")
-        Main.PrintS(name)
+        # Main.PrintS("notes: ", len(notes))
+        # Main.PrintS(notes)
+        # Main.PrintS("beats: ", len(beats))
+        # Main.PrintS(beats)
+        # Main.PrintS("tempo")
+        # Main.PrintS(tempo)
+        # Main.PrintS("name")
+        # Main.PrintS(name)
         m = melody.Melody(name, notes, beats, tempo)
         return m
 
@@ -213,7 +213,7 @@ class Main:
         beats = melody.beats
         Main.PrintS("Now playing: \n\t", melody.melodyName)
         
-        ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1)
+        ser = serial.Serial(port = "COM4", baudrate = 9600)
 
         notesLen = len(notes)
         print("Playing")
@@ -225,35 +225,74 @@ class Main:
 
         print("TODO play Melody")
         # sollution: send a string of 0000@0000 to serial, python uses substring but can use @ as delim later:
-        ser.write("0650@1000".encode()) # Plays note 650 for 1000 ms, rememper to sleep for that time to avoid trying to play multiple tones at once 
+        # ser.write("0650@1000".encode()) # Plays note 650 for 1000 ms, rememper to sleep for that time to avoid trying to play multiple tones at once 
         
+        # while 1:
+        #     Main.PrintS(" --- ", i, "/", notesLen, " --- ")
+        #     if(i == notesLen):
+        #         break
+
+        #     time.sleep(tempoInSeconds)
+        #     print(tempoInSeconds)
+        #     data = str(notes[i]).zfill(4) + str(beats[i] * tempo).zfill(4) # zFill adds leading zeros until the length of the string is argument, in this case 4. Format "xxxx@yyyy"
+        #     print(data)
+        #     Main.SendToSerial(ser, data)
+        #     # time.sleep(float(float(beats[i]) * float(tempoInSeconds)))
+        #     time.sleep(0.9) # Timing issues, can't send more frequently than 1000 ms? doesn't seem to ahve anything to do with serials timeout
+        #     print("end")
+        #     i += 1
+
+        # Woraround for limitations in transerfer?:
+        # Send 4 notes and 4 beats as data format tempo|note1@beat1|note2@beat2|note3@beat3|note4@beat4
+        #   Assuming 4 notes last at elast 0.9? seconds (they wont during faster parts of AS where 114 tempo and 12+ notes in a row have a beat of 1: 4 * 114 * 1 = 456 (< 0.9))
+        #   Await for 4 * tempo + 4 * beat for those notes 
+        dataArray = ""
+        dataNotes = []
+        dataBeats = []
+        dataArraySize = 4
         while 1:
             Main.PrintS(" --- ", i, "/", notesLen, " --- ")
             if(i == notesLen):
                 break
 
-            time.sleep(tempoInSeconds)
-            print(tempoInSeconds)
-            data = str(notes[i]).zfill(4) + "@" + str(beats[i] * tempo).zfill(4) # zFill adds leading zeros until the length of the string is argument, in this case 4. Format "xxxx@yyyy"
-            print(data)
-            Main.SendToSerial(ser, data)
-            # time.sleep(float(float(beats[i]) * float(tempoInSeconds)))
-            time.sleep(0.9) # Timing issues, can't send more frequently than 1000 ms? doesn't seem to ahve anything to do with serials timeout
-            print("end")
+            dataNotes.append(notes[i])
+            dataBeats.append(beats[i] * tempo)
+            
+            if(i > 1 and (i + 1) % dataArraySize == 0):
+                print("Sending...")
+
+                dataArray = Main.AssembleDataArray(tempo, dataNotes, dataBeats, "|", "@")
+                Main.SendToSerial(ser, dataArray)
+                print(dataArray)
+
+                sleepFor = dataArraySize * tempo
+                for b in dataBeats:
+                    sleepFor += int(b)
+                
+                time.sleep(sleepFor / 1000)
+                
+                dataNotes.clear()
+                dataBeats.clear()
+
             i += 1
 
         Main.PrintS("Finished playing: \n\t", melody.melodyName)
 
-        # TODO
-        # 0. Print "now playing.. x"
-        # 1. use python time.sleep(y) where y is the seconds-version of tempo, need to translate first 
-        #       - Tempo seems to bethe pause between the notes, beats is the multiplication of tempo, ie. tempo 100 and beat 10 means note will be played for 10 * 100 ms = 1000 ms = 1 second, with a 100 ms pause before and after
-        # 2. get unicode characters for note and beat
-        # 3. send note
-        # 4. send beat
-        # 5. repeat for notes and beats
-        # 6. send 0 as beat to end? special char?
-        # NB: Arduino code must understand that 2 serial values are needed to make a sound
+    def AssembleDataArray(tempo, notesArray, beatsArray, dataDelim, elementDelim):
+        """
+        
+        """
+        if(len(notesArray) != len(beatsArray)):
+            return None
+
+        elementSize = 4
+        res = str(tempo).zfill(elementSize)
+        i = 0
+        for e in notesArray:
+            res += str(dataDelim) + str(notesArray[i]).zfill(elementSize) + str(elementDelim) + str(beatsArray[i]).zfill(elementSize)
+            i += 1
+
+        return res
 
     def SendToSerial(ser, data):
         """
