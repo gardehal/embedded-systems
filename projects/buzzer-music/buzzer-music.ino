@@ -3,6 +3,7 @@
 #include "./notes.h"
 
 // Melodies
+#include "melodies/example.h"
 // #include "melodies/all-star.h"
 
 const int speakerPin = 13;
@@ -12,36 +13,51 @@ void setup()
   Serial.begin(9600);
   
   pinMode(speakerPin, OUTPUT);
-  
-  //tone(speakerPin, 650, 1000);
+  tone(speakerPin, 650, 100);
 }
 
 void serialEvent() 
 {
+    // tempo|note1@beat1|note2@beat2|note3@beat3|note4@beat4... tempo, beats, and notes are 4 char long ints
+    // 0114|0466@0228|0466@0456|0415@0228|0370@0228
     String in = Serial.readString();
-    int t = in.substring(0, 4).toInt();
-    int b = in.substring(5).toInt();
+    int tempo = in.substring(0, 4).toInt();
+    String consumeString = in.substring(5);
+    int len = (in.length() + 1) / 10; // 0000|.. ends with 0000, add one to get a length that is divisible with 5
+    int notes[len];
+    int beats[len];
+
+    for (int i = 0; i < len; i++)
+    {
+      notes[i] = consumeString.substring(0, 4).toInt();
+      beats[i] = consumeString.substring(5, 9).toInt();
+      consumeString = consumeString.substring(10);
+    }
+
+    delay(1000);
+    int notes1[4] = {466, 466, 415, 370};
+    int beats1[4] = {228, 456, 228, 228};
     
-    tone(speakerPin, t, b);
+    play(4, 114, notes1, beats1);
 }
 
 void loop() 
 {  
-  // play(ex);
+  // playMelody(ex);
   // delay(1000);
-  // play(ttls);
+  // playMelody(ttls);
   // delay(1000);
-  // play(hbty);
+  // playMelody(hbty);
   // delay(1000);
-  // play(jvedt);
+  // playMelody(jvedt);
   // delay(1000);
-  // play(tom);
+  // playMelody(tom);
   // delay(1000);
-  // play(as);
+  // playMelody(as);
   // delay(1000);
 }
 
-void play(Melody m)
+void playMelody(Melody m)
 {
   String mName = m.getMelodyName();
   int mLength = m.getMelodyLength();
@@ -56,7 +72,12 @@ void play(Melody m)
   Serial.print("Tempo: ");
   Serial.println(tempo);
 
-  for (int i = 0; i < mLength; i++) 
+  play(mLength, tempo, notes, beats);
+}
+
+void play(int len, int tempo, int* notes, int* beats)
+{
+  for (int i = 0; i < len; i++) 
   {
     // Rest/Pause
     if (notes[i] == 0) 
@@ -65,10 +86,7 @@ void play(Melody m)
       continue;
     }
 
-    // Play tone, wait, stop tone
     tone(speakerPin, notes[i], beats[i] * tempo);
-    delay(beats[i] * tempo);
-    noTone(speakerPin);
 
     // pause between notes
     delay(tempo / 2); 
