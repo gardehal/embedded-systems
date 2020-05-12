@@ -9,13 +9,12 @@ import melody
 
 melodiesArgs = ["-melodies", "-m", "-songs", "-s"]
 helpArgs = ["-help", "-h"]
-initializeArgs = ["-initialize", "-init", "-i"] # add to help print
+initializeArgs = ["-initialize", "-init", "-i"]
 
 class Main:
     def Main():     
         """
-        Main function. Parses arguments from terminal and executes relevant code.
-
+        Main function. Parses arguments from terminal and executes relevant code.  \n
         array of any sys.argv
         """       
 
@@ -83,12 +82,10 @@ class Main:
             
     def GetFullFilePath(dirName, fileName = None):
         """
-        A method for getting the full path from root file the script is called from and a sub-directory with optional file.
-
+        A method for getting the full path from root file the script is called from and a sub-directory with optional file. \n
         string dirName \n
         string fileName(optional)
         """
-
         appendPath = dirName
         if(fileName != None):
             appendPath = os.path.join(dirName, fileName)
@@ -104,7 +101,6 @@ class Main:
     def LoadPyMelody(filepath):
         """ 
         Reads the filepath.h file and translates to python version of melody.
-
         string filepath
         """
         name = ""
@@ -115,8 +111,6 @@ class Main:
         f = open(filepath)
         lines = f.readlines()
         i = 0
-
-        # print(lines[len(lines) - 1]) # .h melody class declaration
 
         for line in lines:
             if(line.find("=") >= 0): # Get assignment of a variable
@@ -168,9 +162,8 @@ class Main:
 
     def GetArrayFromFileLines(fileLines, parseInt):
         """
-        Gets an array from array of string fileLines. fileLines should start at array declaration, as it will read untill the first ;
-
-        array of string fileLines
+        Gets an array from array of string fileLines. fileLines should start at array declaration, as it will read untill the first ; \n
+        array of string fileLines \n
         boolean parseInt 
         """
         array = []
@@ -203,8 +196,7 @@ class Main:
 
     def PlayMelody(melody):
         """
-        Plays Melody melody by sending unicode characters over serial (USB) to Arduino that's is listenening, configured after buzzer-melody.png and running buzzer-melody.ino code.
-
+        Plays Melody melody by sending unicode characters over serial (USB) to Arduino that's is listenening, configured after buzzer-melody.png and running buzzer-melody.ino code. \n
         Melody melody
         """
         tempo = int(melody.tempo)
@@ -261,7 +253,12 @@ class Main:
 
     def AssembleDataArray(tempo, notesArray, beatsArray, dataDelim, elementDelim):
         """
-        
+        Assemle a data transfer string from tempo, notes, beats with a delimeter dataDelim between each segment and elementDelim between notes and beats \n
+        int tempo \n
+        int array beatsArray \n
+        int array notesArray \n
+        char dataDelim \n
+        char elementDelim
         """
         if(len(notesArray) != len(beatsArray)):
             return None
@@ -305,7 +302,6 @@ class Main:
         """
         A simple console print that informs user of program arguments.
         """
-
         print("--- Help ---")
         print("Arguments marked with ? are optional.")
         print("All arguments that triggers a function start with dash(-).")
@@ -333,8 +329,7 @@ class Main:
 
     def PrintS(*params):
         """
-        Format all parameters *params as string in print() so there's no need to surround everything with str().
-
+        Format all parameters *params as string in print() so there's no need to surround everything with str(). \n
         splat params
         """
 
@@ -347,8 +342,7 @@ class Main:
     
     def PyCopyHClass(filepath):
         """
-        Copy a single Arduino OOP .h class in filepath to a simplified Python class.
-
+        Copy a single Arduino OOP .h class in filepath to a simplified Python class. \n
         string filepath (relative to where code was called from) 
         """
         pyClassString = ""
