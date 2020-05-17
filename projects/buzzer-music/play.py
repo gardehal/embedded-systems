@@ -16,8 +16,7 @@ class Main:
         """
         Main function. Parses arguments from terminal and executes relevant code.  \n
         array of any sys.argv
-        """       
-
+        """
         argC = len(sys.argv)
         argIndex = 1
         while argIndex < argC:
@@ -215,6 +214,7 @@ class Main:
         print(tempoInSeconds)
         i = 0
 
+        # TODO
         # Send 8 notes and 8 beats as data format tempo|note1@beat1|note2@beat2|note3@beat3|note4@beat4
         #   Assuming 8 notes last at elast 0.9? seconds (they wont during faster parts of AS where 114 tempo and 12+ notes in a row have a beat of 1: 4 * 114 * 1 = 456 (< 0.9))
         #   Await for 8 * tempo + 8 * beat for those notes 
@@ -276,7 +276,7 @@ class Main:
         """
         Send data to serial port using PySerial.
         """        
-        # ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1) # serial initiation "restarts" Arduino board
+        # ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1) # serial initiation "restarts" Arduino board, initiate in caller function
 
         encoded = data.encode()
         ser.write(encoded)
@@ -332,7 +332,6 @@ class Main:
         Format all parameters *params as string in print() so there's no need to surround everything with str(). \n
         splat params
         """
-
         s = ""
         for p in params:
             s += str(p)
@@ -383,26 +382,3 @@ class Main:
             
 if __name__ == "__main__":
     Main.Main()
-
-
-
-
-### Plan
-# 1. read array of files from molodies folder
-# 2. pick melody (can also be done with arguments)
-# 3. print melody name? and set beat
-# 4. read array of notes and beats
-# 5. for each send note with corresponding beat (preload notes then send beats? preload both beats and notes?)
-#       - Send notes as Unicode characters, format: decimal (of note or beat) -> hex -> ser.write("\u[hex]".encode()) https://unicode-table.com/en/ https://www.calculator.net/hex-calculator.html or lib
-# 6. read beat = 0 to finish melody
-
-# Arduino awaits any input;
-# Input from serial: start serial code to play from incoming serial data
-# Button press or afer a set timeout, play song from melody folder using old code
-
-# Python terminal aways commands to start;
-# With no arguments, prompt argument help print, then play from melody folder in order
-# With integer argument, play index that corresponds with melody
-# With string argument, search for song name that contains input args
-# Print help for overvoew of arguments implementerd
-# Print ordered list of songs in folder, with index (ex. "1 - Twinkle Twinkle Little Star\n" etc.)
