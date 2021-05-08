@@ -161,7 +161,7 @@ class Main:
 
     def GetArrayFromFileLines(fileLines, parseInt):
         """
-        Gets an array from array of string fileLines. fileLines should start at array declaration, as it will read untill the first ; \n
+        Gets an array from array of string fileLines. fileLines should start at array declaration, as it will read until the first ; \n
         array of string fileLines \n
         boolean parseInt 
         """
@@ -195,11 +195,10 @@ class Main:
 
     def PlayMelody(melody):
         """
-        Plays Melody melody by sending unicode characters over serial (USB) to Arduino that's is listenening, configured after buzzer-melody.png and running buzzer-melody.ino code. \n
+        Plays Melody melody by sending unicode characters over serial (USB) to Arduino that's is listening, configured after buzzer-melody.png and running buzzer-melody.ino code. \n
         Melody melody
         """
         tempo = int(melody.tempo)
-        tempoInSeconds = tempo / 1000
         notes = melody.notes
         beats = melody.beats
         Main.PrintS("Now playing: \n\t", melody.melodyName)
@@ -207,28 +206,20 @@ class Main:
         ser = serial.Serial(port = "COM4", baudrate = 9600, timeout = 1)
 
         notesLen = len(notes)
-        print("Playing")
-        print("tempo")
-        print(tempo)
-        print("tempo s")
-        print(tempoInSeconds)
         i = 0
 
-        # TODO
-        # Send 8 notes and 8 beats as data format tempo|note1@beat1|note2@beat2|note3@beat3|note4@beat4
-        #   Assuming 8 notes last at elast 0.9? seconds (they wont during faster parts of AS where 114 tempo and 12+ notes in a row have a beat of 1: 4 * 114 * 1 = 456 (< 0.9))
-        #   Await for 8 * tempo + 8 * beat for those notes 
         dataArray = ""
         dataNotes = []
         dataBeats = []
         dataArraySize = 8
         while 1:
-            Main.PrintS(" --- ", i, "/", notesLen, " --- ")
+            # Print progression of notes
+            #Main.PrintS(" --- ", i, "/", notesLen, " --- ")
             if(i == notesLen):
                 break
 
             dataNotes.append(notes[i])
-            dataBeats.append(beats[i] * tempo)
+            dataBeats.append(beats[i])
             
             if(i > 1 and (i + 1) % dataArraySize == 0):
                 print("Sending...")
@@ -241,8 +232,9 @@ class Main:
                 for b in dataBeats:
                     sleepFor += int(b)
                 
-                # time.sleep(float(sleepFor) / 1000)
-                time.sleep(10)
+                # TODO 5 seconds is still lagging behind, but less than 4.5 starts overlapping with other lines sent. 
+                # Some function of tempo and beats sent probably
+                time.sleep(5)
                 
                 dataNotes.clear()
                 dataBeats.clear()
@@ -253,7 +245,7 @@ class Main:
 
     def AssembleDataArray(tempo, notesArray, beatsArray, dataDelim, elementDelim):
         """
-        Assemle a data transfer string from tempo, notes, beats with a delimeter dataDelim between each segment and elementDelim between notes and beats \n
+        Assemble a data transfer string from tempo, notes, beats with a delimeter dataDelim between each segment and elementDelim between notes and beats \n
         int tempo \n
         int array beatsArray \n
         int array notesArray \n
@@ -337,7 +329,6 @@ class Main:
             s += str(p)
 
         print(s)
-
     
     def PyCopyHClass(filepath):
         """
