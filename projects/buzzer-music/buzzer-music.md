@@ -44,7 +44,12 @@ Since I only have one buzzer, melodies or songs with multiple notes played at th
 ## TODO
 
 Found a way to send data to arduino from computer though a Python library, plan is to use script to read .h song files and send bits of data to Arduino, this way there's no need to worry about storage.
-- Flow: Start Parduino, python script, Serial Monitor tool must be closed?. Python finds file (id? name? index in folder?) send song title as displayable data and tempo as "hidden" data. Send array og single beat and note at a time tempo/speed controlled by Arduino? Might need a response function to ask for next data, otherwise functionality will be duplicated...   
+- Flow: Start Arduino, python script, Serial Monitor tool must be closed?. Python finds file (id? name? index in folder?) send song title as displayable data and tempo as "hidden" data. Send array og single beat and note at a time tempo/speed controlled by Arduino? Might need a response function to ask for next data, otherwise functionality will be duplicated...   
 - Python script for getting notes or music data
-- Configure arduino to recieve serial data
 - Optional: implement functionality to play either from serial or .h (status quo)
+- Document issues with sending data (incorrect usage, missing some timing still), solutions and general concept, usage, general knowledge for future projects. Also odd how delay between notes had to be changed, didn't seem to scale with tempo, beat or notes as well, put some arbatrary value. Old code may be useful, add tempo to it?
+                for b in dataBeats:
+                    sleepFor += int(b)
+                
+                # time.sleep(float(sleepFor) / 1000)
+                
