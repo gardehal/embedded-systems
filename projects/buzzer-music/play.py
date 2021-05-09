@@ -305,8 +305,8 @@ class Main:
         print(str(initializeArgs) + " + [string filename]: translates an Arduino class from the filename.h to a python class filename.h.")
         print(str(melodiesArgs) + ": prints a list of melodies available.")
         print(str(helpArgs) + ": prints this information about input arguments.")
-        print("int" + ": plays the song with number..........") # TODO
-        print("string" + ": searches songs for similar name ............") # TODO
+        print("int" + ": plays the song with number.")
+        #print("string" + ": searches songs for similar name ............") # TODO
 
     def IsInt(s):
         """
@@ -334,6 +334,8 @@ class Main:
         """
         Copy a single Arduino OOP .h class in filepath to a simplified Python class. \n
         string filepath (relative to where code was called from) 
+
+        Not sure what the plan was when this was made, it sees to make a py-class with the fields of the .h-file without the values, similar to melody.py...
         """
         pyClassString = ""
         classname = ""
@@ -352,7 +354,7 @@ class Main:
                     args = line.split("(")[1].split(")")[0].split(", ")
 
                     for argDef in args:
-                        arg = argDef.split(" ")[1]
+                        arg = argDef.strip()
                         constructorDef += (", " + arg)
                         constructorBlock += ("\n\t\tself." + arg + " = " + arg)
                         print("\tPyCopyHClass: Added field: '" + str(arg) + "'.")
@@ -361,9 +363,6 @@ class Main:
                     constructor = constructorDef + constructorBlock
                     pyClassString += (constructor)
                     print("\tPyCopyHClass: Added constructor.")
-
-        # print("pyClassString")
-        # print(pyClassString)
 
         w = open(Main.GetFullFilePath(str(classname.lower())) + ".py", "w")
         w.write(pyClassString)
