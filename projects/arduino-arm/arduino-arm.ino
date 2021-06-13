@@ -1,32 +1,4 @@
-#include <IRremote.h>
 #include <Servo.h>
-#include <ResponsiveAnalogRead.h>
-
-const long keyPower = 16753245;
-const long keyVolPluss = 16736925;
-const long keyFunc = 16769565;
-const long keyLeft = 16720605;
-const long keyPlay = 16712445;
-const long keyRight = 16761405;
-const long keyDown = 16769055;
-const long keyVolMinus = 16754775;
-const long keyUp = 16748655;
-const long key0 = 16738455;
-const long keyEq = 16750695;
-const long keySt = 16756815;
-const long key1 = 16724175;
-const long key2 = 16718055;
-const long key3 = 16743045;
-const long key4 = 16716015;
-const long key5 = 16726215;
-const long key6 = 16734885;
-const long key7 = 16728765;
-const long key8 = 16730805;
-const long key9 = 16732845;
-
-const int irPin = 2;
-IRrecv ir(irPin);
-decode_results results;
 
 // Joystick for arm base and and first joint
 // Potentiometer for second joint
@@ -43,7 +15,11 @@ int SW_state = 0;
 int mapX = 0;
 int mapY = 0;
 int mapZ = 0;
+int mapG = 0;
 
+const int initialState = 90;
+const int padding = 15;
+const int moveSteps = 2;
 const int servo1Pin = 11;
 const int servo2Pin = 10;
 const int servo3Pin = 9;
@@ -52,112 +28,97 @@ Servo servo1;
 Servo servo2;
 Servo servo3;
 Servo servo4;
-int servo1Pos = 90;
-int servo2Pos = 90;
-int servo3Pos = 90;
-int servo4Pos = 0;
+int servo1Pos = initialState;
+int servo2Pos = initialState;
+int servo3Pos = initialState;
+int servo4Pos = initialState;
 
 void setup()
 {
-  Serial.begin(9600);
-  
-  ir.enableIRIn();
-
   servo1.attach(servo1Pin);
   servo2.attach(servo2Pin);
   servo3.attach(servo3Pin);
   servo4.attach(servo4Pin);
+  
   servo1.write(servo1Pos);
   servo2.write(servo2Pos);
   servo3.write(servo3Pos);
   servo4.write(servo4Pos);
+  
+  Serial.begin(9600);
 }
 
 void loop()
-{
-  if(ir.decode())
-  {
-    switch(results.value)
-    {
-      case keyPower:
-        Serial.print("Power");
-        break;
-      case keyVolPluss:
-        Serial.print("VOL+");
-        servo2Pos += 4;
-        break;
-      case keyFunc:
-        Serial.print("FUNC/STOP");
-        break;
-      case keyLeft:
-        Serial.print("Left");
-        servo1Pos += 4;
-        break;
-      case keyPlay:
-        Serial.print("Play/Pause");
-        break;
-      case keyRight:
-        Serial.print("Right");
-        servo1Pos -= 4;
-        break;
-      case keyDown:
-        Serial.print("Down");
-        break;
-      case keyVolMinus:
-        Serial.print("VOL-");
-        servo2Pos -= 4;
-        break;
-      case keyUp:
-        Serial.print("Up");
-        break;
-      case key0:
-        Serial.print("0");
-        break;
-      case keyEq:
-        Serial.print("EQ");
-        break;
-      case keySt:
-        Serial.print("ST/REPT");
-        break;
-      case key1:
-        Serial.print("1");
-        break;
-      case key2:
-        Serial.print("2");
-        break;
-      case key3:
-        Serial.print("3");
-        break;
-      case key4:
-        Serial.print("4");
-        break;
-      case key5:
-        Serial.print("5");
-        break;
-      case key6:
-        Serial.print("6");
-        break;
-      case key7:
-        Serial.print("7");
-        break;
-      case key8:
-        Serial.print("8");
-        break;
-      case key9:
-        Serial.print("9");
-        break;
-      default:
-        Serial.print(" - value: ");
-        Serial.println(results.value);
-    }
+{  
+  xPosition = analogRead(VRx);
+  yPosition = analogRead(VRy);
+  zPosition = 0;//analogRead(potPin);
+  SW_state = 0;//digitalRead(SW);
+  
+  mapX = map(xPosition, 0, 1023, 0, 180);
+  mapY = map(yPosition, 0, 1023, 0, 180);
+  mapZ = map(zPosition, 0, 1023, 0, 180);
+  mapG = map(SW_state, 0, 1, 0, 1);
+  
+  Serial.print("X: ");
+  Serial.print(mapX);
+  Serial.print(" | Y: ");
+  Serial.print(mapY);
+  Serial.print(" | Z: ");
+  Serial.print(mapZ);
+  Serial.print(" | G: ");
+  Serial.print(mapG);
+  Serial.println("");
 
-      ir.resume(); 
+  // Update servos based on current position +/- joystick input 
+  if(mapX > (initialState + padding) && servo1Pos < (180 - moveSteps - 5))
+  {
+    servo1Pos += moveSteps; 
+    servo1.write(servo1Pos);
+    Serial.print("servo1Pos: ");
+    Serial.println(servo1Pos);
+  }
+  else if(mapX < (initialState - padding) && servo1Pos > (0 + moveSteps + 5))
+  {
+    servo1Pos -= moveSteps; 
+    servo1.write(servo1Pos);
+    Serial.print("servo1Pos: ");
+    Serial.println(servo1Pos);
+  }
+    
+  if(mapY > (initialState + padding) && servo2Pos < (180 - moveSteps - 5))
+  {
+    servo2Pos += moveSteps; 
+    servo2.write(servo2Pos);
+    Serial.print("servo2Pos: ");
+    Serial.println(servo2Pos);
+  }
+  else if(mapY < (initialState - padding) && servo2Pos < (0 + moveSteps + 5))
+  {
+    servo2Pos -= moveSteps; 
+    servo2.write(servo2Pos);
+    Serial.print("servo2Pos: ");
+    Serial.println(servo2Pos);
+  }
+   
+  if(mapZ > (initialState + padding) && servo3Pos < (180 - moveSteps - 5))
+  {
+    servo3Pos += moveSteps; 
+    servo3.write(servo3Pos);
+  }
+  else if(mapZ < (initialState - padding) && servo3Pos < (0 + moveSteps + 5))
+  {
+    servo3Pos -= moveSteps; 
+    servo3.write(servo3Pos);
   }
 
-  servo1.write(servo1Pos);
-  servo2.write(servo2Pos);
-  servo3.write(servo3Pos);
-  servo4.write(servo4Pos);
+  // TODO grabber
+  //if(!SW_state)
+    //servo4Pos = 0;
+  //else
+    //servo4Pos = 180;
+  
+  //servo4.write(servo4Pos);
 
-  delay(25);
+  delay(100);
 }
