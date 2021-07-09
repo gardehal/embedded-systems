@@ -1,26 +1,8 @@
-#include <IRremote.h>
+#include "IRremote.h"
 
-const long keyPower = 16753245;
-const long keyVolPluss = 16736925;
-const long keyFunc = 16769565;
-const long keyLeft = 16720605;
-const long keyPlay = 16712445;
-const long keyRight = 16761405;
-const long keyDown = 16769055;
-const long keyVolMinus = 16754775;
-const long keyUp = 16748655;
-const long key0 = 16738455;
-const long keyEq = 16750695;
-const long keySt = 16756815;
-const long key1 = 16724175;
-const long key2 = 16718055;
-const long key3 = 16743045;
-const long key4 = 16716015;
-const long key5 = 16726215;
-const long key6 = 16734885;
-const long key7 = 16728765;
-const long key8 = 16730805;
-const long key9 = 16732845;
+// Elegoo remote
+#include "ElegooIrRemote.h"
+ElegooIrRemote irRemote;
 
 const int irRecPin = 2;
 const int segementNorthGPin = 3;
@@ -32,15 +14,11 @@ const int segementSouthDPin = 8;
 const int segementSouthCPin = 9;
 const int segementSouthDPPin = 10;
 
-IRrecv irrecv(irRecPin);
-decode_results results;
-
 int currentNumber = 0;
 
 void setup()
 {
-  irrecv.enableIRIn();
-  irrecv.blink13(true);
+  IrReceiver.begin(irRecPin);
   Serial.begin(9600);
 
   display0();
@@ -48,96 +26,95 @@ void setup()
 
 void loop()
 {
-    
-  if(irrecv.decode(&results))
-  {
-    switch(results.value)
+  if(IrReceiver.decode())
+  {    
+    switch(IrReceiver.decodedIRData.command)
     {
-      case keyPower:
-        Serial.print("Power");
+      case irRemote.keyPower:
+        Serial.println("Power");
         displayOff();
         break;
-      case keyVolPluss:
-        Serial.print("VOL+");
+      case irRemote.keyVolumePlus:
+        Serial.println("VOL+");
         displayDotPoint();
         break;
-      case keyFunc:
-        Serial.print("FUNC/STOP");
+      case irRemote.keyFuncStop:
+        Serial.println("FUNC/STOP");
         break;
-      case keyLeft:
-        Serial.print("Left");
+      case irRemote.keyBack:
+        Serial.println("Back");
         break;
-      case keyPlay:
-        Serial.print("Play/Pause");
+      case irRemote.keyPlayPause:
+        Serial.println("Play/Pause");
         displayAll();
         break;
-      case keyRight:
-        Serial.print("Right");
+      case irRemote.keyForward:
+        Serial.println("Forward");
         break;
-      case keyDown:
-        Serial.print("Down");
+      case irRemote.keyDown:
+        Serial.println("Down");
         decrement();
         break;
-      case keyVolMinus:
-        Serial.print("VOL-");
+      case irRemote.keyVolumeMinus:
+        Serial.println("VOL-");
         displayMinus();
         break;
-      case keyUp:
-        Serial.print("Up");
+      case irRemote.keyUp:
+        Serial.println("Up");
         increment();
         break;
-      case key0:
-        Serial.print("0");
+      case irRemote.key0:
+        Serial.println("0");
         setNumber(0);
         break;
-      case keyEq:
-        Serial.print("EQ");
+      case irRemote.keyEq:
+        Serial.println("EQ");
         break;
-      case keySt:
-        Serial.print("ST/REPT");
+      case irRemote.keyStRept:
+        Serial.println("ST/REPT");
         break;
-      case key1:
-        Serial.print("1");
+      case irRemote.key1:
+        Serial.println("1");
         setNumber(1);
         break;
-      case key2:
-        Serial.print("2");
+      case irRemote.key2:
+        Serial.println("2");
         setNumber(2);
         break;
-      case key3:
-        Serial.print("3");
+      case irRemote.key3:
+        Serial.println("3");
         setNumber(3);
         break;
-      case key4:
-        Serial.print("4");
+      case irRemote.key4:
+        Serial.println("4");
         setNumber(4);
         break;
-      case key5:
-        Serial.print("5");
+      case irRemote.key5:
+        Serial.println("5");
         setNumber(5);
         break;
-      case key6:
-        Serial.print("6");
+      case irRemote.key6:
+        Serial.println("6");
         setNumber(6);
         break;
-      case key7:
-        Serial.print("7");
+      case irRemote.key7:
+        Serial.println("7");
         setNumber(7);
         break;
-      case key8:
-        Serial.print("8");
+      case irRemote.key8:
+        Serial.println("8");
         setNumber(8);
         break;
-      case key9:
-        Serial.print("9");
+      case irRemote.key9:
+        Serial.println("9");
         setNumber(9);
         break;
       default:
         Serial.print(" - value: ");
-        Serial.println(results.value);
+        Serial.println(IrReceiver.decodedIRData.command);
     }
 
-      irrecv.resume(); 
+      IrReceiver.resume(); 
   }
 }
 
