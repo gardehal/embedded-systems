@@ -6,7 +6,11 @@
 ElegooIrRemote irRemote;
 
 const int initialState = 90;
-const int padding = 15;
+const int moveSteps = 10;
+const int minDegreesSegment = 0;
+const int maxDegreesSegment = 180;
+const int minDegreesFinger = 45;
+const int maxDegreesFinger = 135;
 
 const int irRecPin = 2;
 const int servo1Pin = 12;
@@ -89,6 +93,8 @@ void loop()
         break;
       case irRemote.key0:
         Serial.println("0");
+        servo5Pos = calcMove(moveSteps, servo5Pos, minDegreesFinger, maxDegreesFinger);
+        servo5.write(servo5Pos);
         break;
       case irRemote.keyEq:
         Serial.println("EQ");
@@ -98,45 +104,47 @@ void loop()
         break;
       case irRemote.key1:
         Serial.println("1");
-        servo2Pos = calcMove(10, servo2Pos);
+        servo2Pos = calcMove(moveSteps, servo2Pos, minDegreesSegment, maxDegreesSegment);
         servo2.write(servo2Pos);
         break;
       case irRemote.key2:
         Serial.println("2");
-        servo3Pos = calcMove(10, servo3Pos);
+        servo3Pos = calcMove(moveSteps, servo3Pos, minDegreesSegment, maxDegreesSegment);
         servo3.write(servo3Pos);
         break;
       case irRemote.key3:
         Serial.println("3");
-        servo4Pos = calcMove(10, servo4Pos);
+        servo4Pos = calcMove(moveSteps, servo4Pos, minDegreesSegment, maxDegreesSegment);
         servo4.write(servo4Pos);
         break;
       case irRemote.key4:
         Serial.println("4");
-        servo1Pos = calcMove(10, servo1Pos);
+        servo1Pos = calcMove(moveSteps, servo1Pos, minDegreesSegment, maxDegreesSegment);
         servo1.write(servo1Pos);
         break;
       case irRemote.key5:
         Serial.println("5");
+        servo5Pos = calcMove(-1 * moveSteps, servo5Pos, minDegreesFinger, maxDegreesFinger);
+        servo5.write(servo5Pos);
         break;
       case irRemote.key6:
         Serial.println("6");
-        servo1Pos = calcMove(-10, servo1Pos);
+        servo1Pos = calcMove(-1 * moveSteps, servo1Pos, minDegreesSegment, maxDegreesSegment);
         servo1.write(servo1Pos);
         break;
       case irRemote.key7:
         Serial.println("7");
-        servo2Pos = calcMove(-10, servo2Pos);
+        servo2Pos = calcMove(-1 * moveSteps, servo2Pos, minDegreesSegment, maxDegreesSegment);
         servo2.write(servo2Pos);
         break;
       case irRemote.key8:
         Serial.println("8");
-        servo3Pos = calcMove(-10, servo3Pos);
+        servo3Pos = calcMove(-1 * moveSteps, servo3Pos, minDegreesSegment, maxDegreesSegment);
         servo3.write(servo3Pos);
         break;
       case irRemote.key9:
         Serial.println("9");
-        servo4Pos = calcMove(-10, servo4Pos);
+        servo4Pos = calcMove(-1 * moveSteps, servo4Pos, minDegreesSegment, maxDegreesSegment);
         servo4.write(servo4Pos);
         break;
       default:
@@ -148,12 +156,12 @@ void loop()
   }
 }
 
-int calcMove(int toMove, int current)
+int calcMove(int toMove, int current, int minDegrees, int maxDegrees)
 {
     int steps = abs(toMove)/10;
     
-    if(toMove > 0 && current < (180 - steps))
+    if(toMove > 0 && current < (maxDegrees - steps))
       return (current += steps); 
-    else if(toMove < 0 && current > (0 + steps))
+    else if(toMove < 0 && current > (minDegrees + steps))
       return (current -= steps); 
 }
