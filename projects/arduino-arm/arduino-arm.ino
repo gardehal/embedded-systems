@@ -13,11 +13,11 @@ const int minDegreesFinger = 45;
 const int maxDegreesFinger = 135;
 
 const int irRecPin = 2;
-const int servo1Pin = 12;
-const int servo2Pin = 11;
-const int servo3Pin = 10;
-const int servo4Pin = 9;
-const int servo5Pin = 8;
+const int servo1Pin = 11;
+const int servo2Pin = 10;
+const int servo3Pin = 9;
+const int servo4Pin = 6;
+const int servo5Pin = 5;
 Servo servo1;
 Servo servo2;
 Servo servo3;
