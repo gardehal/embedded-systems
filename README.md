@@ -1,6 +1,6 @@
-# Arduino Projects
+# Embedded systems
  
-A collection of homemade projects using what's most commonly referred to as ["Arduino"](https://www.arduino.cc/en/guide/introduction).
+A collection of smaller projects using embedded systems, micro controllers, etc.
 
 ## Content
 
@@ -43,16 +43,4 @@ A collection of homemade projects using what's most commonly referred to as ["Ar
 
 ## Motivation
 
-During college I had received the wrong schedule for my classes. It was early in the semester and I walked into a class I was not signed up for, but no one stopped me. The class happened to be on 
-integrated systems and micro-controllers (Arduinos). From the introduction I was gripped by the possibilities contained within the small plastic box the kit was housed in, and although I did not participate
-in the course I swore to one day continue on the path of exploring micro controllers and simple robotics. After securing a job I ordered a ELEGOO Starter Kit from Amazon for myself for christmas and that is where the adventure starts.
-
-## Planned
-
-- Hey Jude (Beatles) karaoke on LCD with LED or speaker for beat (from flowchart)
-- Thermometer that uploads to ex. Firebase hourly
-- Servo motor
-- Stepper motor / 7 segment clock
-- Control Lego computer though arduino?
-- Integrate other electronics
-- Send data over Bluetooth
+During college I had received the wrong schedule for my classes. It was early in the semester and I walked into a class I was not signed up for, but no one stopped me. The class happened to be on integrated systems and micro-controllers (Arduinos). From the introduction I was gripped by the possibilities contained within the small plastic box the kit was housed in, and although I did not participate in the course I swore to one day continue on the path of exploring micro controllers and simple robotics. After securing a job I ordered a ELEGOO Starter Kit from Amazon for myself for christmas and that is where the adventure starts.
