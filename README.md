@@ -24,6 +24,7 @@ A collection of smaller projects using embedded systems, micro controllers, etc.
 1. [Ultrasonic Led](./projects/ultrasonic-led/ultrasonic-led.md)
 1. [Morning Alarm](./projects/morning-alarm/morning-alarm.md)
 1. [Buzzer Music](./projects/buzzer-music/buzzer-music.md)
+1. [Dumb door](./projects/dumb-door/dumb-door.md)
 
 ## Libraries
 
