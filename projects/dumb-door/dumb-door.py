@@ -1,13 +1,12 @@
-import picozero
 import time
+
 import network
-import machine
-import urequests
+import picozero
+from machine import Pin, reset
 
-import secrets
-from lockStatus import lockStatus
+import secrets  # Secret values in secrets.py
 
-# TODO motor, button, on/off switch?, getting call over internet to lock/unlock, press+hold button to switch status without locking/unlopkcing door useg for correcting default state without having to force motor
+# TODO motor, button, on/off switch?, getting call over internet to lock/unlock, press+hold button to switch status without locking/unlocking door usage for correcting default state without having to force motor
 
 rgb = picozero.RGBLED(red = 1, green = 2, blue = 3)
 rgb_off = (0, 0, 0)
@@ -16,6 +15,9 @@ rgb_red = (255, 0, 0)
 rgb_green = (0, 255, 0)
 rgb_blue = (0, 0, 255)
 
+button = Pin(14, Pin.IN, Pin.PULL_DOWN)
+
+lockStatus = {"open": 0, "locked": 1}
 doorStatus = lockStatus["locked"]
 
 def connectWlan():
@@ -47,34 +49,43 @@ def blink(ledColor: tuple, sleepSeconds: number = 0.5):
 def toggleLock():
     # Toggle lock, opening if status is locked, locking if status is open.
     
-    if(doorOpen):
-        rgb.color = rgb_red
+    if(doorStatus == lockStatus["locked"]):
+        # TODO activate motor ccw
+        print("WIP")
     else:
-        rgb.color = rgb_green
+        # TODO activate motor cw
+        print("WIP")
+        
+    toggleLockStatus()
     
 def toggleLockStatus():
     # Toggle lock status only, not the physical door lock. Green LED = locked, red LED = open.
     
-    if(doorOpen):
-        rgb.color = rgb_red
-    else:
+    if(doorStatus == lockStatus["locked"]):
         rgb.color = rgb_green
+    else:
+        rgb.color = rgb_red
 
-try:
-    # Signal startup and connect to WLAN
-    blink(rgb_white)
-    ip = connectWlan()
-    
-    # Pico connected to WLAN but IP was 0.0.0.0, run infinite loop until reset or fixed
-    if(ip[0] == '0'):
-        while 1:
-            blink(rgb_red)
-            
-    # Signal connect OK, default to locked state and wait for calls to toggle lock over WLAN or though button
-    while 1:
-        blink(rgb_green, 2)
-        # TODO check status, blink async
+def main():
+    try:
+        # Signal startup
+        await blink(rgb_white)
         
-except KeyboardInterrupt:
-    print(f"An error occured, resetting machine")
-    machine.reset()
+        if(1):
+            ip = connectWlan()
+            # Run infinite loop until reset or fixed
+            if(ip[0] == '0'):
+                print("PICO connected to WLAN but IP was 0.0.0.0")
+                while 1:
+                    await blink(rgb_red)
+                
+        # Signal connect OK, default to locked state and wait for calls to toggle lock over WLAN or though button
+        while 1:
+            blink(rgb_green, 2)
+            # TODO check status, blink async
+            
+    except KeyboardInterrupt:
+        print(f"An error occurred, resetting machine")
+        reset()
+        
+main()
