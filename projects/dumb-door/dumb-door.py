@@ -27,7 +27,7 @@ def connectWlan():
     print([_[0] for _ in wlan.scan()])
     
     wlan.connect(secrets.ssid, secrets.password)
-    wlan.ifconfig(secrets.staticIps)
+    wlan.ifconfig(secrets.ipStruct)
     while wlan.status() < 1:
         print(f"Waiting for connection... Status: {wlan.status()}")
         blink(rgb_blue)
