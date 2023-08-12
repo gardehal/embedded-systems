@@ -1,14 +1,16 @@
-import time
+import uasyncio
+import random
 
 import network
-import picozero
+from picozero import RGBLED
 from machine import Pin, reset
 
+import queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 import secrets  # Secret values in secrets.py
 
 # TODO motor, button, on/off switch?, getting call over internet to lock/unlock, press+hold button to switch status without locking/unlocking door usage for correcting default state without having to force motor
 
-rgb = picozero.RGBLED(red = 1, green = 2, blue = 3)
+rgb = RGBLED(red = 1, green = 2, blue = 3)
 rgb_off = (0, 0, 0)
 rgb_white = (255, 255, 255)
 rgb_red = (255, 0, 0)
@@ -20,7 +22,7 @@ button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 lockStatus = {"open": 0, "locked": 1}
 doorStatus = lockStatus["locked"]
 
-def connectWlan():
+async def connectWlan():
     # Connect to WLAN using secrets from secrets.py file.
         
     rgb.color = rgb_blue
@@ -32,19 +34,34 @@ def connectWlan():
     wlan.ifconfig(secrets.ipStruct)
     while wlan.status() < 1:
         print(f"Waiting for connection... Status: {wlan.status()}")
-        blink(rgb_blue)
+        await blink(rgb_blue)
         
     ip = wlan.ifconfig()[0]
     print(f"Connected on IP: {ip}")
     return ip
 
-def blink(ledColor: tuple, sleepSeconds: number = 0.5):
-    # Blink LEDs off then to given ledColor, sleeping for given sleepSeconds between on/off.
+async def blinkQ(q, off: tuple = rgb_off, onSeconds: float = 0.5, offSeconds: float = 0.5):
+    # Blink LED with on color for onSeconds then off for offSeconds.
     
-    rgb.color = ledColor
-    time.sleep(sleepSeconds)
-    rgb.color = rgb_off
-    time.sleep(sleepSeconds)
+    c = rgb_off
+    while 1:
+        if(not q.empty()):
+            c = await q.get()
+        await blinkOnce(c, off, onSeconds, offSeconds)
+
+async def blink(on: tuple, off: tuple = rgb_off, onSeconds: float = 0.5, offSeconds: float = 0.5):
+    # Blink LED with on color for onSeconds then off for offSeconds.
+    
+    while 1:
+        await blinkOnce(on, off, onSeconds, offSeconds)
+        
+async def blinkOnce(on: tuple, off: tuple = rgb_off, onSeconds: float = 0.5, offSeconds: float = 0.5):
+    # Blink LED ONCE with on color for onSeconds then off for offSeconds.
+    
+    rgb.color = on
+    await uasyncio.sleep(onSeconds)
+    rgb.color = off
+    await uasyncio.sleep(offSeconds)
     
 def toggleLock():
     # Toggle lock, opening if status is locked, locking if status is open.
@@ -65,27 +82,44 @@ def toggleLockStatus():
         rgb.color = rgb_green
     else:
         rgb.color = rgb_red
+        
+async def waitButton():
+    # Wait for button input.
+    
+    last = button.value()
+    while(button.value() == 1) or (button.value() == last):
+        last = button.value()
+        await uasyncio.sleep(0.04)
+        
+    return last
 
-def main():
+async def main():
     try:
         # Signal startup
-        await blink(rgb_white)
+        await blinkOnce(rgb_white)
         
-        if(1):
-            ip = connectWlan()
+        if(0):
+            ip = await connectWlan()
             # Run infinite loop until reset or fixed
             if(ip[0] == '0'):
                 print("PICO connected to WLAN but IP was 0.0.0.0")
-                while 1:
-                    await blink(rgb_red)
-                
+                await blink(rgb_red)
+       
+        q = queue.Queue()
+        uasyncio.create_task(blinkQ(q, (100, 0, 100), 1, 2))
+        timestamp = utime.ticks_ms()
         # Signal connect OK, default to locked state and wait for calls to toggle lock over WLAN or though button
         while 1:
-            blink(rgb_green, 2)
-            # TODO check status, blink async
+            await waitButton()
+            print("pressed")
+            await q.put((random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)))
+            
+            #blink(rgb_green, 2)
+            # TODO toggle lock, toggle status, blink async
             
     except KeyboardInterrupt:
         print(f"An error occurred, resetting machine")
         reset()
         
-main()
+uasyncio.run(main())
+reset()
