@@ -22,13 +22,13 @@ button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 lockStatus = {"open": 0, "locked": 1}
 doorStatus = lockStatus["locked"]
 
-async def connectWlan():
+async def connectWlan() -> None:
     # Connect to WLAN using secrets from secrets.py file.
         
     rgb.color = rgb_blue
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    print([_[0] for _ in wlan.scan()])
+    print(f"Scanned SSIDs: {[_[0] for _ in wlan.scan()]}")
     
     wlan.connect(secrets.ssid, secrets.password)
     wlan.ifconfig(secrets.ipStruct)
@@ -40,30 +40,32 @@ async def connectWlan():
     print(f"Connected on IP: {ip}")
     return ip
 
-async def blinkQ(q, off: tuple = rgb_off, onSeconds: float = 0.5, offSeconds: float = 0.5):
-    # Blink LED with on color for onSeconds then off for offSeconds.
+async def blinkQueue(queue, aMs: float = 0.5, bMs: float = 0.5) -> None:
+    # Blink LED with colours from queue, first item for aMs milliseconds then the next item for bMs milliseconds, repeating.
     
-    c = rgb_off
+    a = rgb_off
+    b = rgb_off
     while 1:
-        if(not q.empty()):
-            c = await q.get()
-        await blinkOnce(c, off, onSeconds, offSeconds)
+        if(not queue.empty()):
+            a = await queue.get()
+            b = await queue.get()
+        await blinkOnce(a, b, aMs, bMs)
 
-async def blink(on: tuple, off: tuple = rgb_off, onSeconds: float = 0.5, offSeconds: float = 0.5):
-    # Blink LED with on color for onSeconds then off for offSeconds.
+async def blink(a: tuple, b: tuple = rgb_off, aMs: float = 0.5, bMs: float = 0.5) -> None:
+    # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
     
     while 1:
-        await blinkOnce(on, off, onSeconds, offSeconds)
+        await blinkOnce(a, b, aMs, bMs)
         
-async def blinkOnce(on: tuple, off: tuple = rgb_off, onSeconds: float = 0.5, offSeconds: float = 0.5):
-    # Blink LED ONCE with on color for onSeconds then off for offSeconds.
+async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: float = 0.5, bMs: float = 0.5) -> None:
+    # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
     
-    rgb.color = on
-    await uasyncio.sleep(onSeconds)
-    rgb.color = off
-    await uasyncio.sleep(offSeconds)
+    rgb.color = a
+    await uasyncio.sleep(aMs)
+    rgb.color = b
+    await uasyncio.sleep(bMs)
     
-def toggleLock():
+def toggleLock() -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
     
     if(doorStatus == lockStatus["locked"]):
@@ -73,17 +75,19 @@ def toggleLock():
         # TODO activate motor cw
         print("WIP")
         
-    toggleLockStatus()
+    return toggleLockStatus()
     
-def toggleLockStatus():
+def toggleLockStatus() -> int:
     # Toggle lock status only, not the physical door lock. Green LED = locked, red LED = open.
     
     if(doorStatus == lockStatus["locked"]):
         rgb.color = rgb_green
+        return lockStatus["open"]
     else:
         rgb.color = rgb_red
+        return lockStatus["locked"]
         
-async def waitButton():
+async def waitButton() -> None:
     # Wait for button input.
     
     last = button.value()
@@ -93,12 +97,13 @@ async def waitButton():
         
     return last
 
-async def main():
+async def main() -> None:
     try:
         # Signal startup
         await blinkOnce(rgb_white)
         
-        if(0):
+        if(1):
+            print("PICO connecting to WLAN...")
             ip = await connectWlan()
             # Run infinite loop until reset or fixed
             if(ip[0] == '0'):
@@ -106,19 +111,17 @@ async def main():
                 await blink(rgb_red)
        
         q = queue.Queue()
-        uasyncio.create_task(blinkQ(q, (100, 0, 100), 1, 2))
-        timestamp = utime.ticks_ms()
+        uasyncio.create_task(blinkQueue(q, 1, 1))
         # Signal connect OK, default to locked state and wait for calls to toggle lock over WLAN or though button
         while 1:
             await waitButton()
             print("pressed")
-            await q.put((random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)))
+            await q.put((random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255))) # type: ignore
+            await q.put(rgb_off) # type: ignore
             
-            #blink(rgb_green, 2)
-            # TODO toggle lock, toggle status, blink async
+            # TODO toggle lock, toggle status, blink async with lock status
             
     except KeyboardInterrupt:
-        print(f"An error occurred, resetting machine")
         reset()
         
 uasyncio.run(main())
