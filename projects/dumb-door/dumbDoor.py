@@ -39,7 +39,7 @@ async def log(message: str) -> None:
     
     print(log)
     
-    with open(logFilename,"w+") as file:
+    with open(logFilename, "a") as file:
         fileSize = uos.stat(logFilename)[6]
         # if(fileSize > logFileMaxSizeByte):
         #     file.truncate(int(logFileMaxSizeByte - (logFileMaxSizeByte / 2)))
@@ -183,3 +183,4 @@ async def main() -> None:
         reset()
         
 uasyncio.run(main())
+
