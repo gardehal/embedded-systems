@@ -22,7 +22,6 @@ rgb_blue = (0, 0, 255)
 button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 lockStatus = {"open": 0, "locked": 1}
-doorStatus = lockStatus["locked"]
 
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London"
 datetime = "[Unknown]"
@@ -94,25 +93,25 @@ async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
         
         await blinkOnce(a, b, aMs, bMs)
     
-async def toggleLockStatus() -> int:
+async def toggleLockStatus(doorStatus) -> int:
     # Toggle lock status only, not the physical door lock. Green LED = locked, red LED = open.
     
     newStatus = lockStatus["open"] if(doorStatus == lockStatus["locked"]) else lockStatus["locked"]
     await log(f"Lock status updated: {doorStatus} -> {newStatus}")
     return newStatus
     
-async def toggleLock() -> int:
+async def toggleLock(doorStatus) -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
     
-    if(doorStatus == lockStatus["locked"]):
-        # TODO activate motor ccw
-        print("WIP")
-    else:
+    newStatus = await toggleLockStatus(doorStatus)
+    if(newStatus == lockStatus["open"]):
         # TODO activate motor cw
-        print("WIP")
+        await log("Lock opened")
+    else:
+        # TODO activate motor ccw
+        await log("Lock locked")
         
-    await log("Lock toggled")
-    return await toggleLockStatus()
+    return newStatus
         
 async def registerInput() -> None:
     # Wait for button or API input.
@@ -144,14 +143,18 @@ async def main() -> None:
         await log("Initialize complete")
         while 1:
             await registerInput()
-            newStatus = await toggleLock()
-            ledStatus = rgb_green if(newStatus == 1) else rgb_red
+            doorStatus = await toggleLock(doorStatus)
+            ledStatus = rgb_green if(doorStatus == 1) else rgb_red
             await q.put(ledStatus) # type: ignore
             await q.put(rgb_off) # type: ignore
             
-            # TODO toggle lock, toggle status
+            # TODO toggle lock, toggle status, better lock status like enum or object - not a dict, LED status updates to separate func so main doesn't have to deal with it, logging datetime and ticks not working, exception message on crash, logging to file
             
     except KeyboardInterrupt:
+        reset()
+    except Exception as e:
+        await log("Error caught:")
+        # await log(e.message)
         reset()
         
 uasyncio.run(main())
