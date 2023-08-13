@@ -67,6 +67,20 @@ async def connect() -> str:
     datetimeSet = True
     
     return ip
+        
+async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
+    # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
+    
+    rgb.color = a
+    await uasyncio.sleep_ms(aMs)
+    rgb.color = b
+    await uasyncio.sleep_ms(bMs)
+
+async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
+    # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
+    
+    while 1:
+        await blinkOnce(a, b, aMs, bMs)
 
 async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED with colours from queue, first item for aMs milliseconds then the next item for bMs milliseconds, repeating.
@@ -79,20 +93,13 @@ async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
             b = await queue.get()
         
         await blinkOnce(a, b, aMs, bMs)
-
-async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
-    # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
     
-    while 1:
-        await blinkOnce(a, b, aMs, bMs)
-        
-async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
-    # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
+async def toggleLockStatus() -> int:
+    # Toggle lock status only, not the physical door lock. Green LED = locked, red LED = open.
     
-    rgb.color = a
-    await uasyncio.sleep_ms(aMs)
-    rgb.color = b
-    await uasyncio.sleep_ms(bMs)
+    newStatus = lockStatus["open"] if(doorStatus == lockStatus["locked"]) else lockStatus["locked"]
+    await log(f"Lock status updated: {doorStatus} -> {newStatus}")
+    return newStatus
     
 async def toggleLock() -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
@@ -106,13 +113,6 @@ async def toggleLock() -> int:
         
     await log("Lock toggled")
     return await toggleLockStatus()
-    
-async def toggleLockStatus() -> int:
-    # Toggle lock status only, not the physical door lock. Green LED = locked, red LED = open.
-    
-    newStatus = lockStatus["open"] if(doorStatus == lockStatus["locked"]) else lockStatus["locked"]
-    await log(f"Lock status updated: {doorStatus} -> {newStatus}")
-    return newStatus
         
 async def registerInput() -> None:
     # Wait for button or API input.
