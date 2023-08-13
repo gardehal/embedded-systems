@@ -1,5 +1,4 @@
 import uasyncio
-import random
 import urequests
 import utime
 
@@ -7,7 +6,7 @@ import network
 from picozero import RGBLED
 from machine import Pin, reset
 
-import queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
+from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 import secrets  # Secret values in secrets.py
 
 # TODO motor, button, on/off switch?, getting call over internet to lock/unlock, press+hold button to switch status without locking/unlocking door usage for correcting default state without having to force motor
@@ -21,11 +20,11 @@ rgb_blue = (0, 0, 255)
 
 button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
-lockStatus = {"open": 0, "locked": 1}
+lockStatus = {"open": 1, "locked": 2}
 
-datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London"
-datetime = "[Unknown]"
-datetimeSet = False
+# UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
+datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
+datetime = "[Uninitialized]"
         
 async def log(message: str) -> None:
     # Log some change.
@@ -62,8 +61,8 @@ async def connect() -> str:
         await blink(rgb_red)
         
     datetimeJson = urequests.get(datetimeSourceUrl).json()
+    global datetime
     datetime = datetimeJson["datetime"]
-    datetimeSet = True
     
     return ip
         
@@ -93,17 +92,28 @@ async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
         
         await blinkOnce(a, b, aMs, bMs)
     
-async def toggleLockStatus(doorStatus) -> int:
-    # Toggle lock status only, not the physical door lock. Green LED = locked, red LED = open.
+async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
+    # Toggle lock status only, not the physical door lock. Updates LED: Green = locked, red = open.
     
-    newStatus = lockStatus["open"] if(doorStatus == lockStatus["locked"]) else lockStatus["locked"]
-    await log(f"Lock status updated: {doorStatus} -> {newStatus}")
+    newStatus = 0
+    if(doorStatus == lockStatus["locked"]):
+        newStatus = lockStatus["open"]
+        await ledQueue.put(rgb_red) # type: ignore
+        await ledQueue.put(rgb_off) # type: ignore
+    elif(doorStatus == lockStatus["open"]):
+        newStatus = lockStatus["locked"]
+        await ledQueue.put(rgb_green) # type: ignore
+        await ledQueue.put(rgb_off) # type: ignore
+    else:
+        raise Exception(f"doorStatus was invalid: {doorStatus}")
+    
+    await log(f"Lock status updating: {doorStatus} -> {newStatus}")
     return newStatus
     
-async def toggleLock(doorStatus) -> int:
+async def toggleLock(doorStatus, ledQueue: Queue) -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
     
-    newStatus = await toggleLockStatus(doorStatus)
+    newStatus = await toggleLockStatus(doorStatus, ledQueue)
     if(newStatus == lockStatus["open"]):
         # TODO activate motor cw
         await log("Lock opened")
@@ -133,29 +143,25 @@ async def main() -> None:
         await connect()
             
         # Signal connect OK, default to locked state and create async LED status blink
-        q = queue.Queue()
-        await q.put(rgb_green) # type: ignore
-        await q.put(rgb_off) # type: ignore
+        ledQueue = Queue()
+        await ledQueue.put(rgb_green) # type: ignore
+        await ledQueue.put(rgb_off) # type: ignore
         doorStatus = lockStatus["locked"]
-        uasyncio.create_task(blinkQueue(q, 1000, 4000))
+        uasyncio.create_task(blinkQueue(ledQueue, 1000, 4000))
         
         # Main loop
         await log("Initialize complete")
         while 1:
             await registerInput()
-            doorStatus = await toggleLock(doorStatus)
-            ledStatus = rgb_green if(doorStatus == 1) else rgb_red
-            await q.put(ledStatus) # type: ignore
-            await q.put(rgb_off) # type: ignore
+            doorStatus = await toggleLock(doorStatus, ledQueue)
             
-            # TODO toggle lock, toggle status, better lock status like enum or object - not a dict, LED status updates to separate func so main doesn't have to deal with it, logging datetime and ticks not working, exception message on crash, logging to file
+            # TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file
             
     except KeyboardInterrupt:
         reset()
     except Exception as e:
-        await log("Error caught:")
-        # await log(e.message)
+        await log("Error caught: ")
+        await log(str(e))
         reset()
         
 uasyncio.run(main())
-reset()
