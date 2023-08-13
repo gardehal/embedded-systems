@@ -1,5 +1,7 @@
 import uasyncio
 import random
+import urequests
+import utime
 
 import network
 from picozero import RGBLED
@@ -22,25 +24,51 @@ button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 lockStatus = {"open": 0, "locked": 1}
 doorStatus = lockStatus["locked"]
 
-async def connectWlan() -> None:
+datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London"
+datetime = "[Unknown]"
+datetimeSet = False
+        
+async def log(message: str) -> None:
+    # Log some change.
+    
+    log = f"{datetime} +{utime.ticks_ms()}: {message}"
+    
+    print(log)
+    # TODO log to rotating file
+
+async def connectWlan() -> str:
     # Connect to WLAN using secrets from secrets.py file.
         
     rgb.color = rgb_blue
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    print(f"Scanned SSIDs: {[_[0] for _ in wlan.scan()]}")
+    await log(f"Scanned SSIDs: {[_[0] for _ in wlan.scan()]}")
     
     wlan.connect(secrets.ssid, secrets.password)
     wlan.ifconfig(secrets.ipStruct)
     while wlan.status() < 1:
-        print(f"Waiting for connection... Status: {wlan.status()}")
+        await log(f"Waiting for connection... Status: {wlan.status()}")
         await blink(rgb_blue)
         
     ip = wlan.ifconfig()[0]
-    print(f"Connected on IP: {ip}")
+    await log(f"Connected on IP: {ip}")
     return ip
 
-async def blinkQueue(queue, aMs: float = 0.5, bMs: float = 0.5) -> None:
+async def connect() -> str:
+    await log("PICO connecting to WLAN...")
+    ip = await connectWlan()
+    
+    if(ip.startswith("0.")): # Run infinite loop until reset or fixed
+        await log("PICO connected to WLAN but IP was 0.0.0.0")
+        await blink(rgb_red)
+        
+    datetimeJson = urequests.get(datetimeSourceUrl).json()
+    datetime = datetimeJson["datetime"]
+    datetimeSet = True
+    
+    return ip
+
+async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED with colours from queue, first item for aMs milliseconds then the next item for bMs milliseconds, repeating.
     
     a = rgb_off
@@ -49,23 +77,24 @@ async def blinkQueue(queue, aMs: float = 0.5, bMs: float = 0.5) -> None:
         if(not queue.empty()):
             a = await queue.get()
             b = await queue.get()
+        
         await blinkOnce(a, b, aMs, bMs)
 
-async def blink(a: tuple, b: tuple = rgb_off, aMs: float = 0.5, bMs: float = 0.5) -> None:
+async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
     
     while 1:
         await blinkOnce(a, b, aMs, bMs)
         
-async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: float = 0.5, bMs: float = 0.5) -> None:
+async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
     
     rgb.color = a
-    await uasyncio.sleep(aMs)
+    await uasyncio.sleep_ms(aMs)
     rgb.color = b
-    await uasyncio.sleep(bMs)
+    await uasyncio.sleep_ms(bMs)
     
-def toggleLock() -> int:
+async def toggleLock() -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
     
     if(doorStatus == lockStatus["locked"]):
@@ -75,51 +104,52 @@ def toggleLock() -> int:
         # TODO activate motor cw
         print("WIP")
         
-    return toggleLockStatus()
+    await log("Lock toggled")
+    return await toggleLockStatus()
     
-def toggleLockStatus() -> int:
+async def toggleLockStatus() -> int:
     # Toggle lock status only, not the physical door lock. Green LED = locked, red LED = open.
     
-    if(doorStatus == lockStatus["locked"]):
-        rgb.color = rgb_green
-        return lockStatus["open"]
-    else:
-        rgb.color = rgb_red
-        return lockStatus["locked"]
+    newStatus = lockStatus["open"] if(doorStatus == lockStatus["locked"]) else lockStatus["locked"]
+    await log(f"Lock status updated: {doorStatus} -> {newStatus}")
+    return newStatus
         
-async def waitButton() -> None:
-    # Wait for button input.
+async def registerInput() -> None:
+    # Wait for button or API input.
     
     last = button.value()
     while(button.value() == 1) or (button.value() == last):
         last = button.value()
-        await uasyncio.sleep(0.04)
+        # TODO input form API or similar
+        await uasyncio.sleep_ms(40)
         
     return last
 
 async def main() -> None:
     try:
         # Signal startup
+        await log("Initializing")
         await blinkOnce(rgb_white)
         
-        if(1):
-            print("PICO connecting to WLAN...")
-            ip = await connectWlan()
-            # Run infinite loop until reset or fixed
-            if(ip[0] == '0'):
-                print("PICO connected to WLAN but IP was 0.0.0.0")
-                await blink(rgb_red)
-       
+        await connect()
+            
+        # Signal connect OK, default to locked state and create async LED status blink
         q = queue.Queue()
-        uasyncio.create_task(blinkQueue(q, 1, 1))
-        # Signal connect OK, default to locked state and wait for calls to toggle lock over WLAN or though button
+        await q.put(rgb_green) # type: ignore
+        await q.put(rgb_off) # type: ignore
+        doorStatus = lockStatus["locked"]
+        uasyncio.create_task(blinkQueue(q, 1000, 4000))
+        
+        # Main loop
+        await log("Initialize complete")
         while 1:
-            await waitButton()
-            print("pressed")
-            await q.put((random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255))) # type: ignore
+            await registerInput()
+            newStatus = await toggleLock()
+            ledStatus = rgb_green if(newStatus == 1) else rgb_red
+            await q.put(ledStatus) # type: ignore
             await q.put(rgb_off) # type: ignore
             
-            # TODO toggle lock, toggle status, blink async with lock status
+            # TODO toggle lock, toggle status
             
     except KeyboardInterrupt:
         reset()
