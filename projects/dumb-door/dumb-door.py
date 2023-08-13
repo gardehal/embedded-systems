@@ -1,6 +1,7 @@
 import uasyncio
 import urequests
 import utime
+import uos
 
 import network
 from picozero import RGBLED
@@ -8,8 +9,9 @@ from machine import Pin, reset
 
 from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 import secrets  # Secret values in secrets.py
-
-# TODO motor, button, on/off switch?, getting call over internet to lock/unlock, press+hold button to switch status without locking/unlocking door usage for correcting default state without having to force motor
+        
+logFilename = "dumbDoor.log"
+logFileMaxSizeByte = 50 #(1024 * 1024) / 2 # 0.5 mb
 
 rgb = RGBLED(red = 1, green = 2, blue = 3)
 rgb_off = (0, 0, 0)
@@ -25,14 +27,26 @@ lockStatus = {"open": 1, "locked": 2}
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
 datetime = "[Uninitialized]"
-        
+tickMsOffset = 0
+
+# TODO motor, button, on/off switch?, getting call over internet to lock/unlock, press+hold button to switch status without locking/unlocking door usage for correcting default state without having to force motor
+# TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate
+    
 async def log(message: str) -> None:
     # Log some change.
     
-    log = f"{datetime} +{utime.ticks_ms()}: {message}"
+    log = f"{datetime} +{utime.ticks_ms() - tickMsOffset}: {message}"
     
     print(log)
-    # TODO log to rotating file
+    
+    with open(logFilename,"w+") as file:
+        fileSize = uos.stat(logFilename)[6]
+        # if(fileSize > logFileMaxSizeByte):
+        #     file.truncate(int(logFileMaxSizeByte - (logFileMaxSizeByte / 2)))
+        
+        # file.seek(0, 0)
+        file.write(f"{log}\n")
+        file.close()
 
 async def connectWlan() -> str:
     # Connect to WLAN using secrets from secrets.py file.
@@ -63,6 +77,9 @@ async def connect() -> str:
     datetimeJson = urequests.get(datetimeSourceUrl).json()
     global datetime
     datetime = datetimeJson["datetime"]
+    
+    global tickMsOffset
+    tickMsOffset = utime.ticks_ms()
     
     return ip
         
@@ -113,13 +130,15 @@ async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
 async def toggleLock(doorStatus, ledQueue: Queue) -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
     
+    toggleSource = "unknown"
+    toggleBy = "unknown"
     newStatus = await toggleLockStatus(doorStatus, ledQueue)
     if(newStatus == lockStatus["open"]):
         # TODO activate motor cw
-        await log("Lock opened")
+        await log(f"{toggleSource} - {toggleBy} - Opened")
     else:
         # TODO activate motor ccw
-        await log("Lock locked")
+        await log(f"{toggleSource} - {toggleBy} - Locked")
         
     return newStatus
         
@@ -137,6 +156,7 @@ async def registerInput() -> None:
 async def main() -> None:
     try:
         # Signal startup
+        await log(str(uos.uname()))
         await log("Initializing")
         await blinkOnce(rgb_white)
         
@@ -147,15 +167,13 @@ async def main() -> None:
         await ledQueue.put(rgb_green) # type: ignore
         await ledQueue.put(rgb_off) # type: ignore
         doorStatus = lockStatus["locked"]
-        uasyncio.create_task(blinkQueue(ledQueue, 1000, 4000))
+        uasyncio.create_task(blinkQueue(ledQueue, 800, 4000))
         
         # Main loop
         await log("Initialize complete")
         while 1:
             await registerInput()
             doorStatus = await toggleLock(doorStatus, ledQueue)
-            
-            # TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file
             
     except KeyboardInterrupt:
         reset()
