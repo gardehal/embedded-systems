@@ -13,7 +13,7 @@ from ledColor import *
 import lockStatus as ls
         
 logFilename = "dumbDoor.log"
-logFileMaxSizeByte = 50 #(1024 * 1024) / 2 # 0.5 mb
+logFileMaxSizeByte = 5000 #(1024 * 1024) / 2 # 0.5 mb, capped to 2 mb for a standard PICO
 
 rgb = RGBLED(red = 1, green = 2, blue = 3)
 
@@ -25,23 +25,31 @@ datetime = "[Uninitialized]"
 tickMsOffset = 0
 
 # TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate, getting call over internet to lock/unlock
-    
-async def log(message: str. logToFile: bool = True) -> None:
+
+async def log(message: str, logToFile: bool = True) -> None:
     # Print and log message in standard format.
     
-    log = f"{datetime} +{utime.ticks_ms() - tickMsOffset}: {message}"
+    prefix = "{datetime} +{utime.ticks_ms() - tickMsOffset}:"
+    formattedMessage = f"{prefix} {message}"
     
-    print(log)
+    print(formattedMessage)
     
     if(logToFile):
-        with open(logFilename, "a") as file:
-            logSize = uos.stat(logFilename)[6]
-            # if(logSize > logFileMaxSizeByte):
-            #     file.truncate(int(logFileMaxSizeByte - (logFileMaxSizeByte / 2)))
+        log = f"{formattedMessage}\n"
+        logSize = len(log.encode("utf-8"))
+        logFileSize = uos.stat(logFilename)[6]
+        
+        if((logFileSize + logSize + 1) > logFileMaxSizeByte):
+            print(f"{prefix} Logfile size exceeds logFileMaxSizeByte ({logFileSize}/{logFileMaxSizeByte} bytes), triggered clean up...")
+            with open(logFilename, "r+") as file:
+                while(logFileSize > logFileMaxSizeByte):
+                    logFileSize = file.tell()
+                    file.seek(0, 0)
+                    file.write("")
+                    print(f"{prefix} Cleaning up (logfile size {logFileSize}/{logFileMaxSizeByte} bytes)...")
             
-            # file.seek(0, 0)
-            file.write(f"{log}\n")
-            file.close()
+        with open(logFilename, "a") as file:
+            file.write(log)
 
 async def connectWlan() -> str:
     # Connect to WLAN using secrets from secrets.py file.
@@ -150,7 +158,8 @@ async def registerInput() -> None:
 async def main() -> None:
     try:
         # Signal startup
-        await log("\nInitializing")
+        await log("")
+        await log("Initializing")
         await log(str(uos.uname()))
         await blinkOnce(rgb_white)
         
@@ -162,7 +171,7 @@ async def main() -> None:
         ledQueue = Queue()
         await ledQueue.put(rgb_green) # type: ignore
         await ledQueue.put(rgb_off) # type: ignore
-        uasyncio.create_task(blinkQueue(ledQueue, 400, 4000))
+        uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
         
         # Initialize complete
         global tickMsOffset
