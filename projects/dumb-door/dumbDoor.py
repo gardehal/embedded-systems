@@ -26,21 +26,22 @@ tickMsOffset = 0
 
 # TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate, getting call over internet to lock/unlock
     
-async def log(message: str) -> None:
-    # Log some change.
+async def log(message: str. logToFile: bool = True) -> None:
+    # Print and log message in standard format.
     
     log = f"{datetime} +{utime.ticks_ms() - tickMsOffset}: {message}"
     
     print(log)
     
-    with open(logFilename, "a") as file:
-        fileSize = uos.stat(logFilename)[6]
-        # if(fileSize > logFileMaxSizeByte):
-        #     file.truncate(int(logFileMaxSizeByte - (logFileMaxSizeByte / 2)))
-        
-        # file.seek(0, 0)
-        file.write(f"{log}\n")
-        file.close()
+    if(logToFile):
+        with open(logFilename, "a") as file:
+            logSize = uos.stat(logFilename)[6]
+            # if(logSize > logFileMaxSizeByte):
+            #     file.truncate(int(logFileMaxSizeByte - (logFileMaxSizeByte / 2)))
+            
+            # file.seek(0, 0)
+            file.write(f"{log}\n")
+            file.close()
 
 async def connectWlan() -> str:
     # Connect to WLAN using secrets from secrets.py file.
@@ -61,6 +62,8 @@ async def connectWlan() -> str:
     return ip
 
 async def connect() -> str:
+    # Connect to the internet using secrets from secrets.py file and set up .
+    
     await log("PICO connecting to WLAN...")
     ip = await connectWlan()
     
@@ -71,9 +74,6 @@ async def connect() -> str:
     datetimeJson = urequests.get(datetimeSourceUrl).json()
     global datetime
     datetime = datetimeJson["datetime"]
-    
-    global tickMsOffset
-    tickMsOffset = utime.ticks_ms()
     
     return ip
         
@@ -150,27 +150,33 @@ async def registerInput() -> None:
 async def main() -> None:
     try:
         # Signal startup
-        await log("--------------------------------")
-        await log("Initializing")
+        await log("\nInitializing")
         await log(str(uos.uname()))
         await blinkOnce(rgb_white)
         
+        # Connect to internet
         await connect()
             
-        # Signal connect OK, default to locked state and create async LED status blink
+        # Default to locked state and create async LED status blink
+        doorStatus = ls.locked
         ledQueue = Queue()
         await ledQueue.put(rgb_green) # type: ignore
         await ledQueue.put(rgb_off) # type: ignore
-        doorStatus = ls.locked
-        uasyncio.create_task(blinkQueue(ledQueue, 800, 4000))
+        uasyncio.create_task(blinkQueue(ledQueue, 400, 4000))
+        
+        # Initialize complete
+        global tickMsOffset
+        tickMsOffset = utime.ticks_ms()
+        await log("Initialize complete")
         
         # Main loop
-        await log("Initialize complete")
         while 1:
             await registerInput()
             doorStatus = await toggleLock(doorStatus, ledQueue)
             
+        await log("Main loop completed")
     except KeyboardInterrupt:
+        await log("Keyboard interrupt")
         reset()
     except Exception as e:
         await log("Error caught: ")
