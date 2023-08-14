@@ -6,3 +6,4 @@ projects/buzzer-music/all-star-experimental.h
 projects/ignore/*
 *.pyc
 **/.micropico
+**/secrets.py
