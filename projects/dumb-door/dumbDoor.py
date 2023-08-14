@@ -8,29 +8,23 @@ from picozero import RGBLED
 from machine import Pin, reset
 
 from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
-import secrets  # Secret values in secrets.py
+import secrets # Secret values in secrets.py
+from ledColor import *
+import lockStatus as ls
         
 logFilename = "dumbDoor.log"
 logFileMaxSizeByte = 50 #(1024 * 1024) / 2 # 0.5 mb
 
 rgb = RGBLED(red = 1, green = 2, blue = 3)
-rgb_off = (0, 0, 0)
-rgb_white = (255, 255, 255)
-rgb_red = (255, 0, 0)
-rgb_green = (0, 255, 0)
-rgb_blue = (0, 0, 255)
 
 button = Pin(14, Pin.IN, Pin.PULL_DOWN)
-
-lockStatus = {"open": 1, "locked": 2}
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
 datetime = "[Uninitialized]"
 tickMsOffset = 0
 
-# TODO motor, button, on/off switch?, getting call over internet to lock/unlock, press+hold button to switch status without locking/unlocking door usage for correcting default state without having to force motor
-# TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate
+# TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate, getting call over internet to lock/unlock
     
 async def log(message: str) -> None:
     # Log some change.
@@ -113,12 +107,12 @@ async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
     # Toggle lock status only, not the physical door lock. Updates LED: Green = locked, red = open.
     
     newStatus = 0
-    if(doorStatus == lockStatus["locked"]):
-        newStatus = lockStatus["open"]
+    if(doorStatus == ls.locked):
+        newStatus = ls.unlocked
         await ledQueue.put(rgb_red) # type: ignore
         await ledQueue.put(rgb_off) # type: ignore
-    elif(doorStatus == lockStatus["open"]):
-        newStatus = lockStatus["locked"]
+    elif(doorStatus == ls.unlocked):
+        newStatus = ls.locked
         await ledQueue.put(rgb_green) # type: ignore
         await ledQueue.put(rgb_off) # type: ignore
     else:
@@ -133,12 +127,12 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
     toggleSource = "unknown"
     toggleBy = "unknown"
     newStatus = await toggleLockStatus(doorStatus, ledQueue)
-    if(newStatus == lockStatus["open"]):
-        # TODO activate motor cw
-        await log(f"{toggleSource} - {toggleBy} - Opened")
-    else:
+    if(newStatus == ls.locked):
         # TODO activate motor ccw
         await log(f"{toggleSource} - {toggleBy} - Locked")
+    else:
+        # TODO activate motor cw
+        await log(f"{toggleSource} - {toggleBy} - Unlocked")
         
     return newStatus
         
@@ -156,8 +150,9 @@ async def registerInput() -> None:
 async def main() -> None:
     try:
         # Signal startup
-        await log(str(uos.uname()))
+        await log("--------------------------------")
         await log("Initializing")
+        await log(str(uos.uname()))
         await blinkOnce(rgb_white)
         
         await connect()
@@ -166,7 +161,7 @@ async def main() -> None:
         ledQueue = Queue()
         await ledQueue.put(rgb_green) # type: ignore
         await ledQueue.put(rgb_off) # type: ignore
-        doorStatus = lockStatus["locked"]
+        doorStatus = ls.locked
         uasyncio.create_task(blinkQueue(ledQueue, 800, 4000))
         
         # Main loop
@@ -183,4 +178,3 @@ async def main() -> None:
         reset()
         
 uasyncio.run(main())
-
