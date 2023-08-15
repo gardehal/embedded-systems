@@ -13,10 +13,9 @@ from ledColor import *
 import lockStatus as ls
         
 logFilename = "dumbDoor.log"
-logFileMaxSizeByte = 900 #(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temp file will be ca. 50% additional when rotating/cleaning
+logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
 
 rgb = RGBLED(red = 1, green = 2, blue = 3)
-
 button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
@@ -26,33 +25,39 @@ tickMsOffset = 0
 
 # TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate, getting call over internet to lock/unlock
 
-def rotateLogFile(logPrefix: str, logFileSize: int) -> None:
-    # Rotate logfile.
+def rotateLogFile(logPrefix: str, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
+    # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
     
     print(f"{logPrefix} Logfile size exceeds logFileMaxSizeByte ({logFileSize}/{logFileMaxSizeByte} bytes), triggered clean up...")
-    tmpLogFilename = "tmp_dumbDoor.log"
+    tmpLogFilename = f"tmp_{logFilename}"
     tmpLogFileSize = 0
+    skipBytes = int(logFileSize * logDeleteMultiplier)
 
-    # TODO repeat until copied x bytes
-    #while(tmpLogFileSize < logFileMaxSizeByte):
-    print(f"{logPrefix} Cleaning up (logfile size {logFileSize}/{logFileMaxSizeByte} bytes)...")
-    
-    blockSize = 16 * 1024 # 132 kb, capped to 264 kb RAM on standard PICO
-    block = ""
-    with open(logFilename, "rb") as readFile:
-        readFile.seek(blockSize, 2)
-        block = readFile.read(blockSize)
+    logFileEof = False
+    for i in range(0, 999):
+        if(logFileEof or tmpLogFileSize > skipBytes):
+            break
         
-        # TODO ??? eof or something fails
-        if block:
-            print(block)
+        chunkSize = 16 * 1024 # 16 kb, capped to 264 kb RAM on standard PICO
+        chunk = ""
+        print(f"{logPrefix} Cleaning up (logfile size {skipBytes + (chunkSize * i)}/{logFileSize} bytes)...")
+        with open(logFilename, "rb") as readFile:
+            readFile.seek(skipBytes + (chunkSize * i), 0)
+            chunk = readFile.read(chunkSize)
+            if not chunk: # EOF
+                chunk = readFile.read()
+                logFileEof = True
+            
+        with open(tmpLogFilename, "wb+") as writeFile:
+            writeFile.seek(0, 0)
+            writeFile.write(chunk)
+            tmpLogFileSize = writeFile.tell()
         
-    with open(tmpLogFilename, "wb+") as writeFile:
-        writeFile.seek(0, 0)
-        writeFile.write(block)
-        tmpLogFileSize = writeFile.tell()
-        
-    # TODO rename/delete tmp
+    uos.rename(tmpLogFilename, logFilename)
+    # EOF messes with remove file for some reason, truncate file, then delete
+    with open(tmpLogFilename, "w") as file:
+        pass
+    uos.remove(tmpLogFilename)
     
 async def log(message: str, logToFile: bool = True) -> None:
     # Print and log message in standard format.
@@ -215,3 +220,4 @@ async def main() -> None:
         reset()
         
 uasyncio.run(main())
+    
