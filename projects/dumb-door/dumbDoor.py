@@ -13,7 +13,7 @@ from ledColor import *
 import lockStatus as ls
         
 logFilename = "dumbDoor.log"
-logFileMaxSizeByte = 5000 #(1024 * 1024) / 2 # 0.5 mb, capped to 2 mb for a standard PICO
+logFileMaxSizeByte = 900 #(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temp file will be ca. 50% additional when rotating/cleaning
 
 rgb = RGBLED(red = 1, green = 2, blue = 3)
 
@@ -26,10 +26,38 @@ tickMsOffset = 0
 
 # TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate, getting call over internet to lock/unlock
 
+def rotateLogFile(logPrefix: str, logFileSize: int) -> None:
+    # Rotate logfile.
+    
+    print(f"{logPrefix} Logfile size exceeds logFileMaxSizeByte ({logFileSize}/{logFileMaxSizeByte} bytes), triggered clean up...")
+    tmpLogFilename = "tmp_dumbDoor.log"
+    tmpLogFileSize = 0
+
+    # TODO repeat until copied x bytes
+    #while(tmpLogFileSize < logFileMaxSizeByte):
+    print(f"{logPrefix} Cleaning up (logfile size {logFileSize}/{logFileMaxSizeByte} bytes)...")
+    
+    blockSize = 16 * 1024 # 132 kb, capped to 264 kb RAM on standard PICO
+    block = ""
+    with open(logFilename, "rb") as readFile:
+        readFile.seek(blockSize, 2)
+        block = readFile.read(blockSize)
+        
+        # TODO ??? eof or something fails
+        if block:
+            print(block)
+        
+    with open(tmpLogFilename, "wb+") as writeFile:
+        writeFile.seek(0, 0)
+        writeFile.write(block)
+        tmpLogFileSize = writeFile.tell()
+        
+    # TODO rename/delete tmp
+    
 async def log(message: str, logToFile: bool = True) -> None:
     # Print and log message in standard format.
     
-    prefix = "{datetime} +{utime.ticks_ms() - tickMsOffset}:"
+    prefix = f"{datetime} +{utime.ticks_ms() - tickMsOffset}:"
     formattedMessage = f"{prefix} {message}"
     
     print(formattedMessage)
@@ -40,14 +68,8 @@ async def log(message: str, logToFile: bool = True) -> None:
         logFileSize = uos.stat(logFilename)[6]
         
         if((logFileSize + logSize + 1) > logFileMaxSizeByte):
-            print(f"{prefix} Logfile size exceeds logFileMaxSizeByte ({logFileSize}/{logFileMaxSizeByte} bytes), triggered clean up...")
-            with open(logFilename, "r+") as file:
-                while(logFileSize > logFileMaxSizeByte):
-                    logFileSize = file.tell()
-                    file.seek(0, 0)
-                    file.write("")
-                    print(f"{prefix} Cleaning up (logfile size {logFileSize}/{logFileMaxSizeByte} bytes)...")
-            
+            rotateLogFile(prefix, logFileSize)
+                    
         with open(logFilename, "a") as file:
             file.write(log)
 
