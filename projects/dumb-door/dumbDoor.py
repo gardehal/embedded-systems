@@ -2,8 +2,9 @@ import uasyncio
 import urequests
 import utime
 import uos
-
 import network
+import socket
+
 from picozero import RGBLED
 from machine import Pin, reset
 
@@ -23,7 +24,7 @@ datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://wor
 datetime = "[Uninitialized]"
 tickMsOffset = 0
 
-# TODO toggle lock, toggle status only, getting call over internet to lock/unlock
+# TODO toggle lock, toggle status only, authentication on socket calls
 
 def rotateLogFile(logPrefix: str, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
     # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
@@ -96,6 +97,27 @@ async def connectWlan() -> str:
     await log(f"Connected on IP: {ip}")
     return ip
 
+async def setUpSocketListener(ip: str) -> Dict:
+    # Set up socket listeners for wireless calls.
+    
+    socketAddress = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
+    
+    s = socket.socket()
+    s.bind(socketAddress)
+    s.listen(1)
+    
+    clientListener, socketAddress = s.accept()
+    await log(f"Socket listening on {socketAddress}")
+    request = str(clientListener.recv(1024))
+    # await log(request) # Verbose
+    
+    toggleLock = request.find("/toggleLock")
+    toggleStatus = request.find("/toggleStatus")
+    print("toggleLock " + str(toggleLock))
+    print("toggleStatus " + str(toggleStatus))
+    
+    return socketAddress
+
 async def connect() -> str:
     # Connect to the internet using secrets from secrets.py file and set up .
     
@@ -105,6 +127,8 @@ async def connect() -> str:
     if(ip.startswith("0.")): # Run infinite loop until reset or fixed
         await log("PICO connected to WLAN but IP was 0.0.0.0")
         await blink(rgb_red)
+        
+    await setUpSocketListener(ip)
         
     datetimeJson = urequests.get(datetimeSourceUrl).json()
     global datetime
