@@ -23,7 +23,7 @@ datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://wor
 datetime = "[Uninitialized]"
 tickMsOffset = 0
 
-# TODO toggle lock, toggle status only, better lock status like enum or object - not a dict, logging to file/truncate, getting call over internet to lock/unlock
+# TODO toggle lock, toggle status only, getting call over internet to lock/unlock
 
 def rotateLogFile(logPrefix: str, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
     # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
