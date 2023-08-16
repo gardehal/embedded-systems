@@ -25,7 +25,7 @@ datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://wor
 datetime = "[Uninitialized]"
 tickMsOffset = 0
 
-# TODO toggle lock, toggle status only, authentication on socket calls
+# TODO toggle lock, toggle status only, authentication on socket calls, fix slow/expensive socket calls by using buildt in non-blocking features isntead of timeouts and exceptions
 
 def rotateLogFile(logPrefix: str, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
     # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
@@ -105,6 +105,7 @@ async def setupSocketConnection(ip: str) -> Dict:
     socketAddress = usocket.getaddrinfo("0.0.0.0", 80)[0][-1]
     
     s = usocket.socket()
+    s.setsockopt(usocket.SOL_SOCKET, usocket.SO_REUSEADDR, 1)
     s.bind(socketAddress)
     s.listen(1)
     
@@ -191,51 +192,41 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
 async def listenSocket(s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    while 1:
-        # s.setblocking(False) raises EAGAIN and no one knows why or cares to fix it, do it the expensive way for now
-        if(1):
-            pritn("Testcode")
-            try:
-                s.settimeout(1)
-                connection, socketAddress = s.accept()
-                request = str(connection.recv(1024))
-                # await log(request) # Verbose
+    # s.setblocking(False) raises EAGAIN and no one knows why or cares to fix it, do it the expensive way for now
+    if(1):
+        print("Testcode")
+        try:
+            s.settimeout(1)
+            connection, socketAddress = s.accept()
+            request = str(connection.recv(1024))
+            # await log(request) # Verbose
+        
+            if(request.find("/toggleLock")):
+                return act.lock
+            if(request.find("/toggleStatus")):
+                return act.status
             
-                if(request.find("/toggleLock")):
-                    return act.lock
-                if(request.find("/toggleStatus")):
-                    return act.status
-                
-            except:
-                await uasyncio.sleep_ms(40)
-                pass
+        except:
+            await uasyncio.sleep_ms(40)
+            pass
     
     return 0
 
 async def listenMainButton() -> int:
     # Wait for main button input and determine actions to take.
     
+    # TODO blocks for other input like sockets, need to remove while while keeping edge detection 
     last = button.value()
     while(button.value() == 1) or (button.value() == last):
         last = button.value()
         await uasyncio.sleep_ms(40)
         
     return last
-    
-    #while 1:
-    #    if(button.value()):
-    #        return 1
-    #    await uasyncio.sleep_ms(40)
 
 async def registerAction(s: Dict) -> int:
     # Wait for button or socket input and determine actions to take.
     
-    action = 0
-    while(action <= 0):
-        action = listenSocket(s)
-        #action = await listenMainButton()
-        
-    return action
+    return await listenSocket(s) or await listenMainButton()
 
 async def main() -> None:
     try:
@@ -261,12 +252,14 @@ async def main() -> None:
         
         # Main loop
         while 1:
-            action = await listenSocket(s)
-            #action = await listenMainButton()
+            #for action in await registerAction(s):
+            action = await registerAction(s)
             if(action == act.lock):
                 doorStatus = await toggleLock(doorStatus, ledQueue)
             elif(action == act.status):
                 doorStatus = await toggleStatus(doorStatus, ledQueue)
+            
+            await uasyncio.sleep_ms(40)
             
         await log("Main loop completed")
     except KeyboardInterrupt:
