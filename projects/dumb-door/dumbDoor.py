@@ -12,6 +12,7 @@ from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/
 import secrets # Secret values in secrets.py
 from ledColor import *
 import lockStatus as ls
+import action as act
         
 logFilename = "dumbDoor.log"
 logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
@@ -97,7 +98,7 @@ async def connectWlan() -> str:
     await log(f"Connected on IP: {ip}")
     return ip
 
-async def setUpSocketListener(ip: str) -> Dict:
+async def setupSocketListener(ip: str) -> Dict:
     # Set up socket listeners for wireless calls.
     
     socketAddress = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
@@ -108,17 +109,10 @@ async def setUpSocketListener(ip: str) -> Dict:
     
     clientListener, socketAddress = s.accept()
     await log(f"Socket listening on {socketAddress}")
-    request = str(clientListener.recv(1024))
-    # await log(request) # Verbose
     
-    toggleLock = request.find("/toggleLock")
-    toggleStatus = request.find("/toggleStatus")
-    print("toggleLock " + str(toggleLock))
-    print("toggleStatus " + str(toggleStatus))
-    
-    return socketAddress
+    return s
 
-async def connect() -> str:
+async def setupLan() -> str:
     # Connect to the internet using secrets from secrets.py file and set up .
     
     await log("PICO connecting to WLAN...")
@@ -128,11 +122,11 @@ async def connect() -> str:
         await log("PICO connected to WLAN but IP was 0.0.0.0")
         await blink(rgb_red)
         
-    await setUpSocketListener(ip)
-        
     datetimeJson = urequests.get(datetimeSourceUrl).json()
     global datetime
     datetime = datetimeJson["datetime"]
+    global tickMsOffset
+    tickMsOffset = utime.ticks_ms()
     
     return ip
         
@@ -194,17 +188,43 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
         await log(f"{toggleSource} - {toggleBy} - Unlocked")
         
     return newStatus
-        
-async def registerInput() -> None:
-    # Wait for button or API input.
+
+# TODO need some way to handle input (button, url) and map it to toggle lock and status
+#    without just keeping an inifnite loop and exiting it on input.
+#    implement this in registerInput along with toggleLock/toggleStatus
+
+async def listenSocket(s: Dict) -> int:
+    # Listen and receive data over given paths on PICO IP.
+    
+    request = str(clientListener.recv(1024))
+    # await log(request) # Verbose
+    
+    if(request.find("/toggleLock")):
+        return act.toggleLock
+    if(request.find("/toggleStatus")):
+        return act.toggleStatus
+    
+    return 0
+
+async def listenMainButton() -> int:
+    # Wait for main button input and determine actions to take.
     
     last = button.value()
     while(button.value() == 1) or (button.value() == last):
         last = button.value()
-        # TODO input form API or similar
         await uasyncio.sleep_ms(40)
         
     return last
+
+async def registerAction(s: Dict) -> int:
+    # Wait for button or socket input and determine actions to take.
+    
+    action = 0
+    while(action <= 0):
+        #action = listenSocket(s)
+        action = await listenMainButton()
+        
+    return action
 
 async def main() -> None:
     try:
@@ -214,9 +234,10 @@ async def main() -> None:
         await log(str(uos.uname()))
         await blinkOnce(rgb_white)
         
-        # Connect to internet
-        await connect()
-            
+        # Connect to LAN and listen on socket
+        ip = await setupLan()
+        s = ()#await setupSocketListener(ip)
+        
         # Default to locked state and create async LED status blink
         doorStatus = ls.locked
         ledQueue = Queue()
@@ -225,14 +246,15 @@ async def main() -> None:
         uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
         
         # Initialize complete
-        global tickMsOffset
-        tickMsOffset = utime.ticks_ms()
         await log("Initialize complete")
         
         # Main loop
         while 1:
-            await registerInput()
-            doorStatus = await toggleLock(doorStatus, ledQueue)
+            action = await listenMainButton()
+            if(action == act.lock):
+                doorStatus = await toggleLock(doorStatus, ledQueue)
+            elif(action == act.status):
+                doorStatus = await toggleStatus(doorStatus, ledQueue)
             
         await log("Main loop completed")
     except KeyboardInterrupt:
@@ -241,7 +263,7 @@ async def main() -> None:
     except Exception as e:
         await log("Error caught: ")
         await log(str(e))
-        reset()
+        raise e
         
 uasyncio.run(main())
     
