@@ -191,14 +191,24 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
 async def listenSocket(s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    connection, socketAddress = s.accept()
-    request = str(connection.recv(1024))
-    # await log(request) # Verbose
-    
-    if(request.find("/toggleLock")):
-        return act.lock
-    if(request.find("/toggleStatus")):
-        return act.status
+    while 1:
+        # s.setblocking(False) raises EAGAIN and no one knows why or cares to fix it, do it the expensive way for now
+        if(1):
+            pritn("Testcode")
+            try:
+                s.settimeout(1)
+                connection, socketAddress = s.accept()
+                request = str(connection.recv(1024))
+                # await log(request) # Verbose
+            
+                if(request.find("/toggleLock")):
+                    return act.lock
+                if(request.find("/toggleStatus")):
+                    return act.status
+                
+            except:
+                await uasyncio.sleep_ms(40)
+                pass
     
     return 0
 

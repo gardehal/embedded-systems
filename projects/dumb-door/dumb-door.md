@@ -16,6 +16,7 @@ Code and software related to [3D printed dumb door project](https://github.com/g
 - Basic PICO W internet connection - https://www.tomshardware.com/how-to/connect-raspberry-pi-pico-w-to-the-internet
 - MicroPython async - https://www.youtube.com/watch?v=5VLvmA__2v0
 - PICO sheet - https://datasheets.raspberrypi.com/pico/pico-product-brief.pdf
+- PICO server - https://www.raspberrypi.com/news/how-to-run-a-webserver-on-raspberry-pi-pico-w/
 
 ## VS Code IDE
 
