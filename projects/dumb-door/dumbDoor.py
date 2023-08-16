@@ -3,7 +3,7 @@ import urequests
 import utime
 import uos
 import network
-import socket
+import usocket
 
 from picozero import RGBLED
 from machine import Pin, reset
@@ -98,24 +98,23 @@ async def connectWlan() -> str:
     await log(f"Connected on IP: {ip}")
     return ip
 
-async def setupSocketListener(ip: str) -> Dict:
+async def setupSocketConnection(ip: str) -> Dict:
     # Set up socket listeners for wireless calls.
     
-    socketAddress = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
+    await log("Setting up socket...")
+    socketAddress = usocket.getaddrinfo("0.0.0.0", 80)[0][-1]
     
-    s = socket.socket()
+    s = usocket.socket()
     s.bind(socketAddress)
     s.listen(1)
     
-    clientListener, socketAddress = s.accept()
     await log(f"Socket listening on {socketAddress}")
-    
     return s
 
 async def setupLan() -> str:
     # Connect to the internet using secrets from secrets.py file and set up .
     
-    await log("PICO connecting to WLAN...")
+    await log("Connecting to LAN...")
     ip = await connectWlan()
     
     if(ip.startswith("0.")): # Run infinite loop until reset or fixed
@@ -189,20 +188,17 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
         
     return newStatus
 
-# TODO need some way to handle input (button, url) and map it to toggle lock and status
-#    without just keeping an inifnite loop and exiting it on input.
-#    implement this in registerInput along with toggleLock/toggleStatus
-
 async def listenSocket(s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    request = str(clientListener.recv(1024))
+    connection, socketAddress = s.accept()
+    request = str(connection.recv(1024))
     # await log(request) # Verbose
     
     if(request.find("/toggleLock")):
-        return act.toggleLock
+        return act.lock
     if(request.find("/toggleStatus")):
-        return act.toggleStatus
+        return act.status
     
     return 0
 
@@ -215,14 +211,19 @@ async def listenMainButton() -> int:
         await uasyncio.sleep_ms(40)
         
     return last
+    
+    #while 1:
+    #    if(button.value()):
+    #        return 1
+    #    await uasyncio.sleep_ms(40)
 
 async def registerAction(s: Dict) -> int:
     # Wait for button or socket input and determine actions to take.
     
     action = 0
     while(action <= 0):
-        #action = listenSocket(s)
-        action = await listenMainButton()
+        action = listenSocket(s)
+        #action = await listenMainButton()
         
     return action
 
@@ -236,7 +237,7 @@ async def main() -> None:
         
         # Connect to LAN and listen on socket
         ip = await setupLan()
-        s = ()#await setupSocketListener(ip)
+        s = await setupSocketConnection(ip)
         
         # Default to locked state and create async LED status blink
         doorStatus = ls.locked
@@ -250,7 +251,8 @@ async def main() -> None:
         
         # Main loop
         while 1:
-            action = await listenMainButton()
+            action = await listenSocket(s)
+            #action = await listenMainButton()
             if(action == act.lock):
                 doorStatus = await toggleLock(doorStatus, ledQueue)
             elif(action == act.status):
