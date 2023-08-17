@@ -205,7 +205,7 @@ async def listenSocket(s: Dict) -> int:
             action = act.status
 
         connection.send("HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n")
-        connection.send("OK")
+        connection.send('{"code": 200, "status": "OK", "message": null, "data": null}')
         connection.close()
         
         if(action):
@@ -224,7 +224,8 @@ async def listenMainButton() -> int:
 async def registerAction(s: Dict) -> int:
     # Wait for button or socket input and determine actions to take.
     
-    # TODO socket can only return if button also returns,
+    # TODO socket and button tasks are dependent on each toher to return, want 4 threads, main, led blink task, button listener task, socket listener task
+    # Main always runs and connnects others, led only takes input, listeners wait for input and immediatly report back
     listeners = [listenMainButton(), listenSocket(s)]
     return await uasyncio.gather(*listeners)
 
