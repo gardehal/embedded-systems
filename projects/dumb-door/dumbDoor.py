@@ -193,7 +193,6 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
 async def listenSocket(s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-
     while 1:
         connection, socketAddress = s.accept()
         request = str(connection.recv(1024))
@@ -209,7 +208,8 @@ async def listenSocket(s: Dict) -> int:
         connection.send("OK")
         connection.close()
         
-        return action
+        if(action):
+            return action
         
 async def listenMainButton() -> int:
     # Wait for main button input and determine actions to take.
@@ -224,9 +224,9 @@ async def listenMainButton() -> int:
 async def registerAction(s: Dict) -> int:
     # Wait for button or socket input and determine actions to take.
     
-    buttonTask = uasyncio.create_task(listenMainButton())
-    socketTask = uasyncio.create_task(listenSocket(s))
-    return await buttonTask or await socketTask
+    # TODO socket can only return if button also returns,
+    listeners = [listenMainButton(), listenSocket(s)]
+    return await uasyncio.gather(*listeners)
 
 async def main() -> None:
     try:
@@ -252,14 +252,11 @@ async def main() -> None:
         
         # Main loop
         while 1:
-            #for action in await registerAction(s):
-            action = await registerAction(s)
-            if(action == act.lock):
-                doorStatus = await toggleLock(doorStatus, ledQueue)
-            elif(action == act.status):
-                doorStatus = await toggleStatus(doorStatus, ledQueue)
-            
-            await uasyncio.sleep_ms(40)
+            for action in await registerAction(s):
+                if(action == act.lock):
+                    doorStatus = await toggleLock(doorStatus, ledQueue)
+                elif(action == act.status):
+                    doorStatus = await toggleStatus(doorStatus, ledQueue)
             
         await log("Main loop completed")
     except KeyboardInterrupt:
