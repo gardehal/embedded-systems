@@ -121,8 +121,9 @@ async def setupLan() -> str:
     if(ip.startswith("0.")): # Run infinite loop until reset or fixed
         await log("PICO connected to WLAN but IP was 0.0.0.0")
         await blink(rgb_red)
-        
-    datetimeJson = urequests.get(datetimeSourceUrl).json()
+       
+    headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
+    datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
     global datetime
     datetime = datetimeJson["datetime"]
     global tickMsOffset
@@ -130,7 +131,7 @@ async def setupLan() -> str:
     
     return ip
         
-async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
+async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 200, bMs: int = 2000) -> None:
     # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
     
     rgb.color = a
@@ -138,13 +139,13 @@ async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500
     rgb.color = b
     await uasyncio.sleep_ms(bMs)
 
-async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
+async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 200, bMs: int = 2000) -> None:
     # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
     
     while 1:
         await blinkOnce(a, b, aMs, bMs)
 
-async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
+async def blinkQueue(queue, aMs: int = 200, bMs: int = 2000) -> None:
     # Blink LED with colours from queue, first item for aMs milliseconds then the next item for bMs milliseconds, repeating.
     
     a = rgb_off
@@ -193,24 +194,34 @@ async def listenSocket(s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
     # s.setblocking(False) raises EAGAIN and no one knows why or cares to fix it, do it the expensive way for now
-    if(1):
-        print("Testcode")
+    while 1:
         try:
+            print("pre socket time")
             s.settimeout(1)
+            print("pre socket accept")
             connection, socketAddress = s.accept()
+            print("pre socket rec")
             request = str(connection.recv(1024))
             # await log(request) # Verbose
         
+            print("pre socket return")
+            action = 0
             if(request.find("/toggleLock")):
-                return act.lock
-            if(request.find("/toggleStatus")):
-                return act.status
-            
-        except:
-            await uasyncio.sleep_ms(40)
-            pass
+                action = act.lock
+            elif(request.find("/toggleStatus")):
+                action = act.status
     
-    return 0
+            connection.send("HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n")
+            connection.close()
+            
+            if(action):
+                print(f"returning {action}")
+                return action
+            
+        except Exception as e:
+            pass
+        
+        await uasyncio.sleep_ms(40)
 
 async def listenMainButton() -> int:
     # Wait for main button input and determine actions to take.
@@ -226,7 +237,9 @@ async def listenMainButton() -> int:
 async def registerAction(s: Dict) -> int:
     # Wait for button or socket input and determine actions to take.
     
-    return await listenSocket(s) or await listenMainButton()
+    buttonTask = uasyncio.create_task(listenMainButton())
+    socketTask = uasyncio.create_task(listenSocket(s))
+    return await buttonTask or await socketTask
 
 async def main() -> None:
     try:
