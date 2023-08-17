@@ -25,7 +25,7 @@ datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://wor
 datetime = "[Uninitialized]"
 tickMsOffset = 0
 
-# TODO toggle lock, toggle status only, authentication on socket calls, fix slow/expensive socket calls by using buildt in non-blocking features isntead of timeouts and exceptions
+# TODO toggle lock, toggle status only, authentication on socket calls, fix socket/button only working every other, classes with vars for "enums" like lockStatus
 
 def rotateLogFile(logPrefix: str, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
     # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
@@ -193,40 +193,27 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
 async def listenSocket(s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    # s.setblocking(False) raises EAGAIN and no one knows why or cares to fix it, do it the expensive way for now
-    while 1:
-        try:
-            print("pre socket time")
-            s.settimeout(1)
-            print("pre socket accept")
-            connection, socketAddress = s.accept()
-            print("pre socket rec")
-            request = str(connection.recv(1024))
-            # await log(request) # Verbose
-        
-            print("pre socket return")
-            action = 0
-            if(request.find("/toggleLock")):
-                action = act.lock
-            elif(request.find("/toggleStatus")):
-                action = act.status
-    
-            connection.send("HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n")
-            connection.close()
-            
-            if(action):
-                print(f"returning {action}")
-                return action
-            
-        except Exception as e:
-            pass
-        
-        await uasyncio.sleep_ms(40)
 
+    while 1:
+        connection, socketAddress = s.accept()
+        request = str(connection.recv(1024))
+        # await log(request) # Verbose
+    
+        action = 0
+        if(request.find("/toggleLock")):
+            action = act.lock
+        elif(request.find("/toggleStatus")):
+            action = act.status
+
+        connection.send("HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n")
+        connection.send("OK")
+        connection.close()
+        
+        return action
+        
 async def listenMainButton() -> int:
     # Wait for main button input and determine actions to take.
     
-    # TODO blocks for other input like sockets, need to remove while while keeping edge detection 
     last = button.value()
     while(button.value() == 1) or (button.value() == last):
         last = button.value()
