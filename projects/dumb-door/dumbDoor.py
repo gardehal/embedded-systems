@@ -22,7 +22,7 @@ button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
-datetime = "[Uninitialized]"
+datetime = "[DateTime Uninitialized]"
 tickMsOffset = 0
 
 # TODO toggle lock, toggle status only, authentication on socket calls, fix socket/button only working every other, classes with vars for "enums" like lockStatus
@@ -203,32 +203,38 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
 async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
+    listenerSocket.settimeout(1) # This timeout somehow affects everything else despite being run in an async task. without the timeout everything else sits and waits for socket call despite still being in a task.
     while 1:
-        connection, socketAddress = listenerSocket.accept()
-        request = str(connection.recv(1024))
-        # await log(request) # Verbose
-    
-        action = 0
-        if(request.find("/toggleLock")):
-            action = act.lock
-        elif(request.find("/toggleStatus")):
-            action = act.status
+        try:
+            connection, socketAddress = await listenerSocket.accept()
+            request = str(connection.recv(1024))
+            # await log(request) # Verbose
+        
+            action = 0
+            if(request.find("/toggleLock")):
+                action = act.lock
+            elif(request.find("/toggleStatus")):
+                action = act.status
 
-        code = 200
-        status = "SUCCESS"
-        message = None
-        data = None
-        if(not action):
-            code = 400
-            status = "FAIL"
-            message = "Path was not valid"
-        
-        connection.send("HTTP/1.0 200 SUCCESS\r\nContent-type: application/json\r\n\r\n")
-        connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
-        connection.close()
-        
-        if(action):
-            await inputQueue.put(action)
+            code = 200
+            status = "SUCCESS"
+            message = f"+{tickMsOffset} ms after initialization"
+            data = None
+            if(not action):
+                code = 400
+                status = "FAIL"
+                message = "Path was not valid"
+            
+            connection.send("HTTP/1.0 200 SUCCESS\r\nContent-type: application/json\r\n\r\n")
+            connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
+            connection.close()
+            
+            if(action):
+                await inputQueue.put(action)
+        except:
+            await uasyncio.sleep_ms(100)
+            pass
+            
         
 async def listenMainButton(inputQueue: Queue) -> int:
     # Wait for main button input and determine actions to take.
@@ -237,7 +243,7 @@ async def listenMainButton(inputQueue: Queue) -> int:
         last = button.value()
         while(button.value() == 1) or (button.value() == last):
             last = button.value()
-            await uasyncio.sleep_ms(40)
+            await uasyncio.sleep_ms(100)
             
         # TODO hardcoded lock only, missing status
         await inputQueue.put(1)
@@ -265,12 +271,11 @@ async def main() -> None:
         
         # Main loop
         inputQueue = Queue()
-        #uasyncio.create_task(listenSocket(inputQueue, listenerSocket))
+        uasyncio.create_task(listenSocket(inputQueue, listenerSocket))
         uasyncio.create_task(listenMainButton(inputQueue))
         while 1:
             if(not inputQueue.empty()):
                 action = await inputQueue.get()
-                print(action)
                 if(action == act.lock):
                     doorStatus = await toggleLock(doorStatus, ledQueue)
                 elif(action == act.status):
