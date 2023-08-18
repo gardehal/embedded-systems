@@ -120,15 +120,23 @@ async def setupLan() -> str:
     
     if(ip.startswith("0.")): # Run infinite loop until reset or fixed
         await log("PICO connected to WLAN but IP was 0.0.0.0")
-        await blink(rgb_red)
-       
-    headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
-    datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
-    global datetime
-    datetime = datetimeJson["datetime"]
-    global tickMsOffset
-    tickMsOffset = utime.ticks_ms()
+        while 1:
+            await blink(rgb_red)
     
+    try:
+        headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
+        datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
+        
+        global datetime
+        datetime = datetimeJson["datetime"]
+        global tickMsOffset
+        tickMsOffset = utime.ticks_ms()
+    except Exception as e:
+        await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
+        await log(str(e))
+        while 1:
+            await blink(rgb_blue, rgb_red)
+
     return ip
         
 async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 200, bMs: int = 2000) -> None:
@@ -193,7 +201,6 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
 async def listenSocket(listenerQueue: Queue, s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    print("Listening listenSocket")
     while 1:
         connection, socketAddress = s.accept()
         request = str(connection.recv(1024))
@@ -219,12 +226,11 @@ async def listenSocket(listenerQueue: Queue, s: Dict) -> int:
         connection.close()
         
         if(action):
-            listenerQueue.put(action)
+            await listenerQueue.put(action)
         
 async def listenMainButton(listenerQueue: Queue) -> int:
     # Wait for main button input and determine actions to take.
     
-    print("Listening main button")
     while 1:
         last = button.value()
         while(button.value() == 1) or (button.value() == last):
@@ -257,20 +263,18 @@ async def main() -> None:
         
         # Main loop
         listenerQueue = Queue()
-        uasyncio.create_task(listenSocket(listenerQueue, s))
+        #uasyncio.create_task(listenSocket(listenerQueue, s))
         uasyncio.create_task(listenMainButton(listenerQueue))
         while 1:
-            # Without post lq sleep, LED solid green and noon responsive, 
-            print("pre lq")
             if(not listenerQueue.empty()):
-                action = queue.get()
+                action = await listenerQueue.get()
+                print(action)
                 if(action == act.lock):
                     doorStatus = await toggleLock(doorStatus, ledQueue)
                 elif(action == act.status):
                     doorStatus = await toggleStatus(doorStatus, ledQueue)
                   
-            print("post lq")
-            await uasyncio.sleep_ms(40)
+            await uasyncio.sleep_ms(100)
             
         await log("Main loop completed")
     except KeyboardInterrupt:
