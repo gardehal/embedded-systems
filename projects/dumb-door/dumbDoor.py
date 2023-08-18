@@ -116,26 +116,28 @@ async def setupLan() -> str:
     # Connect to the internet using secrets from secrets.py file and set up .
     
     await log("Connecting to LAN...")
-    ip = await connectWlan()
     
-    if(ip.startswith("0.")): # Run infinite loop until reset or fixed
-        await log("PICO connected to WLAN but IP was 0.0.0.0")
-        while 1:
-            await blink(rgb_red)
-    
-    try:
-        headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
-        datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
+    defaultIp = "0.0.0.0"
+    ip = defaultIp
+    while ip == defaultIp:
+        ip = await connectWlan()
+        await uasyncio.sleep_ms(1000)
         
-        global datetime
-        datetime = datetimeJson["datetime"]
-        global tickMsOffset
-        tickMsOffset = utime.ticks_ms()
-    except Exception as e:
-        await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
-        await log(str(e))
-        while 1:
-            await blink(rgb_blue, rgb_red)
+    while not tickMsOffset:
+        try:
+            headers = { "User-Agent": "Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0" }
+            datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
+            
+            global datetime
+            datetime = datetimeJson["datetime"]
+            global tickMsOffset
+            tickMsOffset = utime.ticks_ms()
+        except Exception as e:
+            await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
+            await log(str(e))
+            await blinkOnce(rgb_blue, rgb_red) # Buildt in wait, 1000 ms
+            
+            await log("Retrying fetch of datetimeJson")
 
     return ip
         
@@ -171,12 +173,12 @@ async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
     newStatus = 0
     if(doorStatus == ls.locked):
         newStatus = ls.unlocked
-        await ledQueue.put(rgb_red) # type: ignore
-        await ledQueue.put(rgb_off) # type: ignore
+        await ledQueue.put(rgb_red)
+        await ledQueue.put(rgb_off)
     elif(doorStatus == ls.unlocked):
         newStatus = ls.locked
-        await ledQueue.put(rgb_green) # type: ignore
-        await ledQueue.put(rgb_off) # type: ignore
+        await ledQueue.put(rgb_green)
+        await ledQueue.put(rgb_off)
     else:
         raise Exception(f"doorStatus was invalid: {doorStatus}")
     
@@ -237,7 +239,8 @@ async def listenMainButton(inputQueue: Queue) -> int:
             last = button.value()
             await uasyncio.sleep_ms(40)
             
-        await inputQueue.put(1) # TODO hardcoded lock only, missing status
+        # TODO hardcoded lock only, missing status
+        await inputQueue.put(1)
 
 async def main() -> None:
     try:
@@ -245,7 +248,6 @@ async def main() -> None:
         await log("")
         await log("Initializing")
         await log(str(uos.uname()))
-        await blinkOnce(rgb_white)
         
         # Connect to LAN and listen on socket
         ip = await setupLan()
@@ -254,8 +256,8 @@ async def main() -> None:
         # Default to locked state and create async LED status blink
         doorStatus = ls.locked
         ledQueue = Queue()
-        await ledQueue.put(rgb_green) # type: ignore
-        await ledQueue.put(rgb_off) # type: ignore
+        await ledQueue.put(rgb_green)
+        await ledQueue.put(rgb_off)
         uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
         
         # Initialize complete
@@ -272,7 +274,7 @@ async def main() -> None:
                 if(action == act.lock):
                     doorStatus = await toggleLock(doorStatus, ledQueue)
                 elif(action == act.status):
-                    doorStatus = await toggleStatus(doorStatus, ledQueue)
+                    doorStatus = await toggleLockStatus(doorStatus, ledQueue)
                   
             await uasyncio.sleep_ms(100)
             
