@@ -104,13 +104,13 @@ async def setupSocketConnection(ip: str) -> Dict:
     await log("Setting up socket...")
     socketAddress = usocket.getaddrinfo("0.0.0.0", 80)[0][-1]
     
-    s = usocket.socket()
-    s.setsockopt(usocket.SOL_SOCKET, usocket.SO_REUSEADDR, 1)
-    s.bind(socketAddress)
-    s.listen(1)
+    listenerSocket = usocket.socket()
+    listenerSocket.setsockopt(usocket.SOL_SOCKET, usocket.SO_REUSEADDR, 1)
+    listenerSocket.bind(socketAddress)
+    listenerSocket.listen(1)
     
     await log(f"Socket listening on {socketAddress}")
-    return s
+    return listenerSocket
 
 async def setupLan() -> str:
     # Connect to the internet using secrets from secrets.py file and set up .
@@ -139,7 +139,7 @@ async def setupLan() -> str:
 
     return ip
         
-async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 200, bMs: int = 2000) -> None:
+async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
     
     rgb.color = a
@@ -147,13 +147,13 @@ async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 200, bMs: int = 200
     rgb.color = b
     await uasyncio.sleep_ms(bMs)
 
-async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 200, bMs: int = 2000) -> None:
+async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
     
     while 1:
         await blinkOnce(a, b, aMs, bMs)
 
-async def blinkQueue(queue, aMs: int = 200, bMs: int = 2000) -> None:
+async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED with colours from queue, first item for aMs milliseconds then the next item for bMs milliseconds, repeating.
     
     a = rgb_off
@@ -183,7 +183,7 @@ async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
     await log(f"Lock status updating: {doorStatus} -> {newStatus}")
     return newStatus
     
-async def toggleLock(doorStatus, ledQueue: Queue) -> int:
+async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
     
     toggleSource = "unknown"
@@ -198,11 +198,11 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
         
     return newStatus
 
-async def listenSocket(listenerQueue: Queue, s: Dict) -> int:
+async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
     while 1:
-        connection, socketAddress = s.accept()
+        connection, socketAddress = listenerSocket.accept()
         request = str(connection.recv(1024))
         # await log(request) # Verbose
     
@@ -226,9 +226,9 @@ async def listenSocket(listenerQueue: Queue, s: Dict) -> int:
         connection.close()
         
         if(action):
-            await listenerQueue.put(action)
+            await inputQueue.put(action)
         
-async def listenMainButton(listenerQueue: Queue) -> int:
+async def listenMainButton(inputQueue: Queue) -> int:
     # Wait for main button input and determine actions to take.
     
     while 1:
@@ -237,7 +237,7 @@ async def listenMainButton(listenerQueue: Queue) -> int:
             last = button.value()
             await uasyncio.sleep_ms(40)
             
-        await listenerQueue.put(1) # TODO hardcoded lock only, missing status
+        await inputQueue.put(1) # TODO hardcoded lock only, missing status
 
 async def main() -> None:
     try:
@@ -249,7 +249,7 @@ async def main() -> None:
         
         # Connect to LAN and listen on socket
         ip = await setupLan()
-        s = await setupSocketConnection(ip)
+        listenerSocket = await setupSocketConnection(ip)
         
         # Default to locked state and create async LED status blink
         doorStatus = ls.locked
@@ -262,12 +262,12 @@ async def main() -> None:
         await log("Initialize complete")
         
         # Main loop
-        listenerQueue = Queue()
-        #uasyncio.create_task(listenSocket(listenerQueue, s))
-        uasyncio.create_task(listenMainButton(listenerQueue))
+        inputQueue = Queue()
+        #uasyncio.create_task(listenSocket(inputQueue, listenerSocket))
+        uasyncio.create_task(listenMainButton(inputQueue))
         while 1:
-            if(not listenerQueue.empty()):
-                action = await listenerQueue.get()
+            if(not inputQueue.empty()):
+                action = await inputQueue.get()
                 print(action)
                 if(action == act.lock):
                     doorStatus = await toggleLock(doorStatus, ledQueue)
