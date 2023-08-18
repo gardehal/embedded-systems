@@ -190,9 +190,10 @@ async def toggleLock(doorStatus, ledQueue: Queue) -> int:
         
     return newStatus
 
-async def listenSocket(s: Dict) -> int:
+async def listenSocket(listenerQueue: Queue, s: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
+    print("Listening listenSocket")
     while 1:
         connection, socketAddress = s.accept()
         request = str(connection.recv(1024))
@@ -204,30 +205,33 @@ async def listenSocket(s: Dict) -> int:
         elif(request.find("/toggleStatus")):
             action = act.status
 
-        connection.send("HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n")
-        connection.send('{"code": 200, "status": "OK", "message": null, "data": null}')
+        code = 200
+        status = "SUCCESS"
+        message = None
+        data = None
+        if(not action):
+            code = 400
+            status = "FAIL"
+            message = "Path was not valid"
+        
+        connection.send("HTTP/1.0 200 SUCCESS\r\nContent-type: application/json\r\n\r\n")
+        connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
         connection.close()
         
         if(action):
-            return action
+            listenerQueue.put(action)
         
-async def listenMainButton() -> int:
+async def listenMainButton(listenerQueue: Queue) -> int:
     # Wait for main button input and determine actions to take.
     
-    last = button.value()
-    while(button.value() == 1) or (button.value() == last):
+    print("Listening main button")
+    while 1:
         last = button.value()
-        await uasyncio.sleep_ms(40)
-        
-    return last
-
-async def registerAction(s: Dict) -> int:
-    # Wait for button or socket input and determine actions to take.
-    
-    # TODO socket and button tasks are dependent on each toher to return, want 4 threads, main, led blink task, button listener task, socket listener task
-    # Main always runs and connnects others, led only takes input, listeners wait for input and immediatly report back
-    listeners = [listenMainButton(), listenSocket(s)]
-    return await uasyncio.gather(*listeners)
+        while(button.value() == 1) or (button.value() == last):
+            last = button.value()
+            await uasyncio.sleep_ms(40)
+            
+        await listenerQueue.put(1) # TODO hardcoded lock only, missing status
 
 async def main() -> None:
     try:
@@ -252,12 +256,21 @@ async def main() -> None:
         await log("Initialize complete")
         
         # Main loop
+        listenerQueue = Queue()
+        uasyncio.create_task(listenSocket(listenerQueue, s))
+        uasyncio.create_task(listenMainButton(listenerQueue))
         while 1:
-            for action in await registerAction(s):
+            # Without post lq sleep, LED solid green and noon responsive, 
+            print("pre lq")
+            if(not listenerQueue.empty()):
+                action = queue.get()
                 if(action == act.lock):
                     doorStatus = await toggleLock(doorStatus, ledQueue)
                 elif(action == act.status):
                     doorStatus = await toggleStatus(doorStatus, ledQueue)
+                  
+            print("post lq")
+            await uasyncio.sleep_ms(40)
             
         await log("Main loop completed")
     except KeyboardInterrupt:
