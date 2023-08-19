@@ -203,6 +203,7 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
 async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
+    listenerSocket.settimeout(1)
     connection = None
     while 1:
         try:
