@@ -203,10 +203,12 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
 async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    listenerSocket.settimeout(1) # This timeout somehow affects everything else despite being run in an async task. without the timeout everything else sits and waits for socket call despite still being in a task.
+    listenerSocket.setblocking(False)
+    listenerSocket.settimeout(1)
+    # This timeout somehow affects everything else despite being run in an async task. without the timeout everything else sits and waits for socket call despite still being in a task.
     while 1:
         try:
-            connection, socketAddress = await listenerSocket.accept()
+            connection, _ = await listenerSocket.accept()
             request = str(connection.recv(1024))
             # await log(request) # Verbose
         
