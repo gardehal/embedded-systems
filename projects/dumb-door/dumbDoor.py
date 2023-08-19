@@ -135,9 +135,8 @@ async def setupLan() -> str:
         except Exception as e:
             await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
             await log(str(e))
-            await blinkOnce(rgb_blue, rgb_red) # Buildt in wait, 1000 ms
-            
             await log("Retrying fetch of datetimeJson")
+            await blinkOnce(rgb_blue, rgb_red) # Buildt in wait, 1000 ms
 
     return ip
         
@@ -203,10 +202,29 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
 async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    listenerSocket.settimeout(1)
+    
+    # Blinking tied to socket
+    # Button delayed input or not triggering
+    # Socket triggers twice
+    # Without timeout, soocket hogs all threads for some reason
+    #listenerSocket.settimeout(2)
+    
+    listenerSocket.setblocking(False)
+    import uselect
+    poller = uselect.poll()
+    poller.register(listenerSocket, uselect.POLLIN)
+    #if not res:
+        # s is still not ready for input, i.e. operation timed out
+    
     connection = None
     while 1:
         try:
+            res = poller.poll(1000)  # time in milliseconds
+            if not res:
+                print("not res")
+                await uasyncio.sleep_ms(100)
+                continue
+            
             connection, _ = listenerSocket.accept()
             request = str(connection.recv(1024))
             # await log(request) # Verbose
@@ -230,10 +248,13 @@ async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
             connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
             
             if(action):
+                print("inputQueue put")
+                print(action)
+                print(connection)
                 await inputQueue.put(action)
         except:
             await uasyncio.sleep_ms(100)
-            pass
+            continue
         finally:
             if(connection):
                 connection.close()
@@ -248,6 +269,7 @@ async def listenMainButton(inputQueue: Queue) -> int:
             await uasyncio.sleep_ms(100)
             
         # TODO hardcoded lock only, missing status
+        print("botton put")
         await inputQueue.put(1)
 
 async def main() -> None:
