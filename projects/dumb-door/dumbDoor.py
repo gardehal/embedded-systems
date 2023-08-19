@@ -203,12 +203,10 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
 async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
-    listenerSocket.setblocking(False)
-    listenerSocket.settimeout(1)
-    # This timeout somehow affects everything else despite being run in an async task. without the timeout everything else sits and waits for socket call despite still being in a task.
+    connection = None
     while 1:
         try:
-            connection, _ = await listenerSocket.accept()
+            connection, _ = listenerSocket.accept()
             request = str(connection.recv(1024))
             # await log(request) # Verbose
         
@@ -223,20 +221,21 @@ async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
             message = f"+{tickMsOffset} ms after initialization"
             data = None
             if(not action):
-                code = 400
+                code = 404
                 status = "FAIL"
                 message = "Path was not valid"
             
-            connection.send("HTTP/1.0 200 SUCCESS\r\nContent-type: application/json\r\n\r\n")
+            connection.send(f"HTTP/1.0 {code} {status}\r\nContent-type: application/json\r\n\r\n")
             connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
-            connection.close()
             
             if(action):
                 await inputQueue.put(action)
         except:
             await uasyncio.sleep_ms(100)
             pass
-            
+        finally:
+            if(connection):
+                connection.close()
         
 async def listenMainButton(inputQueue: Queue) -> int:
     # Wait for main button input and determine actions to take.
