@@ -4,6 +4,8 @@ import utime
 import uos
 import network
 import usocket
+import threading
+import utime
 
 from picozero import RGBLED
 from machine import Pin, reset
@@ -22,7 +24,7 @@ button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
-datetime = "[DateTime Uninitialized]"
+datetime = "[datetime not initialized]"
 tickMsOffset = 0
 
 # TODO toggle lock, toggle status only, authentication on socket calls, fix socket/button only working every other, classes with vars for "enums" like lockStatus
@@ -199,32 +201,17 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
         
     return newStatus
 
-async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
+def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Listen and receive data over given paths on PICO IP.
     
+    # Setup lan takes 5x times now, is unreliable
+    # Sockert only works once
     
-    # Blinking tied to socket
-    # Button delayed input or not triggering
-    # Socket triggers twice
-    # Without timeout, soocket hogs all threads for some reason
-    #listenerSocket.settimeout(2)
-    
-    listenerSocket.setblocking(False)
-    import uselect
-    poller = uselect.poll()
-    poller.register(listenerSocket, uselect.POLLIN)
-    #if not res:
-        # s is still not ready for input, i.e. operation timed out
+    listenerSocket.settimeout(1)
     
     connection = None
     while 1:
         try:
-            res = poller.poll(1000)  # time in milliseconds
-            if not res:
-                print("not res")
-                await uasyncio.sleep_ms(100)
-                continue
-            
             connection, _ = listenerSocket.accept()
             request = str(connection.recv(1024))
             # await log(request) # Verbose
@@ -248,16 +235,12 @@ async def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
             connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
             
             if(action):
-                print("inputQueue put")
-                print(action)
-                print(connection)
-                await inputQueue.put(action)
+                inputQueue.put_nowait(action)
         except:
-            await uasyncio.sleep_ms(100)
+            utime.sleep_ms(100)
             continue
-        finally:
-            if(connection):
-                connection.close()
+        
+        connection.close()
         
 async def listenMainButton(inputQueue: Queue) -> int:
     # Wait for main button input and determine actions to take.
@@ -295,7 +278,10 @@ async def main() -> None:
         
         # Main loop
         inputQueue = Queue()
-        uasyncio.create_task(listenSocket(inputQueue, listenerSocket))
+        f_thread = threading.Thread(target = listenSocket, args = (inputQueue, listenerSocket))
+        f_thread.daemon = True
+        f_thread.start()
+        
         uasyncio.create_task(listenMainButton(inputQueue))
         while 1:
             if(not inputQueue.empty()):
