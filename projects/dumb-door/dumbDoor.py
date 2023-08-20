@@ -106,7 +106,7 @@ async def setupSocketConnection(ip: str) -> Dict:
     # Set up socket listeners for wireless calls.
     
     await log("Setting up socket...")
-    socketAddress = usocket.getaddrinfo("0.0.0.0", 80)[0][-1]
+    socketAddress = usocket.getaddrinfo(ip, 80)[0][-1]
     
     listenerSocket = usocket.socket()
     listenerSocket.setsockopt(usocket.SOL_SOCKET, usocket.SO_REUSEADDR, 1)
@@ -238,11 +238,13 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
             
             if(action):
                 inputQueue.put_nowait(action)
-        except:
+        except Exception as e:
+            print(str(e))
             utime.sleep_ms(100)
             continue
         finally:
-            connection.close()
+            if(connection):
+                connection.close()
         
 async def listenMainButton(inputQueue: Queue) -> None:
     # Wait for main button input and determine actions to take.
