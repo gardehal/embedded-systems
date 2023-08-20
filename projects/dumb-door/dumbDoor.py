@@ -85,6 +85,8 @@ async def log(message: str, logToFile: bool = True) -> None:
 async def connectWlan() -> str:
     # Connect to WLAN using secrets from secrets.py file.
         
+    await log("Connecting to WLAN...")
+    
     rgb.color = rgb_blue
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -123,10 +125,12 @@ async def setupLan() -> str:
     ip = defaultIp
     while ip == defaultIp:
         ip = await connectWlan()
-        await uasyncio.sleep_ms(1000)
+        await log("IP from connectWlan was invalid, retrying...")
+        await blinkOnce(rgb_blue, rgb_off)
         
     while not tickMsOffset:
         try:
+            await log(f"Initializing datetime...")
             headers = { "User-Agent": "Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0" }
             datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
             
@@ -135,12 +139,11 @@ async def setupLan() -> str:
             global tickMsOffset
             tickMsOffset = utime.ticks_ms()
             
-            await log(f"datetime ({datetime}) and tickMsOffset ({tickMsOffset}) initated")
+            await log(f"datetime ({datetime}) and tickMsOffset ({tickMsOffset}) initialized")
         except Exception as e:
             await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
             await log(str(e))
-            await log("Retrying fetch of datetimeJson")
-            await blinkOnce(rgb_blue, rgb_red) # Buildt in wait, 1000 ms
+            await blinkOnce(rgb_blue, rgb_red) # Built in wait, 1000 ms
 
     return ip
         
@@ -203,38 +206,35 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
         
     return newStatus
 
-def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
+def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
     # Listen and receive data over given paths on PICO IP.
     
     # Setup lan takes 5x times now, is unreliable
-    # Sockert only works once
-    
-    html = """
-    <!DOCTYPE html>
-    <html>
-        <form>
-            <center>
-                <h3>Door</h3>
-                <button name="action" value="lockToggle" type="submit">Lock</button>
-                <button name="action" value="statusToggle" type="submit">Status</button>
-            </center>
-        </form>
-    </html>
-    """
+    # Socket only works once
     
     while 1:
         try:
             connection, _ = listenerSocket.accept()
             request = str(connection.recv(1024))
-            # await log(request) # Verbose
+            #print(request) # Verbose
         
             action = 0
-            if(request.find("/?action=lockToggle") == 6):
+            if(request.find("/toggleLock") == 6):
                 action = act.lock
-            elif(request.find("/?action=statusToggle") == 6):
+            elif(request.find("/toggleStatus") == 6):
                 action = act.status
 
-            connection.send(html)
+            code = 200
+            status = "SUCCESS"
+            message = f"+{tickMsOffset} ms after initialization"
+            data = None
+            if(not action):
+                code = 404
+                status = "FAIL"
+                message = "Path was not valid"
+            
+            connection.send(f"HTTP/1.0 {code} {status}\r\nContent-type: application/json\r\n\r\n")
+            connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
             
             if(action):
                 inputQueue.put_nowait(action)
@@ -244,7 +244,7 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
         finally:
             connection.close()
         
-async def listenMainButton(inputQueue: Queue) -> int:
+async def listenMainButton(inputQueue: Queue) -> None:
     # Wait for main button input and determine actions to take.
     
     while 1:
@@ -280,10 +280,9 @@ async def main() -> None:
         
         # Main loop
         inputQueue = Queue()
-        f_thread = threading.Thread(target = listenSocket, args = (inputQueue, listenerSocket))
-        f_thread.daemon = True
-        f_thread.start()
-        
+        socketThread = threading.Thread(target = listenSocket, args = (inputQueue, listenerSocket))
+        socketThread.daemon = True
+        socketThread.start()
         uasyncio.create_task(listenMainButton(inputQueue))
         while 1:
             if(not inputQueue.empty()):
