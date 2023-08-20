@@ -109,7 +109,7 @@ async def setupSocketConnection(ip: str) -> Dict:
     listenerSocket = usocket.socket()
     listenerSocket.setsockopt(usocket.SOL_SOCKET, usocket.SO_REUSEADDR, 1)
     listenerSocket.bind(socketAddress)
-    listenerSocket.listen(1)
+    listenerSocket.listen(4)
     
     await log(f"Socket listening on {socketAddress}")
     return listenerSocket
@@ -134,6 +134,8 @@ async def setupLan() -> str:
             datetime = datetimeJson["datetime"]
             global tickMsOffset
             tickMsOffset = utime.ticks_ms()
+            
+            await log(f"datetime ({datetime}) and tickMsOffset ({tickMsOffset}) initated")
         except Exception as e:
             await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
             await log(str(e))
@@ -207,9 +209,19 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
     # Setup lan takes 5x times now, is unreliable
     # Sockert only works once
     
-    listenerSocket.settimeout(1)
+    html = """
+    <!DOCTYPE html>
+    <html>
+        <form>
+            <center>
+                <h3>Door</h3>
+                <button name="action" value="lockToggle" type="submit">Lock</button>
+                <button name="action" value="statusToggle" type="submit">Status</button>
+            </center>
+        </form>
+    </html>
+    """
     
-    connection = None
     while 1:
         try:
             connection, _ = listenerSocket.accept()
@@ -217,30 +229,20 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> int:
             # await log(request) # Verbose
         
             action = 0
-            if(request.find("/toggleLock")):
+            if(request.find("/?action=lockToggle") == 6):
                 action = act.lock
-            elif(request.find("/toggleStatus")):
+            elif(request.find("/?action=statusToggle") == 6):
                 action = act.status
 
-            code = 200
-            status = "SUCCESS"
-            message = f"+{tickMsOffset} ms after initialization"
-            data = None
-            if(not action):
-                code = 404
-                status = "FAIL"
-                message = "Path was not valid"
-            
-            connection.send(f"HTTP/1.0 {code} {status}\r\nContent-type: application/json\r\n\r\n")
-            connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
+            connection.send(html)
             
             if(action):
                 inputQueue.put_nowait(action)
         except:
             utime.sleep_ms(100)
             continue
-        
-        connection.close()
+        finally:
+            connection.close()
         
 async def listenMainButton(inputQueue: Queue) -> int:
     # Wait for main button input and determine actions to take.
