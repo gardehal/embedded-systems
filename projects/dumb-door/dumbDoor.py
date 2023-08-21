@@ -5,7 +5,7 @@ import uos
 import network
 import usocket
 import threading
-import utime
+import micropython
 
 from picozero import RGBLED
 from machine import Pin, reset
@@ -15,7 +15,7 @@ import secrets # Secret values in secrets.py
 from ledColor import *
 import lockStatus as ls
 import action as act
-        
+
 logFilename = "dumbDoor.log"
 logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
 
@@ -111,7 +111,7 @@ async def setupSocketConnection(ip: str) -> Dict:
     listenerSocket = usocket.socket()
     listenerSocket.setsockopt(usocket.SOL_SOCKET, usocket.SO_REUSEADDR, 1)
     listenerSocket.bind(socketAddress)
-    listenerSocket.listen(4)
+    listenerSocket.listen(1)
     
     await log(f"Socket listening on {socketAddress}")
     return listenerSocket
@@ -264,6 +264,7 @@ async def main() -> None:
         # Signal startup
         await log("")
         await log("Initializing")
+        await log(str(micropython.mem_info()))
         await log(str(uos.uname()))
         
         # Connect to LAN and listen on socket
