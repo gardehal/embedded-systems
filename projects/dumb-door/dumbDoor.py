@@ -72,6 +72,10 @@ async def log(message: str, logToFile: bool = True) -> None:
     print(formattedMessage)
     
     if(logToFile):
+        if(not logFilename in uos.listdir()):
+            with open(logFilename, "a") as file:
+                file.write("Created new logfile")
+        
         log = f"{formattedMessage}\n"
         logSize = len(log.encode("utf-8"))
         logFileSize = uos.stat(logFilename)[6]
@@ -87,10 +91,13 @@ async def connectWlan() -> str:
         
     await log("Connecting to WLAN...")
     
-    rgb.color = rgb_blue
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    await log(f"Scanned SSIDs: {[_[0] for _ in wlan.scan()]}")
+    wlanScan = []
+    rgbLed.color = rgb.blue
+    while not wlanScan:
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        wlanScan = wlan.scan()
+        await log(f"Scanned SSIDs: {[_[0] for _ in wlanScan]}")
     
     wlan.connect(secrets.ssid, secrets.password)
     wlan.ifconfig(secrets.ipStruct)
@@ -124,8 +131,8 @@ async def setupLan() -> str:
     defaultIp = "0.0.0.0"
     ip = defaultIp
     while ip == defaultIp:
+        await log("Getting IP...")
         ip = await connectWlan()
-        await log("IP from connectWlan was invalid, retrying...")
         await blinkOnce(rgb.blue, rgb.off)
         
     while not tickMsOffset:
