@@ -12,14 +12,14 @@ from machine import Pin, reset
 
 from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 import secrets # Secret values in secrets.py
-from ledColor import *
-import lockStatus as ls
-import action as act
+from rgbColor import RgbColor as rgb
+from lockStatus import LockStatus
+from lockAction import LockAction
 
 logFilename = "dumbDoor.log"
 logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
 
-rgb = RGBLED(red = 1, green = 2, blue = 3)
+rgbLed = RGBLED(red = 1, green = 2, blue = 3)
 button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
@@ -96,7 +96,7 @@ async def connectWlan() -> str:
     wlan.ifconfig(secrets.ipStruct)
     while wlan.status() < 1:
         await log(f"Waiting for connection... Status: {wlan.status()}")
-        await blink(rgb_blue)
+        await blink(rgb.blue)
         
     ip = wlan.ifconfig()[0]
     await log(f"Connected on IP: {ip}")
@@ -126,7 +126,7 @@ async def setupLan() -> str:
     while ip == defaultIp:
         ip = await connectWlan()
         await log("IP from connectWlan was invalid, retrying...")
-        await blinkOnce(rgb_blue, rgb_off)
+        await blinkOnce(rgb.blue, rgb.off)
         
     while not tickMsOffset:
         try:
@@ -143,19 +143,19 @@ async def setupLan() -> str:
         except Exception as e:
             await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
             await log(str(e))
-            await blinkOnce(rgb_blue, rgb_red) # Built in wait, 1000 ms
+            await blinkOnce(rgb.blue, rgb.red) # Built in wait, 1000 ms
 
     return ip
         
-async def blinkOnce(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
+async def blinkOnce(a: tuple, b: tuple = rgb.off, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
     
-    rgb.color = a
+    rgbLed.color = a
     await uasyncio.sleep_ms(aMs)
-    rgb.color = b
+    rgbLed.color = b
     await uasyncio.sleep_ms(bMs)
 
-async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) -> None:
+async def blink(a: tuple, b: tuple = rgb.off, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
     
     while 1:
@@ -164,8 +164,8 @@ async def blink(a: tuple, b: tuple = rgb_off, aMs: int = 500, bMs: int = 500) ->
 async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
     # Blink LED with colours from queue, first item for aMs milliseconds then the next item for bMs milliseconds, repeating.
     
-    a = rgb_off
-    b = rgb_off
+    a = rgb.off
+    b = rgb.off
     while 1:
         if(not queue.empty()):
             a = await queue.get()
@@ -177,16 +177,17 @@ async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
     # Toggle lock status only, not the physical door lock. Updates LED: Green = locked, red = open.
     
     newStatus = 0
-    if(doorStatus == ls.locked):
-        newStatus = ls.unlocked
-        await ledQueue.put(rgb_red)
-        await ledQueue.put(rgb_off)
-    elif(doorStatus == ls.unlocked):
-        newStatus = ls.locked
-        await ledQueue.put(rgb_green)
-        await ledQueue.put(rgb_off)
+    if(doorStatus == LockStatus.locked):
+        newStatus = LockStatus.unlocked
+        await ledQueue.put(rgb.red)
+        await ledQueue.put(rgb.off)
+    elif(doorStatus == LockStatus.unlocked):
+        newStatus = LockStatus.locked
+        await ledQueue.put(rgb.green)
+        await ledQueue.put(rgb.off)
     else:
-        raise Exception(f"doorStatus was invalid: {doorStatus}")
+        await log(f"toggleLockStatus - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
+        return doorStatus
     
     await log(f"Lock status updating: {doorStatus} -> {newStatus}")
     return newStatus
@@ -197,12 +198,15 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
     toggleSource = "unknown"
     toggleBy = "unknown"
     newStatus = await toggleLockStatus(doorStatus, ledQueue)
-    if(newStatus == ls.locked):
+    if(newStatus == LockStatus.locked):
         # TODO activate motor ccw
         await log(f"{toggleSource} - {toggleBy} - Locked")
-    else:
+    if(newStatus == LockStatus.locked):
         # TODO activate motor cw
         await log(f"{toggleSource} - {toggleBy} - Unlocked")
+    else:
+        await log(f"toggleLock - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
+        return doorStatus
         
     return newStatus
 
@@ -220,9 +224,9 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
         
             action = 0
             if(request.find("/toggleLock") == 6):
-                action = act.lock
+                action = LockAction.lockToggle
             elif(request.find("/toggleStatus") == 6):
-                action = act.status
+                action = LockAction.statusToggle
 
             code = 200
             status = "SUCCESS"
@@ -272,10 +276,10 @@ async def main() -> None:
         listenerSocket = await setupSocketConnection(ip)
         
         # Default to locked state and create async LED status blink
-        doorStatus = ls.locked
+        doorStatus = LockStatus.locked
         ledQueue = Queue()
-        await ledQueue.put(rgb_green)
-        await ledQueue.put(rgb_off)
+        await ledQueue.put(rgb.green)
+        await ledQueue.put(rgb.off)
         uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
         
         # Initialize complete
@@ -290,9 +294,9 @@ async def main() -> None:
         while 1:
             if(not inputQueue.empty()):
                 action = await inputQueue.get()
-                if(action == act.lock):
+                if(action == LockAction.lockToggle):
                     doorStatus = await toggleLock(doorStatus, ledQueue)
-                elif(action == act.status):
+                elif(action == LockAction.statusToggle):
                     doorStatus = await toggleLockStatus(doorStatus, ledQueue)
                   
             await uasyncio.sleep_ms(100)
