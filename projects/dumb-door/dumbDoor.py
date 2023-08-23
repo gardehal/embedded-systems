@@ -243,7 +243,9 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
     
     while 1:
         try:
+            print("wait")
             connection, _ = listenerSocket.accept()
+            print("rexc")
             request = str(connection.recv(1024))
             #print(request) # Verbose
         
@@ -277,6 +279,35 @@ async def listenMainButton(inputQueue: Queue) -> None:
         # TODO hardcoded lock only, missing status
         await inputQueue.put(1)
 
+inputQueue = Queue()
+def x() -> None:
+    print("x")
+    uasyncio.run(mainLoop(()))
+    print("xx")
+    
+async def mainLoop(inputQueue1) -> None:
+    
+    print("xxx")
+    global inputQueue
+    # Default to locked state and create async LED status blink
+    doorStatus = LockStatus.locked
+    ledQueue = Queue()
+    await ledQueue.put(rgb.green)
+    await ledQueue.put(rgb.off)
+    uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
+        
+    uasyncio.create_task(listenMainButton(inputQueue))
+    
+    while 1:
+        if(not inputQueue.empty()):
+            action = await inputQueue.get()
+            if(action == LockAction.lockToggle):
+                doorStatus = await toggleLock(doorStatus, ledQueue)
+            elif(action == LockAction.statusToggle):
+                doorStatus = await toggleLockStatus(doorStatus, ledQueue)
+              
+        await uasyncio.sleep_ms(100)
+        
 async def main() -> None:
     try:
         await log("")
@@ -287,30 +318,25 @@ async def main() -> None:
         ip = await setupLan()
         listenerSocket = await setupSocketConnection(ip)
         
-        # Default to locked state and create async LED status blink
-        doorStatus = LockStatus.locked
-        ledQueue = Queue()
-        await ledQueue.put(rgb.green)
-        await ledQueue.put(rgb.off)
-        uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
-        
         await log("Initialize complete")
         
         # Main loop
-        inputQueue = Queue()
-        socketThread = threading.Thread(target = listenSocket, args = (inputQueue, listenerSocket))
-        socketThread.daemon = True
-        socketThread.start()
-        uasyncio.create_task(listenMainButton(inputQueue))
-        while 1:
-            if(not inputQueue.empty()):
-                action = await inputQueue.get()
-                if(action == LockAction.lockToggle):
-                    doorStatus = await toggleLock(doorStatus, ledQueue)
-                elif(action == LockAction.statusToggle):
-                    doorStatus = await toggleLockStatus(doorStatus, ledQueue)
-                  
-            await uasyncio.sleep_ms(100)
+        global inputQueue
+        #uasyncio.run(mainLoop(inputQueue))
+        #uasyncio.create_task(mainLoop(inputQueue))
+        #uasyncio.get_event_loop().run_until_complete(mainLoop(inputQueue))
+        
+        import _thread
+        #_thread.start_new_thread(uasyncio.create_task(mainLoop(inputQueue)), ())
+        #threading.Thread(target=uasyncio.run(mainLoop(inputQueue)), args=(mainLoop(inputQueue), ))
+        _thread.start_new_thread(x, ())
+        #t = threading.Thread(target=x, args=())
+        #t.daemon = True
+        #t.start()
+        #_thread.start_new_thread(uasyncio.run, (mainLoop(inputQueue)))
+        #_thread.start_new_thread(mainLoop, (inputQueue))
+        
+        uasyncio.create_task(listenSocket(inputQueue, listenerSocket))
             
         await log("Main loop completed")
     except KeyboardInterrupt:
