@@ -20,7 +20,7 @@ logFilename = "dumbDoor.log"
 logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
 
 rgbLed = RGBLED(red = 1, green = 2, blue = 3)
-button = Pin(14, Pin.IN, Pin.PULL_DOWN)
+button = Pin(4, Pin.IN, Pin.PULL_DOWN)
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
@@ -199,6 +199,11 @@ async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
     await log(f"Lock status updating: {doorStatus} -> {newStatus}")
     return newStatus
     
+async def activateMotor(steps: int) -> int:
+    # Activate motor, rotating the shaft in direction and number of steps given by steps.
+    
+    return 0
+    
 async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
     # Toggle lock, opening if status is locked, locking if status is open.
     
@@ -206,10 +211,10 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
     toggleBy = "unknown"
     newStatus = await toggleLockStatus(doorStatus, ledQueue)
     if(newStatus == LockStatus.locked):
-        # TODO activate motor ccw
+        await activateMotor(-100)
         await log(f"{toggleSource} - {toggleBy} - Locked")
-    if(newStatus == LockStatus.locked):
-        # TODO activate motor cw
+    elif(newStatus == LockStatus.unlocked):
+        await activateMotor(100)
         await log(f"{toggleSource} - {toggleBy} - Unlocked")
     else:
         await log(f"toggleLock - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
@@ -223,6 +228,19 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
     # Setup lan takes 5x times now, is unreliable
     # Socket only works once
     
+    html = """
+    <!DOCTYPE html>
+    <html>
+        <form>
+            <center>
+                <h3>Door</h3>
+                <button name="action" value="toggleLock" type="submit">Lock</button>
+                <button name="action" value="toggleStatus" type="submit">Status</button>
+            </center>
+        </form>
+    </html>
+    """
+    
     while 1:
         try:
             connection, _ = listenerSocket.accept()
@@ -230,22 +248,12 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
             #print(request) # Verbose
         
             action = 0
-            if(request.find("/toggleLock") == 6):
+            if(request.find("/?action=toggleLock") == 6):
                 action = LockAction.lockToggle
-            elif(request.find("/toggleStatus") == 6):
+            elif(request.find("/?action=toggleStatus") == 6):
                 action = LockAction.statusToggle
 
-            code = 200
-            status = "SUCCESS"
-            message = f"+{tickMsOffset} ms after initialization"
-            data = None
-            if(not action):
-                code = 404
-                status = "FAIL"
-                message = "Path was not valid"
-            
-            connection.send(f"HTTP/1.0 {code} {status}\r\nContent-type: application/json\r\n\r\n")
-            connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
+            connection.send(html)
             
             if(action):
                 inputQueue.put_nowait(action)
@@ -267,18 +275,15 @@ async def listenMainButton(inputQueue: Queue) -> None:
             await uasyncio.sleep_ms(100)
             
         # TODO hardcoded lock only, missing status
-        print("botton put")
         await inputQueue.put(1)
 
 async def main() -> None:
     try:
-        # Signal startup
         await log("")
         await log("Initializing")
         await log(str(micropython.mem_info()))
         await log(str(uos.uname()))
         
-        # Connect to LAN and listen on socket
         ip = await setupLan()
         listenerSocket = await setupSocketConnection(ip)
         
@@ -289,7 +294,6 @@ async def main() -> None:
         await ledQueue.put(rgb.off)
         uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
         
-        # Initialize complete
         await log("Initialize complete")
         
         # Main loop
@@ -318,4 +322,3 @@ async def main() -> None:
         raise e
         
 uasyncio.run(main())
-    
