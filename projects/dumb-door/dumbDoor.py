@@ -4,7 +4,7 @@ import utime
 import uos
 import network
 import usocket
-import threading
+import _thread
 import micropython
 
 from picozero import RGBLED
@@ -26,6 +26,8 @@ button = Pin(4, Pin.IN, Pin.PULL_DOWN)
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
 datetime = "[datetime not initialized]"
 tickMsOffset = 0
+ledQueue = Queue()
+inputQueue = Queue()
 
 # TODO toggle lock, toggle status only, authentication on socket calls, fix socket/button only working every other, classes with vars for "enums" like lockStatus
 
@@ -225,37 +227,29 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
 def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
     # Listen and receive data over given paths on PICO IP.
     
-    # Setup lan takes 5x times now, is unreliable
-    # Socket only works once
-    
-    html = """
-    <!DOCTYPE html>
-    <html>
-        <form>
-            <center>
-                <h3>Door</h3>
-                <button name="action" value="toggleLock" type="submit">Lock</button>
-                <button name="action" value="toggleStatus" type="submit">Status</button>
-            </center>
-        </form>
-    </html>
-    """
-    
     while 1:
         try:
-            print("wait")
             connection, _ = listenerSocket.accept()
-            print("rexc")
             request = str(connection.recv(1024))
             #print(request) # Verbose
         
             action = 0
-            if(request.find("/?action=toggleLock") == 6):
+            if(request.find("/toggleLock") == 6):
                 action = LockAction.lockToggle
-            elif(request.find("/?action=toggleStatus") == 6):
+            elif(request.find("/toggleStatus") == 6):
                 action = LockAction.statusToggle
 
-            connection.send(html)
+            code = 200
+            status = "SUCCESS"
+            message = f"+{tickMsOffset} ms after initialization"
+            data = None
+            if(not action):
+                code = 404
+                status = "FAIL"
+                message = "Path was not valid"
+            
+            connection.send(f"HTTP/1.0 {code} {status}\r\nContent-type: application/json\r\n\r\n")
+            connection.send(f"{{ 'code': {code}, 'status': {status}, 'message': {message}, 'data': {data} }}")
             
             if(action):
                 inputQueue.put_nowait(action)
@@ -279,25 +273,23 @@ async def listenMainButton(inputQueue: Queue) -> None:
         # TODO hardcoded lock only, missing status
         await inputQueue.put(1)
 
-inputQueue = Queue()
-def x() -> None:
-    print("x")
-    uasyncio.run(mainLoop(()))
-    print("xx")
+def runMainLoop() -> None:
+    # Run mainLoop using uasyncio for the async functionality.
     
-async def mainLoop(inputQueue1) -> None:
+    uasyncio.run(mainLoop())
     
-    print("xxx")
-    global inputQueue
+async def mainLoop() -> None:
+    # Set up outputs; status LED and main loop for motor handleing
+    
     # Default to locked state and create async LED status blink
     doorStatus = LockStatus.locked
-    ledQueue = Queue()
+    global inputQueue
+    global ledQueue
     await ledQueue.put(rgb.green)
     await ledQueue.put(rgb.off)
     uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
-        
-    uasyncio.create_task(listenMainButton(inputQueue))
     
+    await log("Main loop started")
     while 1:
         if(not inputQueue.empty()):
             action = await inputQueue.get()
@@ -308,37 +300,32 @@ async def mainLoop(inputQueue1) -> None:
               
         await uasyncio.sleep_ms(100)
         
+    await log("Main loop completed")
+        
 async def main() -> None:
+    # Entry point
+    
     try:
         await log("")
-        await log("Initializing")
-        await log(str(micropython.mem_info()))
-        await log(str(uos.uname()))
+        await log("Initializing...")
+        await log(f"Mem info:{str(micropython.mem_info())}")
+        await log(f"Sys info:{str(uos.uname())}")
         
         ip = await setupLan()
         listenerSocket = await setupSocketConnection(ip)
         
         await log("Initialize complete")
         
-        # Main loop
+        # Start main loop in a new thread and set up input listeners on main thread
+        # Note: this is done because sockets seem to have issues when not on the first/main thread
+        _thread.start_new_thread(runMainLoop, ())
+        
+        await log("Listeners starting...")
         global inputQueue
-        #uasyncio.run(mainLoop(inputQueue))
-        #uasyncio.create_task(mainLoop(inputQueue))
-        #uasyncio.get_event_loop().run_until_complete(mainLoop(inputQueue))
+        uasyncio.create_task(listenMainButton(inputQueue))
+        uasyncio.create_task(listenSocket(inputQueue, listenerSocket))    
+        await log("Listeners started")
         
-        import _thread
-        #_thread.start_new_thread(uasyncio.create_task(mainLoop(inputQueue)), ())
-        #threading.Thread(target=uasyncio.run(mainLoop(inputQueue)), args=(mainLoop(inputQueue), ))
-        _thread.start_new_thread(x, ())
-        #t = threading.Thread(target=x, args=())
-        #t.daemon = True
-        #t.start()
-        #_thread.start_new_thread(uasyncio.run, (mainLoop(inputQueue)))
-        #_thread.start_new_thread(mainLoop, (inputQueue))
-        
-        uasyncio.create_task(listenSocket(inputQueue, listenerSocket))
-            
-        await log("Main loop completed")
     except KeyboardInterrupt:
         await log("Keyboard interrupt")
         reset()
