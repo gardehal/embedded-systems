@@ -9,9 +9,10 @@ import micropython
 
 from picozero import RGBLED
 from machine import Pin, reset
-
 from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
+
 import secrets # Secret values in secrets.py
+from rgbLedUtil import RgbLedUtil
 from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
 from lockAction import LockAction
@@ -21,6 +22,8 @@ logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. 
 
 rgbLed = RGBLED(red = 1, green = 2, blue = 3)
 button = Pin(4, Pin.IN, Pin.PULL_DOWN)
+
+statusLed = RgbLedUtil(rgbLed)
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
@@ -94,7 +97,7 @@ async def connectWlan() -> str:
     await log("Connecting to WLAN...")
     
     wlanScan = []
-    rgbLed.color = rgb.blue
+    statusLed.setColor(rgb.blue)
     while not wlanScan:
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
@@ -105,7 +108,7 @@ async def connectWlan() -> str:
     wlan.ifconfig(secrets.ipStruct)
     while wlan.status() < 1:
         await log(f"Waiting for connection... Status: {wlan.status()}")
-        await blink(rgb.blue)
+        await statusLed.blink(rgb.blue)
         
     ip = wlan.ifconfig()[0]
     await log(f"Connected on IP: {ip}")
@@ -135,7 +138,7 @@ async def setupLan() -> str:
     while ip == defaultIp:
         await log("Getting IP...")
         ip = await connectWlan()
-        await blinkOnce(rgb.blue, rgb.off)
+        await statusLed.blinkOnce(rgb.blue, rgb.off)
         
     while not tickMsOffset:
         try:
@@ -152,35 +155,9 @@ async def setupLan() -> str:
         except Exception as e:
             await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
             await log(str(e))
-            await blinkOnce(rgb.blue, rgb.red) # Built in wait, 1000 ms
+            await statusLed.blinkOnce(rgb.blue, rgb.red) # Built in wait, 1000 ms
 
     return ip
-        
-async def blinkOnce(a: tuple, b: tuple = rgb.off, aMs: int = 500, bMs: int = 500) -> None:
-    # Blink LED ONCE with a color for aMs milliseconds then b for bMs milliseconds.
-    
-    rgbLed.color = a
-    await uasyncio.sleep_ms(aMs)
-    rgbLed.color = b
-    await uasyncio.sleep_ms(bMs)
-
-async def blink(a: tuple, b: tuple = rgb.off, aMs: int = 500, bMs: int = 500) -> None:
-    # Blink LED with a color for aMs milliseconds then b for bMs milliseconds.
-    
-    while 1:
-        await blinkOnce(a, b, aMs, bMs)
-
-async def blinkQueue(queue, aMs: int = 500, bMs: int = 500) -> None:
-    # Blink LED with colours from queue, first item for aMs milliseconds then the next item for bMs milliseconds, repeating.
-    
-    a = rgb.off
-    b = rgb.off
-    while 1:
-        if(not queue.empty()):
-            a = await queue.get()
-            b = await queue.get()
-        
-        await blinkOnce(a, b, aMs, bMs)
     
 async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
     # Toggle lock status only, not the physical door lock. Updates LED: Green = locked, red = open.
@@ -287,7 +264,7 @@ async def mainLoop() -> None:
     global ledQueue
     await ledQueue.put(rgb.green)
     await ledQueue.put(rgb.off)
-    uasyncio.create_task(blinkQueue(ledQueue, 200, 2000))
+    uasyncio.create_task(statusLed.blinkQueue(ledQueue, 200, 2000))
     
     await log("Main loop started")
     while 1:
@@ -308,8 +285,8 @@ async def main() -> None:
     try:
         await log("")
         await log("Initializing...")
-        await log(f"Mem info:{str(micropython.mem_info())}")
-        await log(f"Sys info:{str(uos.uname())}")
+        await log(f"Mem info: {str(micropython.mem_info())}")
+        await log(f"Sys info: {str(uos.uname())}")
         
         ip = await setupLan()
         listenerSocket = await setupSocketConnection(ip)
