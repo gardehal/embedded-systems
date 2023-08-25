@@ -12,6 +12,7 @@ from machine import Pin, reset
 from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 
 import secrets # Secret values in secrets.py
+from logUtil import LogUtil
 from rgbLedUtil import RgbLedUtil
 from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
@@ -24,77 +25,19 @@ rgbLed = RGBLED(red = 1, green = 2, blue = 3)
 button = Pin(4, Pin.IN, Pin.PULL_DOWN)
 
 statusLed = RgbLedUtil(rgbLed)
+logger = LogUtil(logFilename, logFileMaxSizeByte)
 
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
-datetime = "[datetime not initialized]"
-tickMsOffset = 0
 ledQueue = Queue()
 inputQueue = Queue()
 
-# TODO toggle lock, toggle status only, authentication on socket calls, fix socket/button only working every other, classes with vars for "enums" like lockStatus
-
-def rotateLogFile(logPrefix: str, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
-    # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
-    
-    print(f"{logPrefix} Logfile size exceeds logFileMaxSizeByte ({logFileSize}/{logFileMaxSizeByte} bytes), triggered clean up...")
-    tmpLogFilename = f"tmp_{logFilename}"
-    tmpLogFileSize = 0
-    skipBytes = int(logFileSize * logDeleteMultiplier)
-
-    logFileEof = False
-    for i in range(0, 999):
-        if(logFileEof or tmpLogFileSize > skipBytes):
-            break
-        
-        chunkSize = 16 * 1024 # 16 kb, capped to 264 kb RAM on standard PICO
-        chunk = ""
-        print(f"{logPrefix} Cleaning up (logfile size {skipBytes + (chunkSize * i)}/{logFileSize} bytes)...")
-        with open(logFilename, "rb") as readFile:
-            readFile.seek(skipBytes + (chunkSize * i), 0)
-            chunk = readFile.read(chunkSize)
-            if not chunk: # EOF
-                chunk = readFile.read()
-                logFileEof = True
-            
-        with open(tmpLogFilename, "wb+") as writeFile:
-            writeFile.seek(0, 0)
-            writeFile.write(chunk)
-            tmpLogFileSize = writeFile.tell()
-        
-    uos.rename(tmpLogFilename, logFilename)
-    # EOF messes with remove file for some reason, truncate file, then delete
-    with open(tmpLogFilename, "w") as file:
-        pass
-    uos.remove(tmpLogFilename)
-    
-async def log(message: str, logToFile: bool = True) -> None:
-    # Print and log message in standard format.
-    
-    prefix = f"{datetime} +{utime.ticks_ms() - tickMsOffset}:"
-    formattedMessage = f"{prefix} {message}"
-    
-    print(formattedMessage)
-    
-    if(logToFile):
-        if(not logFilename in uos.listdir()):
-            with open(logFilename, "a") as file:
-                file.write("Created new logfile")
-        
-        log = f"{formattedMessage}\n"
-        logSize = len(log.encode("utf-8"))
-        logFileSize = uos.stat(logFilename)[6]
-        
-        if((logFileSize + logSize + 1) > logFileMaxSizeByte):
-            rotateLogFile(prefix, logFileSize)
-                    
-        with open(logFilename, "a") as file:
-            file.write(log)
+# TODO toggle lock/status button, motor, authentication on socket calls, modularize code (logging, led, network), ledutil some non-red colors = red
 
 async def connectWlan() -> str:
     # Connect to WLAN using secrets from secrets.py file.
         
-    await log("Connecting to WLAN...")
+    await logger.log("Connecting to WLAN...")
     
     wlanScan = []
     statusLed.setColor(rgb.blue)
@@ -102,22 +45,22 @@ async def connectWlan() -> str:
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
         wlanScan = wlan.scan()
-        await log(f"Scanned SSIDs: {[_[0] for _ in wlanScan]}")
+        await logger.log(f"Scanned SSIDs: {[_[0] for _ in wlanScan]}")
     
     wlan.connect(secrets.ssid, secrets.password)
     wlan.ifconfig(secrets.ipStruct)
     while wlan.status() < 1:
-        await log(f"Waiting for connection... Status: {wlan.status()}")
+        await logger.log(f"Waiting for connection... Status: {wlan.status()}")
         await statusLed.blink(rgb.blue)
         
     ip = wlan.ifconfig()[0]
-    await log(f"Connected on IP: {ip}")
+    await logger.log(f"Connected on IP: {ip}")
     return ip
 
 async def setupSocketConnection(ip: str) -> Dict:
     # Set up socket listeners for wireless calls.
     
-    await log("Setting up socket...")
+    await logger.log("Setting up socket...")
     socketAddress = usocket.getaddrinfo(ip, 80)[0][-1]
     
     listenerSocket = usocket.socket()
@@ -125,37 +68,38 @@ async def setupSocketConnection(ip: str) -> Dict:
     listenerSocket.bind(socketAddress)
     listenerSocket.listen(1)
     
-    await log(f"Socket listening on {socketAddress}")
+    await logger.log(f"Socket listening on {socketAddress}")
     return listenerSocket
 
 async def setupLan() -> str:
     # Connect to the internet using secrets from secrets.py file and set up .
     
-    await log("Connecting to LAN...")
+    await logger.log("Connecting to LAN...")
     
     defaultIp = "0.0.0.0"
     ip = defaultIp
     while ip == defaultIp:
-        await log("Getting IP...")
+        await logger.log("Getting IP...")
         ip = await connectWlan()
         await statusLed.blinkOnce(rgb.blue, rgb.off)
         
+    tickMsOffset = 0
     while not tickMsOffset:
         try:
-            await log(f"Initializing datetime...")
+            await logger.log(f"Initializing datetime...")
             headers = { "User-Agent": "Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0" }
             datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
-            
-            global datetime
             datetime = datetimeJson["datetime"]
-            global tickMsOffset
             tickMsOffset = utime.ticks_ms()
             
-            await log(f"datetime ({datetime}) and tickMsOffset ({tickMsOffset}) initialized")
+            logger.datetimeInitiated = datetime
+            logger.tickMsInitiated = tickMsOffset
+            
+            await logger.log(f"datetime ({datetime}) and tickMsOffset ({tickMsOffset}) initialized")
         except Exception as e:
-            await log("PICO connected to LAN, but there was an error with setting datetimeJson:")
-            await log(str(e))
-            await statusLed.blinkOnce(rgb.blue, rgb.red) # Built in wait, 1000 ms
+            await logger.log("PICO connected to LAN, but there was an error with setting datetimeJson:")
+            await logger.log(str(e))
+            await statusLed.blinkOnce(rgb.blue, rgb.red) # Built-in wait, 1000 ms
 
     return ip
     
@@ -172,10 +116,10 @@ async def toggleLockStatus(doorStatus: int, ledQueue: Queue) -> int:
         await ledQueue.put(rgb.green)
         await ledQueue.put(rgb.off)
     else:
-        await log(f"toggleLockStatus - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
+        await logger.log(f"toggleLockStatus - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
         return doorStatus
     
-    await log(f"Lock status updating: {doorStatus} -> {newStatus}")
+    await logger.log(f"Lock status updating: {doorStatus} -> {newStatus}")
     return newStatus
     
 async def activateMotor(steps: int) -> int:
@@ -191,12 +135,12 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
     newStatus = await toggleLockStatus(doorStatus, ledQueue)
     if(newStatus == LockStatus.locked):
         await activateMotor(-100)
-        await log(f"{toggleSource} - {toggleBy} - Locked")
+        await logger.log(f"{toggleSource} - {toggleBy} - Locked")
     elif(newStatus == LockStatus.unlocked):
         await activateMotor(100)
-        await log(f"{toggleSource} - {toggleBy} - Unlocked")
+        await logger.log(f"{toggleSource} - {toggleBy} - Unlocked")
     else:
-        await log(f"toggleLock - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
+        await logger.log(f"toggleLock - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
         return doorStatus
         
     return newStatus
@@ -218,7 +162,7 @@ def listenSocket(inputQueue: Queue, listenerSocket: Dict) -> None:
 
             code = 200
             status = "SUCCESS"
-            message = f"+{tickMsOffset} ms after initialization"
+            message = f"+{logger.tickMsInitiated} ms after initialization"
             data = None
             if(not action):
                 code = 404
@@ -262,11 +206,11 @@ async def mainLoop() -> None:
     doorStatus = LockStatus.locked
     global inputQueue
     global ledQueue
-    await ledQueue.put(rgb.green)
+    await ledQueue.put(rgb.white)
     await ledQueue.put(rgb.off)
     uasyncio.create_task(statusLed.blinkQueue(ledQueue, 200, 2000))
     
-    await log("Main loop started")
+    await logger.log("Main loop started")
     while 1:
         if(not inputQueue.empty()):
             action = await inputQueue.get()
@@ -274,41 +218,41 @@ async def mainLoop() -> None:
                 doorStatus = await toggleLock(doorStatus, ledQueue)
             elif(action == LockAction.statusToggle):
                 doorStatus = await toggleLockStatus(doorStatus, ledQueue)
-              
+            
         await uasyncio.sleep_ms(100)
         
-    await log("Main loop completed")
+    await logger.log("Main loop completed")
         
 async def main() -> None:
     # Entry point
     
     try:
-        await log("")
-        await log("Initializing...")
-        await log(f"Mem info: {str(micropython.mem_info())}")
-        await log(f"Sys info: {str(uos.uname())}")
+        await logger.log("")
+        await logger.log("Initializing...")
+        await logger.log(f"Mem info: {str(micropython.mem_info())}")
+        await logger.log(f"Sys info: {str(uos.uname())}")
         
         ip = await setupLan()
         listenerSocket = await setupSocketConnection(ip)
         
-        await log("Initialize complete")
+        await logger.log("Initialize complete")
         
         # Start main loop in a new thread and set up input listeners on main thread
         # Note: this is done because sockets seem to have issues when not on the first/main thread
         _thread.start_new_thread(runMainLoop, ())
         
-        await log("Listeners starting...")
+        await logger.log("Input listeners starting...")
         global inputQueue
         uasyncio.create_task(listenMainButton(inputQueue))
         uasyncio.create_task(listenSocket(inputQueue, listenerSocket))    
-        await log("Listeners started")
+        await logger.log("Input listeners started")
         
     except KeyboardInterrupt:
-        await log("Keyboard interrupt")
+        await logger.log("Keyboard interrupt")
         reset()
     except Exception as e:
-        await log("Error caught: ")
-        await log(str(e))
+        await logger.log("Error caught: ")
+        await logger.log(str(e))
         raise e
         
 uasyncio.run(main())
