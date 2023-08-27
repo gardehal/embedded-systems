@@ -58,7 +58,7 @@ class LogUtil:
         # Get line used in simple logs.
         
         prefix = f"{self.datetimeInitiated} +{utime.ticks_ms() - self.tickMsInitiated}:"
-        return = f"{prefix} {message}"
+        return f"{prefix} {message}"
         
     async def log(self, message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
         # Print and log message in a given format.
