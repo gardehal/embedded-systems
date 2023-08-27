@@ -17,6 +17,10 @@ class LogUtil:
         self.tickMsInitiated: int = tickMsInitiated
         self.chunkSize: int = chunkSize
         
+        if(not self.logFilename in uos.listdir()):
+            with open(self.logFilename, "a") as file:
+                file.write("LogUtil init created a new logfile")
+        
     def rotateLogFile(self, logPrefix: str, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
         # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
         
@@ -50,22 +54,23 @@ class LogUtil:
             pass
         uos.remove(tmpLogFilename)
         
-    async def log(self, message: str, logToFile: bool = True, doPrint: bool = True) -> None:
-        # Print and log message in a given format.
+    def getFormattedLine(self, message: str) -> str:
+        # Get line used in simple logs.
         
         prefix = f"{self.datetimeInitiated} +{utime.ticks_ms() - self.tickMsInitiated}:"
-        formattedMessage = f"{prefix} {message}"
+        return = f"{prefix} {message}"
+        
+    async def log(self, message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
+        # Print and log message in a given format.
+        
+        formattedMessage = self.getFormattedLine(message)
         
         if(doPrint):
             print(formattedMessage)
             
         if(logToFile):
-            if(not self.logFilename in uos.listdir()):
-                with open(self.logFilename, "a") as file:
-                    file.write("Created new logfile")
-                    
             log = f"{formattedMessage}\n"
-            logSize = len(log.encode("utf-8"))
+            logSize = len(log.encode(encoding))
             logFileSize = uos.stat(self.logFilename)[6]
             
             if((logFileSize + logSize + 10) > self.logFileMaxSizeByte):
