@@ -5,7 +5,8 @@ class NetworkUtil:
     def connectWlan(self, ssid: str, password: str, ipTuple: tuple) -> str:
         # Connect to WLAN using secrets from secrets.py file.
         
-        wLanScan = []
+        wLan = None
+        wlanScan = []
         while not wlanScan:
             wlan = network.WLAN(network.STA_IF)
             wlan.active(True)
@@ -19,7 +20,7 @@ class NetworkUtil:
             
         return wlan.ifconfig()[0]
     
-    def setupTcpSocketConnection(self, ip: str, port: int = 80, maxClients: int = 1) -> tuple:
+    def setupTcpSocketConnection(self, ip: str, port: int = 80, maxClients: int = 4) -> tuple:
         # Set up a TCP socket for calls over networks.
         
         print("Setting up TCP socket...")
