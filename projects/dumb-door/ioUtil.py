@@ -1,23 +1,30 @@
 
 import utime
-
-#mainMotorPins = [Pin(9, Pin.OUT), Pin(10, Pin.OUT), Pin(11, Pin.OUT), Pin(12, Pin.OUT)]
-#fullStepSequence = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+from machine import Pin
 
 class MotorUtil:
-    async def activateMotor(self, motor: tuple, steps: int) -> int:
+    pins = []
+    fullStepSequence = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    
+    def __init__(self, motorPins: list):
+        self.pins = [Pin(motorPins[0], Pin.OUT),
+                         Pin(motorPins[1], Pin.OUT),
+                         Pin(motorPins[2], Pin.OUT),
+                         Pin(motorPins[3], Pin.OUT)]
+    
+    async def move(self, motor: tuple, steps: int) -> int:
         # Activate motor, rotating the shaft in direction and number of steps given by steps.
         
         i = 0
         while i < steps:
-            for step in fullStepSequence:
-                for j in range(len(mainMotorPins))
-                    mainMotorPins[j].value(step[j])
+            for step in self.fullStepSequence:
+                for j in range(len(self.pins))
+                    self.pins[j].value(step[j])
                     await uasyncio.sleep_ms(1)
             
             i += 1
         
-        return 0
+        return i
 
 class ButtonUtil:
     def readButtonHold(button: tuple) -> int:
