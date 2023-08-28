@@ -1,4 +1,4 @@
-
+import uasyncio
 import utime
 from machine import Pin
 
@@ -12,15 +12,15 @@ class MotorUtil:
                          Pin(motorPins[2], Pin.OUT),
                          Pin(motorPins[3], Pin.OUT)]
     
-    async def move(self, motor: tuple, steps: int) -> int:
+    async def move(self, steps: int) -> int:
         # Activate motor, rotating the shaft in direction and number of steps given by steps.
         
         i = 0
-        while i < steps:
+        while 1:
             for step in self.fullStepSequence:
-                for j in range(len(self.pins))
+                for j in range(len(self.pins)):
                     self.pins[j].value(step[j])
-                    await uasyncio.sleep_ms(1)
+                    await uasyncio.sleep_ms(10)
             
             i += 1
         
