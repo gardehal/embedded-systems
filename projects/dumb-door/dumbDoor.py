@@ -20,7 +20,7 @@ from lockStatus import LockStatus
 from lockAction import LockAction
 
 logFilename = "dumbDoor.log"
-logFileMaxSizeByte = 3000#int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
+logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
 
 rgbLed = RGBLED(red = 1, green = 2, blue = 3)
 mainButton = Pin(4, Pin.IN, Pin.PULL_DOWN)
@@ -35,15 +35,14 @@ datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://wor
 ledQueue = Queue()
 inputQueue = Queue()
 
-# TODO toggle lock/status button, motor, authentication on socket calls, modularize code (logging, led, network, http stuff, motor/other outputs),
-# ledutil some non-red colors = red, logging error - wipes file
+# TODO toggle lock/status button, motor, authentication on socket calls, modularize code (io), logging on threads still clashing?
 
 def log(message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
-    # Log message thread safely.
+    # Log message safely for threads.
     
     lock = _thread.allocate_lock()
     with lock:
-        logger.log(message, logToFile, doPrint)
+        logger.log(message, logToFile, doPrint, encoding)
         
 async def setupLan() -> str:
     # Connect to the internet using secrets from secrets.py file.
