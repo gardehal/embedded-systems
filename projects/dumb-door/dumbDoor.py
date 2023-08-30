@@ -15,23 +15,25 @@ from logUtil import LogUtil
 from networkUtil import NetworkUtil
 from httpUtil import HttpUtil
 from rgbLedUtil import RgbLedUtil
+from ioUtil import MotorUtil
 from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
 from lockAction import LockAction
 
+# UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
+datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
 logFilename = "dumbDoor.log"
 logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
 
 rgbLed = RGBLED(red = 1, green = 2, blue = 3)
 mainButton = Pin(4, Pin.IN, Pin.PULL_DOWN)
+mainMotor = MotorUtil([6, 7, 8, 9])
 
 statusLed = RgbLedUtil(rgbLed)
 logger = LogUtil(logFilename, logFileMaxSizeByte)
 netUtil = NetworkUtil()
 httpUtil = HttpUtil()
 
-# UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
-datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
 ledQueue = Queue()
 inputQueue = Queue()
 
@@ -108,10 +110,10 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
     toggleBy = "unknown"
     newStatus = await toggleLockStatus(doorStatus, ledQueue)
     if(newStatus == LockStatus.locked):
-        #await activateMotor(-100)
+        await mainMotor.move(100)
         log(f"{toggleSource} - {toggleBy} - Locked")
     elif(newStatus == LockStatus.unlocked):
-        #await activateMotor(100)
+        await mainMotor.move(-100)
         log(f"{toggleSource} - {toggleBy} - Unlocked")
     else:
         log(f"toggleLock - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
