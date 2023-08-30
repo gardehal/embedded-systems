@@ -19,7 +19,7 @@ class LogUtil:
         
         if(not self.logFilename in os.listdir()):
             with open(self.logFilename, "a") as file:
-                file.write(self.getFormattedLine("LogUtil init created a new logfile"))
+                file.write(self.getFormattedLine("LogUtil init created a new logfile\n"))
         
     def rotateLogFile(self, logFileSize: int, logDeleteMultiplier: float = 0.5) -> None:
         # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
