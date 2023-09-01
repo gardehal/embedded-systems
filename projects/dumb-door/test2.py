@@ -22,6 +22,8 @@ def step(direction, steps, delay):
             stepper_pins[pin_index].value(pin_value)
         utime.sleep(delay)
         
+
 step_index = 0
-step(1, 500, 0.1)
+while 1:
+    step(1, 500, 0.5)
 #step(-1, 500, 0.5)
