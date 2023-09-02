@@ -4,7 +4,10 @@ from machine import Pin
 
 class MotorUtil:
     pins = []
-    fullStepSequence = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    fullStepSequence = [[1, 0, 0, 1],
+                        [1, 1, 0, 0],
+                        [0, 1, 1, 0],
+                        [0, 0, 1, 1]]
     
     def __init__(self, motorPins: list):
         self.pins = [Pin(motorPins[0], Pin.OUT),
@@ -16,12 +19,17 @@ class MotorUtil:
         # Activate motor, rotating the shaft in direction and number of steps given by steps.
         
         i = 0
+        print(f"{steps} steps")
+        print(self.pins)
         while 1:
             for step in self.fullStepSequence:
+                print(f"{step} step")
                 for j in range(len(self.pins)):
+                    print(f"{j} j")
                     self.pins[j].value(step[j])
-                    await uasyncio.sleep_ms(10)
+                    await uasyncio.sleep_ms(500)
             
+            print(f"{i} += 1")
             i += 1
         
         return i
