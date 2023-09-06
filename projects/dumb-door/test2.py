@@ -1,8 +1,8 @@
 import utime
 from machine import Pin
 
-stepper_pins = [Pin(12, Pin.OUT), Pin(13, Pin.OUT), Pin(14, Pin.OUT), Pin(15, Pin.OUT)]
-step_sequence = [
+pins = [Pin(12, Pin.OUT), Pin(13, Pin.OUT), Pin(14, Pin.OUT), Pin(15, Pin.OUT)]
+stepSequence = [
     [1, 1, 0, 0],
     [0, 1, 1, 0],
     [0, 0, 1, 1],
@@ -10,13 +10,22 @@ step_sequence = [
 ]
 
 def step(direction, steps, delay):
-    for i in range(steps):
-        for step in step_sequence:
-            for j in range(len(stepper_pins)):
-                stepper_pins[j].value(step[j])
+    for _ in range(steps):
+        for step in stepSequence:
+            for i in range(len(pins)):
+                pins[i].value(step[i])
+                #pins[i].value(step[i]) # Beeping caused by pins being on?
                 utime.sleep(delay)
                 
 step_index = 0
-while 1:
+
+if(1):
+    while 1:
+        print("5 steps started")
+        step(1, 5, 0.05)
+else:
     print("5 steps started")
-    step(1, 5, 0.01)
+    step(1, 5, 0.05)
+    
+for i in range(len(pins)):
+    pins[i].value(0)
