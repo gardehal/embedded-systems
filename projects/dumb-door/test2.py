@@ -21,7 +21,7 @@ fullstepSequence = [
 
 def step(direction, steps, delay):
     for _ in range(steps):
-        for step in halfstepSequence:
+        for step in fullstepSequence:
             for i in range(len(pins)):
                 pins[i].value(step[i])
                 utime.sleep_ms(delay)
@@ -31,10 +31,10 @@ step_index = 0
 if(1):
     while 1:
         print("5 steps started")
-        step(1, 5, 5)
+        step(1, 5, 50)
 else:
     print("5 steps started")
-    step(1, 5, 5)
+    step(1, 5, 50)
     
 for i in range(len(pins)):
     pins[i].value(0)
