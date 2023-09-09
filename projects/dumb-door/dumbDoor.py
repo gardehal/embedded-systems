@@ -27,7 +27,7 @@ logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. 
 
 rgbLed = RGBLED(red = 1, green = 2, blue = 3)
 mainButton = Pin(4, Pin.IN, Pin.PULL_DOWN)
-mainMotor = Stepper([12, 13, 14, 15])
+mainMotor = Stepper([15, 14, 13, 12])
 
 statusLed = RgbLedUtil(rgbLed)
 logger = LogUtil(logFilename, logFileMaxSizeByte)
