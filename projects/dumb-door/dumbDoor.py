@@ -15,7 +15,7 @@ from logUtil import LogUtil
 from networkUtil import NetworkUtil
 from httpUtil import HttpUtil
 from rgbLedUtil import RgbLedUtil
-from ioUtil import MotorUtil
+from ioUtil import Stepper
 from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
 from lockAction import LockAction
@@ -27,7 +27,7 @@ logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. 
 
 rgbLed = RGBLED(red = 1, green = 2, blue = 3)
 mainButton = Pin(4, Pin.IN, Pin.PULL_DOWN)
-mainMotor = MotorUtil([6, 7, 8, 9])
+mainMotor = Stepper([12, 13, 14, 15])
 
 statusLed = RgbLedUtil(rgbLed)
 logger = LogUtil(logFilename, logFileMaxSizeByte)

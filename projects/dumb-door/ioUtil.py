@@ -2,37 +2,49 @@ import uasyncio
 import utime
 from machine import Pin
 
-class MotorUtil:
+class Stepper:
     pins = []
-    fullStepSequence = [[1, 0, 0, 1],
-                        [1, 1, 0, 0],
-                        [0, 1, 1, 0],
-                        [0, 0, 1, 1]]
-    
+    fullStepSequence = [
+        [1, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 1, 1],
+        [1, 0, 0, 1],]
+    halfStepSequence = [
+        [1, 0, 0, 0],
+        [1, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1],
+        [0, 0, 0, 1],
+        [1, 0, 0, 1],]
+        
     def __init__(self, motorPins: list):
         self.pins = [Pin(motorPins[0], Pin.OUT),
                          Pin(motorPins[1], Pin.OUT),
                          Pin(motorPins[2], Pin.OUT),
                          Pin(motorPins[3], Pin.OUT)]
     
-    async def move(self, steps: int) -> int:
-        # Activate motor, rotating the shaft in direction and number of steps given by steps.
+    async def move(self, steps: int, msDelay: float) -> bool:
+        # Activate motor, rotating the shaft in direction and number of steps given by steps (positive steps = clockwise).
         
-        i = 0
-        print(f"{steps} steps")
-        print(self.pins)
-        while 1:
-            for step in self.fullStepSequence:
-                print(f"{step} step")
-                for j in range(len(self.pins)):
-                    print(f"{j} j")
-                    self.pins[j].value(step[j])
-                    await uasyncio.sleep_ms(500)
-            
-            print(f"{i} += 1")
-            i += 1
+        # TODO 1 step moves 4 full steps in the motor
+        #adjustedSteps = int(steps/4)
         
-        return i
+        # TODO direction, negative steps should be ccw
+        #cw = steps > 0
+        
+        # TODO halfstep because of accuracy
+        stepSequence = self.fullStepSequence if(steps > 0) else reverse(self.fullStepSequence)
+        for _ in range(steps):
+            for step in stepSequence:
+                print("step")
+                for i in range(len(self.pins)):
+                    print("pin")
+                    self.pins[i].value(step[i])
+                    utime.sleep_ms(msDelay)
+        
+        return True
 
 class ButtonUtil:
     def readButtonHold(button: tuple) -> int:
