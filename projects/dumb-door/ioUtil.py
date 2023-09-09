@@ -28,20 +28,20 @@ class Stepper:
     async def move(self, steps: int, msDelay: float) -> bool:
         # Activate motor, rotating the shaft in direction and number of steps given by steps (positive steps = clockwise).
         
-        # TODO 1 step moves 4 full steps in the motor
-        #adjustedSteps = int(steps/4)
+        if(steps == 0):
+            return False
         
-        # TODO direction, negative steps should be ccw
-        #cw = steps > 0
-        
-        # TODO halfstep because of accuracy
-        stepSequence = self.fullStepSequence if(steps > 0) else reverse(self.fullStepSequence)
-        for _ in range(steps):
-            for step in stepSequence:
-                print("step")
-                for i in range(len(self.pins)):
-                    print("pin")
-                    self.pins[i].value(step[i])
+        # TODO step sequence as options or arg for class
+        c = 0
+        stepperSequence = self.fullStepSequence
+        sortedPins = self.pins if(steps > 0) else self.pins[::-1]
+        adjustedSteps = abs(steps) #int(abs(steps)/(len(sortedPins) * len(stepperSequence)))
+        for _ in range(adjustedSteps):
+            for step in stepperSequence:
+                for i in range(len(sortedPins)):
+                    c += 1
+                    print(c)
+                    sortedPins[i].value(step[i])
                     utime.sleep_ms(msDelay)
         
         return True
