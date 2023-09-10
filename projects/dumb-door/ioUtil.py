@@ -8,11 +8,6 @@ class Stepper:
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1],]
-    fullStepSequenceSingleAlt = [
-        [0, 1, 0, 0],
-        [1, 0, 0, 0],
-        [0, 0, 0, 1],
-        [0, 0, 1, 0],]
     fullStepSequenceDouble = [
         [1, 1, 0, 0],
         [0, 1, 1, 0],
