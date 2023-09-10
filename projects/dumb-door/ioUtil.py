@@ -3,8 +3,17 @@ import utime
 from machine import Pin
 
 class Stepper:
-    pins = []
-    fullStepSequence = [
+    fullStepSequenceSingle = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],]
+    fullStepSequenceSingleAlt = [
+        [0, 1, 0, 0],
+        [1, 0, 0, 0],
+        [0, 0, 0, 1],
+        [0, 0, 1, 0],]
+    fullStepSequenceDouble = [
         [1, 1, 0, 0],
         [0, 1, 1, 0],
         [0, 0, 1, 1],
@@ -18,12 +27,18 @@ class Stepper:
         [0, 0, 1, 1],
         [0, 0, 0, 1],
         [1, 0, 0, 1],]
+    
+    pins = []
+    stepSequence = fullStepSequenceDouble
         
     def __init__(self, motorPins: list):
         self.pins = [Pin(motorPins[0], Pin.OUT),
                          Pin(motorPins[1], Pin.OUT),
                          Pin(motorPins[2], Pin.OUT),
                          Pin(motorPins[3], Pin.OUT)]
+        
+        for pin in self.pins:
+            pin.value(0)
     
     async def move(self, steps: int, msDelay: float) -> bool:
         # Activate motor, rotating the shaft in direction and number of steps given by steps (positive steps = clockwise).
@@ -33,16 +48,15 @@ class Stepper:
         
         # TODO step sequence as options or arg for class
         c = 0
-        stepperSequence = self.fullStepSequence
         sortedPins = self.pins if(steps > 0) else self.pins[::-1]
         adjustedSteps = abs(steps) #int(abs(steps)/(len(sortedPins) * len(stepperSequence)))
         for _ in range(adjustedSteps):
-            for step in stepperSequence:
+            for step in self.stepSequence:
                 for i in range(len(sortedPins)):
                     c += 1
                     print(c)
                     sortedPins[i].value(step[i])
-                    utime.sleep_ms(msDelay)
+                utime.sleep_ms(msDelay)
         
         return True
 
