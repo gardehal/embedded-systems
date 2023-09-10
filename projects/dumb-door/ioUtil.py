@@ -32,18 +32,44 @@ class Stepper:
                          Pin(motorPins[2], Pin.OUT),
                          Pin(motorPins[3], Pin.OUT)]
         
+        self.deInit()
+    
+    def deInit(self) -> bool:
+        # De-init/disable powers to the pins.
+        
         for pin in self.pins:
             pin.value(0)
+            
+        return True
+    
+    def brake(self) -> bool:
+        # Initiates all coils, allowing shaft to spin, but with slight resistance. Maybe cause funky power generation.
+        
+        for pin in self.pins:
+            pin.value(1)
+        
+        return True
+    
+    def lock(self) -> bool:
+        # Powers half the pins, effectivly "locking" shaft in place.
+        
+        for i, pin in enumerate(self.pins):
+            if(i % 2):
+                pin.value(1)
+            else:
+                pin.value(0)
+        
+        return True
     
     async def move(self, steps: int, msDelay: float) -> bool:
-        # Activate motor, rotating the shaft in direction and number of steps given by steps (positive steps = clockwise).
+        # Move shaft, rotating the shaft in direction and number of steps given by steps (positive steps = clockwise).
         
         if(steps == 0):
             return False
         
-        # TODO step sequence as options or arg for class
         c = 0
         sortedPins = self.pins if(steps > 0) else self.pins[::-1]
+        # TODO better control over steps, 1 step is currently nPins *nStepper sequence
         adjustedSteps = abs(steps) #int(abs(steps)/(len(sortedPins) * len(stepperSequence)))
         for _ in range(adjustedSteps):
             for step in self.stepSequence:
