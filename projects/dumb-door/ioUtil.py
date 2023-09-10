@@ -3,7 +3,7 @@ import utime
 from machine import Pin
 
 class Stepper:
-    fullStepSequenceSingle = [
+    fullStepSequence = [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
@@ -24,14 +24,17 @@ class Stepper:
         [1, 0, 0, 1],]
     
     pins = []
-    stepSequence = fullStepSequenceDouble
+    stepSequence = []
         
-    def __init__(self, motorPins: list):
+    def __init__(self, motorPins: list, stepSequence: list = halfStepSequence):
+        # Init Stepper class, setting pins, step sequence.
+        
         self.pins = [Pin(motorPins[0], Pin.OUT),
                          Pin(motorPins[1], Pin.OUT),
                          Pin(motorPins[2], Pin.OUT),
                          Pin(motorPins[3], Pin.OUT)]
         
+        self.stepSequence = stepSequence
         self.deInit()
     
     def deInit(self) -> bool:
