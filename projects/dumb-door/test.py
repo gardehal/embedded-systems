@@ -24,7 +24,8 @@ mainMotor.stepSequence = s2
 #while 1: print("1")
 
 print("start")
-uasyncio.run(mainMotor.move(111, 150))
+#uasyncio.run(mainMotor.move(111, 150))
+uasyncio.run(mainMotor.moveDegrees(30, 150))
 print("end")
 mainMotor.deInit()
 
