@@ -70,15 +70,17 @@ class Stepper:
         if(steps == 0):
             return False
         
-        c = 0
         sortedPins = self.pins if(steps > 0) else self.pins[::-1]
         # TODO better control over steps, 1 step is currently nPins *nStepper sequence
-        adjustedSteps = abs(steps) #int(abs(steps)/(len(sortedPins) * len(stepperSequence)))
+        adjustedSteps = abs(steps) #int(abs(steps)/(len(sortedPins) * len(self.stepSequence)))
+        stepCounter = 0
         for _ in range(adjustedSteps):
             for step in self.stepSequence:
                 for i in range(len(sortedPins)):
-                    c += 1
-                    print(c)
+                    stepCounter += 1
+                    if(stepCounter > steps):
+                        return True
+                    
                     sortedPins[i].value(step[i])
                 utime.sleep_ms(msDelay)
         
