@@ -81,11 +81,12 @@ class Stepper:
         for _ in range(adjustedSteps):
             for step in self.stepSequence:
                 for i in range(len(sortedPins)):
-                    stepCounter += 1
-                    if(stepCounter > adjustedSteps):
-                        return True
-                        
                     sortedPins[i].value(step[i])
+                    
+                stepCounter += 1
+                if(stepCounter > adjustedSteps):
+                    return True
+                
                 utime.sleep_ms(msDelay)
         
         return True
@@ -97,17 +98,18 @@ class Stepper:
             return False
         
         sortedPins = self.pins if(degrees > 0) else self.pins[::-1]
-        adjustedSteps = self.map(abs(degrees), 0, 360, 0, 400) # self.stepperFullRotationSteps # 200 for full step, 400 for half, 800 for 1/4 etc.
+        adjustedSteps = self.map(abs(degrees), 0, 360, 0, 400) # self.stepperFullRotationSteps # TODO 200 for full step, 400 for half, 800 for 1/4 etc.
         print(adjustedSteps)
         stepCounter = 0
         for _ in range(adjustedSteps):
             for step in self.stepSequence:
                 for i in range(len(sortedPins)):
-                    stepCounter += 1
-                    if(stepCounter > adjustedSteps):
-                        return True
-                    
                     sortedPins[i].value(step[i])
+                    
+                stepCounter += 1
+                if(stepCounter > adjustedSteps):
+                    return True
+                
                 utime.sleep_ms(msDelay)
         
         return True
