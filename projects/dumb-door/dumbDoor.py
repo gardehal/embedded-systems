@@ -15,7 +15,7 @@ from logUtil import LogUtil
 from networkUtil import NetworkUtil
 from httpUtil import HttpUtil
 from rgbLedUtil import RgbLedUtil
-from ioUtil import Stepper
+from ioUtil import Stepper, halfStepSequence
 from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
 from lockAction import LockAction
@@ -26,8 +26,8 @@ logFilename = "dumbDoor.log"
 logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
 
 rgbLed = RGBLED(red = 1, green = 2, blue = 3)
-mainButton = Pin(4, Pin.IN, Pin.PULL_DOWN)
-mainMotor = Stepper([15, 14, 13, 12])
+mainButton = Pin(28, Pin.IN, Pin.PULL_DOWN)
+mainMotor = Stepper([12, 14, 13, 15], halfStepSequence, 400)
 
 statusLed = RgbLedUtil(rgbLed)
 logger = LogUtil(logFilename, logFileMaxSizeByte)
@@ -37,7 +37,7 @@ httpUtil = HttpUtil()
 ledQueue = Queue()
 inputQueue = Queue()
 
-# TODO toggle lock/status button, motor, authentication on socket calls, modularize code (io), logging on threads still clashing?
+# TODO toggle lock/status button, authentication on socket calls, modularize code (io), logging on threads still clashing?
 
 def log(message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
     # Log message safely for threads.
@@ -110,10 +110,12 @@ async def toggleLock(doorStatus: int, ledQueue: Queue) -> int:
     toggleBy = "unknown"
     newStatus = await toggleLockStatus(doorStatus, ledQueue)
     if(newStatus == LockStatus.locked):
-        await mainMotor.move(100)
+        await mainMotor.move(100, 5)
+        mainMotor.deInit()
         log(f"{toggleSource} - {toggleBy} - Locked")
     elif(newStatus == LockStatus.unlocked):
-        await mainMotor.move(-100)
+        await mainMotor.move(-100, 5)
+        mainMotor.deInit()
         log(f"{toggleSource} - {toggleBy} - Unlocked")
     else:
         log(f"toggleLock - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
