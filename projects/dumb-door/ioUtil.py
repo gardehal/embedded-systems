@@ -2,44 +2,60 @@ import uasyncio
 import utime
 from machine import Pin
 
+fullStepSequence = [
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1],]
+fullStepSequenceDouble = [
+    [1, 1, 0, 0],
+    [0, 1, 1, 0],
+    [0, 0, 1, 1],
+    [1, 0, 0, 1],]
+halfStepSequence = [
+    [1, 0, 0, 0],
+    [1, 1, 0, 0],
+    [0, 1, 0, 0],
+    [0, 1, 1, 0],
+    [0, 0, 1, 0],
+    [0, 0, 1, 1],
+    [0, 0, 0, 1],
+    [1, 0, 0, 1],]
+    
 class Stepper:
     
     pins = []
     stepperFullRotationSteps = 0
     stepSequence = []
     stepIndex = 0 # NB: Always update stepIndex when setting stepSequence
-    fullStepSequence = [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1],]
-    fullStepSequenceDouble = [
-        [1, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 1, 1],
-        [1, 0, 0, 1],]
-    halfStepSequence = [
-        [1, 0, 0, 0],
-        [1, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 1, 0],
-        [0, 0, 1, 1],
-        [0, 0, 0, 1],
-        [1, 0, 0, 1],]
         
-    def __init__(self, motorPins: list, stepSequence: list = halfStepSequence, stepperMotorStepDegree: float = 1.8):
-        # Init Stepper class, setting pins, step sequence.
+    def __init__(self, pins: list[int], stepSequence: list[list[int]], stepperFullRotationSteps: int):
+        # Init Stepper class, setting pins, stepSequence, stepperFullRotationSteps.
         
-        self.pins = [Pin(motorPins[0], Pin.OUT),
-                         Pin(motorPins[1], Pin.OUT),
-                         Pin(motorPins[2], Pin.OUT),
-                         Pin(motorPins[3], Pin.OUT)]
+        if(stepperFullRotationSteps < 1):
+            raise Exception("stepperFullRotationSteps must be a positive integer above 0.")
+        if(len(pins) == 0):
+            raise Exception("pins must contain the int value of pins driving the motor (e.g. [1, 2, 3, 4]).")
+        if(len(stepSequence) == 0):
+            raise Exception("stepSequence must contain a list of int values of steps to take (e.g. [[1, 0, 0, 0], [0, 1, ..]). More examples are provided in file of Stepper class.")
         
-        self.stepperFullRotationSteps = 360 / stepperMotorStepDegree
+        self.pins = [Pin(pins[0], Pin.OUT),
+                         Pin(pins[1], Pin.OUT),
+                         Pin(pins[2], Pin.OUT),
+                         Pin(pins[3], Pin.OUT)]
+        
+        self.stepperFullRotationSteps = stepperFullRotationSteps
+        self.stepSequence = stepSequence
+        self.stepIndex = 0
+        self.deInit()
+    
+    def setSequence(self, stepSequence: list) -> bool:
+        # Set a new stepping sequence for this stepper.
+        
         self.stepIndex = 0
         self.stepSequence = stepSequence
-        self.deInit()
+            
+        return True
     
     def deInit(self) -> bool:
         # De-init/disable powers to the pins.
@@ -74,7 +90,6 @@ class Stepper:
         if(steps == 0):
             return False
         
-        # Steps always start at 0, which can move the shaft backwards, use stepIndex
         sortedPins = self.pins if(steps > 0) else self.pins[::-1]
         adjustedSteps = abs(steps)
         stepCounter = 0
@@ -87,6 +102,8 @@ class Stepper:
                 if(stepCounter > adjustedSteps):
                     return True
                 
+                # Steps always start at 0, which can move the shaft backwards, use stepIndex
+                #self.stepIndex = stepIndex
                 utime.sleep_ms(msDelay)
         
         return True
@@ -98,8 +115,7 @@ class Stepper:
             return False
         
         sortedPins = self.pins if(degrees > 0) else self.pins[::-1]
-        adjustedSteps = self.map(abs(degrees), 0, 360, 0, 400) # self.stepperFullRotationSteps # TODO 200 for full step, 400 for half, 800 for 1/4 etc.
-        print(adjustedSteps)
+        adjustedSteps = self.map(abs(degrees), 0, 360, 0, self.stepperFullRotationSteps)
         stepCounter = 0
         for _ in range(adjustedSteps):
             for step in self.stepSequence:
