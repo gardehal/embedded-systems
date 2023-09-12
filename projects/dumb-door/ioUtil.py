@@ -52,8 +52,8 @@ class Stepper:
     def setSequence(self, stepSequence: list) -> bool:
         # Set a new stepping sequence for this stepper.
         
-        self.stepIndex = 0
         self.stepSequence = stepSequence
+        self.stepIndex = 0
             
         return True
     
@@ -91,19 +91,19 @@ class Stepper:
             return False
         
         sortedPins = self.pins if(steps > 0) else self.pins[::-1]
+        adjustedStepSequence = self.stepSequence[self.stepIndex:] + self.stepSequence[:self.stepIndex]
         adjustedSteps = abs(steps)
         stepCounter = 0
         for _ in range(adjustedSteps):
-            for step in self.stepSequence:
+            for stepIndex, step in enumerate(adjustedStepSequence):
                 for i in range(len(sortedPins)):
                     sortedPins[i].value(step[i])
                     
                 stepCounter += 1
                 if(stepCounter > adjustedSteps):
+                    self.stepIndex = stepIndex
                     return True
                 
-                # Steps always start at 0, which can move the shaft backwards, use stepIndex
-                #self.stepIndex = stepIndex
                 utime.sleep_ms(msDelay)
         
         return True
@@ -115,15 +115,17 @@ class Stepper:
             return False
         
         sortedPins = self.pins if(degrees > 0) else self.pins[::-1]
+        adjustedStepSequence = self.stepSequence[self.stepIndex:] + self.stepSequence[:self.stepIndex]
         adjustedSteps = self.map(abs(degrees), 0, 360, 0, self.stepperFullRotationSteps)
         stepCounter = 0
         for _ in range(adjustedSteps):
-            for step in self.stepSequence:
+            for stepIndex, step in enumerate(adjustedStepSequence):
                 for i in range(len(sortedPins)):
                     sortedPins[i].value(step[i])
                     
                 stepCounter += 1
                 if(stepCounter > adjustedSteps):
+                    self.stepIndex = stepIndex
                     return True
                 
                 utime.sleep_ms(msDelay)
