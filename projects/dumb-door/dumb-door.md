@@ -1,16 +1,22 @@
 # Dumb door
 
-Code and software related to [3D printed dumb door project](https://github.com/gardehal/3d-printing/tree/main/created/dumb-door).
- 
-[Code](./dumbDoor.py)
- 
-[Video](./example-01.mp4)
+Like a smart door, but dumb. Does not require invasive installation. 
+Related to [3D printed dumb door project](https://github.com/gardehal/3d-printing/tree/main/created/dumb-door).
+
+> [!NOTE]  
+> Work in progress
 
 ## TODO
 
 - API on PICO that receives secure calls over LAN to change lock state. Login/simple user functionality. Some basic stats and logs like last (100?) change datetime and by who, number of lock calls, number of unlocks calls, ...
 - Charts and final documentation.
 - Update parts list for 3 battery 11.1V setup, i.e. + 1 bat, 1x LD1117 3.3V voltage regulator)
+- fit third battery
+- attach coltage regulator and make dd runnable without USB power and/or PC input
+- LED white after setup until status or lock toggle
+- button press and hold for status change
+- logging potential issue reading/writing to file across threads still
+- final adjustments for stepper steps to lock/unlock door and some way to calibrate (e.g. move lock to one extreme or other)
  
 ## Circuit Diagram
  
@@ -67,6 +73,29 @@ NB: The first part of this relates to 3D printed parts over at [this repo](https
 1. Attach lock-adapter to the lock, using zip ties
 1. Place frame-upper on the door handle, shim the frame-lower into place from below the lock-adapter, such that the inner "ears" of the frame is placed behind the lock-adapter. Use 2-4 M5 bolts and nuts to secure frame-upper to frame-lower
 - solid core wires
+
+## Assembly
+
+<img src="./assembly/01-frames-top.png" alt="Frame, seen from the top" height="200"/>
+<img src="./assembly/02-frames-side.png" alt="Frame, seen from the side" height="200"/>
+
+- frame-upper (light blue)
+- frame-lower (dark blue), note the "ears" aligned with the lock
+
+<img src="./assembly/03-components-top.png" alt="Components added, seen from the top" height="200"/>
+<img src="./assembly/04-components-side.png" alt="Components added, seen from the side" height="200"/>
+
+- lock-adapter (orange)
+- brain-case (white), including brain-lid, button, LED, on/off switch
+- motor-case (hot pink), including motor and 2 motor-case-clips
+- battery-case (red), including battery-lid
+
+<img src="./assembly/05-gears-top.png" alt="Gears added, seen from the top" height="200"/>
+<img src="./assembly/06-gears-side.png" alt="Gears added, seen from the side" height="200"/>
+
+- lock-gear (dark green)
+- lock-gear-pins (light green)
+- motor-gear (light pink)
 
 ## Useful links
 
