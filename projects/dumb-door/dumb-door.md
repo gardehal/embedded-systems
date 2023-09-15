@@ -10,14 +10,13 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 
 - API on PICO that receives secure calls over LAN to change lock state. Login/simple user functionality. Some basic stats and logs like last (100?) change datetime and by who, number of lock calls, number of unlocks calls, ...
 - Charts and final documentation.
-- Update parts list for 3 battery 11.1V setup, i.e. + 1 bat, 1x LD1117 3.3V voltage regulator)
-- fit third battery
-- attach coltage regulator and make dd runnable without USB power and/or PC input
 - LED white after setup until status or lock toggle
 - button press and hold for status change
 - logging potential issue reading/writing to file across threads still
 - final adjustments for stepper steps to lock/unlock door and some way to calibrate (e.g. move lock to one extreme or other)
- 
+- finish DD class and let main call its run func
+- add diode for Volt regulator to prevent backfeeding
+
 ## Circuit Diagram
  
 ![Circuit Diagram](./circuit-diagram-01.png)
@@ -36,6 +35,7 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - 3x M4 x 12mm bolts/screws + nuts
 - 4x M5 x 12mm bolts/screws + nuts (2x is fine)
 - 1x push spring (7.5mm x 13mm), cut in half
+- 1x LD1117 3.3V voltage regulator
 
 ## Setup guide
 
@@ -131,3 +131,4 @@ NB: The first part of this relates to 3D printed parts over at [this repo](https
 
 - Initial design was bad and relied on impossible physics, did not think it through.
 - The brain-case module could've been better designed, the face plate with components should be removable for easier access to sensors on the face of the case (e.g. make face and bottom a single piece). Making it a little flatter and wider it could include a battery and make for an OK remote controller while still including the half-sized breadboard. Alternatively longer and thinner with a micro breadboard.
+- NEMA 17 is rated for 12V, currently runs on 8.4V (2x 18650 batteries). Ideally a third one should be added to bump up voltage to 11.1 but it seems to be OK. This could and should have been predicated and incorporated from the start, since redesigns will include changes to the frame which currently is not worth the cost-benefit.
