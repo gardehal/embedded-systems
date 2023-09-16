@@ -20,8 +20,7 @@ from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
 from lockAction import LockAction
 
-
-# TODO toggle lock/status button, authentication on socket calls, modularize code (io), logging on threads still clashing?
+# TODO authentication on socket calls, logging on threads still clashing?
 
 class DumbDoor:
     
@@ -173,12 +172,16 @@ class DumbDoor:
         
         while 1:
             last = self.mainButton.value()
+            pressStartMs = utime.ticks_ms()
             while(self.mainButton.value() == 1) or (self.mainButton.value() == last):
                 last = self.mainButton.value()
                 await uasyncio.sleep_ms(100)
                 
-            # TODO hardcoded lock only, missing status
-            await self.inputQueue.put(1)
+            pressEndMs = utime.ticks_ms()
+            if((pressEndMs - pressStartMs) > 5000): # > 5 second press will toggle status but not unlock the door
+                await self.inputQueue.put(LockAction.statusToggle)
+            else:
+                await self.inputQueue.put(LockAction.lockToggle)
 
     def runMainLoop(self) -> None:
         # Run mainLoop using uasyncio for the async functionality.
