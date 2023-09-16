@@ -171,9 +171,12 @@ class DumbDoor:
         # Wait for main button input and determine actions to take.
         
         while 1:
+            pressStartMs = 0
             last = self.mainButton.value()
-            pressStartMs = utime.ticks_ms()
             while(self.mainButton.value() == 1) or (self.mainButton.value() == last):
+                if(self.mainButton.value() != last):
+                    pressStartMs = utime.ticks_ms()
+                    
                 last = self.mainButton.value()
                 await uasyncio.sleep_ms(100)
                 
@@ -193,7 +196,7 @@ class DumbDoor:
         
         # Default to locked state and create async LED status blink
         doorStatus = LockStatus.locked
-        await self.ledQueue.put(rgb.white)
+        await self.ledQueue.put(rgb.green)
         await self.ledQueue.put(rgb.off)
         uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
         
