@@ -10,14 +10,11 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 
 - API on PICO that receives secure calls over LAN to change lock state. Login/simple user functionality. Some basic stats and logs like last (100?) change datetime and by who, number of lock calls, number of unlocks calls, ...
 - Charts and final documentation.
-- LED white after setup until status or lock toggle
-- button press and hold for status change
 - logging potential issue reading/writing to file across threads still
 - final adjustments for stepper steps to lock/unlock door and some way to calibrate (e.g. move lock to one extreme or other)
-- finish DD class and let main call its run func
 
 ## Circuit Diagram
- 
+
 ![Circuit Diagram](./circuit-diagram-01.png)
 
 ## Part list
