@@ -24,23 +24,47 @@ from lockAction import LockAction
 
 class DumbDoor:
     
-    # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
-    datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
-    logFilename = "dumbDoor.log"
-    logFileMaxSizeByte = int(512 * 1024) # 512 kb, capped to 2 mb on standard PICO. Keep in mind the temporary file will add additional when rotating/cleaning
+    datetimeSourceUrl = None
+    logFilename = None
+    logFileMaxSizeByte = 0
 
-    rgbLed = RGBLED(red = 1, green = 2, blue = 3)
-    mainButton = Pin(28, Pin.IN, Pin.PULL_DOWN)
-    mainMotor = Stepper([12, 14, 13, 15], halfStepSequence, 400)
+    rgbLed = None
+    mainButton = None
+    mainMotor = None
 
-    statusLed = RgbLedUtil(rgbLed)
-    logger = LogUtil(logFilename, logFileMaxSizeByte)
-    netUtil = NetworkUtil()
-    http = HttpUtil()
+    statusLed = None
+    logger = None
+    netUtil = None
+    http = None
 
-    ledQueue = Queue()
-    inputQueue = Queue()
-
+    ledQueue = None
+    inputQueue = None
+    
+    def __init__(self, datetimeSourceUrl: str,
+                 logFilename: str,
+                 logFileMaxSizeByte: int,
+                 statusLedPins: list[int],
+                 mainButtonPin: int,
+                 mainMotorPins: list[int],
+                 mainMotorSequence: list[int],
+                 mainMotorMaxSteps: int,):
+        # Initialize DumbDoor, using inputted settings.
+        
+        self.datetimeSourceUrl = datetimeSourceUrl
+        self.logFilename = logFilename
+        self.logFileMaxSizeByte = logFileMaxSizeByte
+        
+        self.rgbLed = RGBLED(red = statusLedPins[0], green = statusLedPins[1], blue = statusLedPins[2])
+        self.mainButton = Pin(mainButtonPin, Pin.IN, Pin.PULL_DOWN)
+        self.mainMotor = Stepper(mainMotorPins, mainMotorSequence, mainMotorMaxSteps)
+        
+        self.statusLed = RgbLedUtil(self.rgbLed)
+        self.logger = LogUtil(self.logFilename, self.logFileMaxSizeByte)
+        self.netUtil = NetworkUtil()
+        self.http = HttpUtil()
+        self.ledQueue = Queue()
+        self.inputQueue = Queue()
+        
     def log(self, message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
         # Log message safely for threads.
         
