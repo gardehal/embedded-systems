@@ -2,6 +2,12 @@ import uasyncio
 from dumbDoor import DumbDoor
 from ioUtil import halfStepSequence
 
+import secrets # Secret values in secrets.py
+
+wifiSsid = secrets.ssid
+wifiPassword = secrets.password
+wifiIps = secrets.ipTuple
+    
 # UTC is preferable since it's near constant, local times, e.g. London, will not account for daylight saving time.
 datetimeSourceUrl = "http://worldtimeapi.org/api/timezone/etc/utc" # "http://worldtimeapi.org/api/timezone/Europe/London" 
 logFilename = "dumbDoor.log"
@@ -13,5 +19,8 @@ mainMotorPins = [12, 14, 13, 15]
 mainMotorSequence = halfStepSequence
 mainMotorMaxSteps = 400
 
-door = DumbDoor(datetimeSourceUrl, logFilename, logFileMaxSizeByte, statusLedPins, mainButtonPin, mainMotorPins, mainMotorSequence, mainMotorMaxSteps)
+door = DumbDoor(wifiSsid, wifiPassword, wifiIps,
+                datetimeSourceUrl, logFilename, logFileMaxSizeByte,
+                statusLedPins, mainButtonPin, mainMotorPins,
+                mainMotorSequence, mainMotorMaxSteps)
 uasyncio.run(door.run())

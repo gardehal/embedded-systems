@@ -10,7 +10,6 @@ from machine import Pin, reset
 
 from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 
-import secrets # Secret values in secrets.py
 from logUtil import LogUtil
 from networkUtil import NetworkUtil
 from httpUtil import HttpUtil
@@ -20,9 +19,11 @@ from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
 from lockAction import LockAction
 
-# TODO authentication on socket calls, logging on threads still clashing?
-
 class DumbDoor:
+    
+    wifiSsid = None
+    wifiPassword = None
+    ipTuple = None
     
     datetimeSourceUrl = None
     logFilename = None
@@ -40,7 +41,10 @@ class DumbDoor:
     ledQueue = None
     inputQueue = None
     
-    def __init__(self, datetimeSourceUrl: str,
+    def __init__(self, wifiSsid: str,
+                 wifiPassword: str,
+                 ipTuple: tuple,
+                 datetimeSourceUrl: str,
                  logFilename: str,
                  logFileMaxSizeByte: int,
                  statusLedPins: list[int],
@@ -49,6 +53,10 @@ class DumbDoor:
                  mainMotorSequence: list[int],
                  mainMotorMaxSteps: int,):
         # Initialize DumbDoor, using inputted settings.
+        
+        self.wifiSsid = wifiSsid
+        self.wifiPassword = wifiPassword
+        self.ipTuple = ipTuple
         
         self.datetimeSourceUrl = datetimeSourceUrl
         self.logFilename = logFilename
@@ -85,7 +93,7 @@ class DumbDoor:
         ip = defaultIp
         while ip == defaultIp:
             self.log("Getting IP...")
-            ip = self.netUtil.connectWlan(secrets.ssid, secrets.password, secrets.ipTuple)
+            ip = self.netUtil.connectWlan(self.wifiSsid, self.wifiPassword, self.ipTuple)
             await self.statusLed.blinkOnce(rgb.blue, rgb.off)
             
         self.log(f"Connected on IP: {ip}")

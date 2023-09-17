@@ -8,10 +8,12 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 
 ## TODO
 
-- API on PICO that receives secure calls over LAN to change lock state. Login/simple user functionality. Some basic stats and logs like last (100?) change datetime and by who, number of lock calls, number of unlocks calls, ...
+- Authentication (e.g. key on pico, auth API on home server)
+  - Log who made the call when over network, button = "[button press]"
 - Charts and final documentation.
-- logging potential issue reading/writing to file across threads still
+- logging potential issue reading/writing to file across threads still (specifically during startup, OS code ?? and/or similar ENOENT error)
 - final adjustments for stepper steps to lock/unlock door and some way to calibrate (e.g. move lock to one extreme or other)
+  - Number of steps to take as argument for network call?
 
 ## Circuit Diagram
 
