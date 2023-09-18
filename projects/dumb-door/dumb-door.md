@@ -18,6 +18,7 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
   - Integrate accepelrator into circuits and diagram
   - buy one an test https://www.digitalimpuls.no/adafruit/144438/lis3dh-trippel-axe-akselerometer--plus-2g-4g-8g-16g
   - Where does it sit physically in the brain? Breadboard full. Add small breadboard due to pins? otherwise just wires tied to board
+- Status LED should continue to blink during setup
 
 ## Circuit Diagram
 
