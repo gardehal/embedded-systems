@@ -14,6 +14,10 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - logging potential issue reading/writing to file across threads still (specifically during startup, OS code ?? and/or similar ENOENT error)
 - final adjustments for stepper steps to lock/unlock door and some way to calibrate (e.g. move lock to one extreme or other)
   - Number of steps to take as argument for network call?
+- Accelerator which can detect when door moves, if status is locked and door moves, it's likely unlocked (or broken into) from outside (depends on speed of acceleration maybe? should probably just flag fast door openings as suspicious)
+  - Integrate accepelrator into circuits and diagram
+  - buy one an test https://www.digitalimpuls.no/adafruit/144438/lis3dh-trippel-axe-akselerometer--plus-2g-4g-8g-16g
+  - Where does it sit physically in the brain? Breadboard full. Add small breadboard due to pins? otherwise just wires tied to board
 
 ## Circuit Diagram
 
