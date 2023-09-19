@@ -18,6 +18,7 @@ from ioUtil import Stepper, halfStepSequence
 from rgbColor import RgbColor as rgb
 from lockStatus import LockStatus
 from lockAction import LockAction
+from lockInput import LockInput
 
 class DumbDoor:
     
@@ -32,6 +33,7 @@ class DumbDoor:
     rgbLed = None
     mainButton = None
     mainMotor = None
+    defaultLockSteps = 200
 
     statusLed = None
     logger = None
@@ -80,8 +82,9 @@ class DumbDoor:
         with lock:
             try:
                 self.logger.log(message, logToFile, doPrint, encoding)
-            except:
-                #self.log(str(e))
+            except Exception as e:
+                self.log("log exception:")
+                self.log(str(e))
                 self.statusLed.blink(rgb.yellow, rgb.red)
             
     async def setupLan(self) -> str:
@@ -91,10 +94,15 @@ class DumbDoor:
         
         defaultIp = "0.0.0.0"
         ip = defaultIp
-        while ip == defaultIp:
-            self.log("Getting IP...")
-            ip = self.netUtil.connectWlan(self.wifiSsid, self.wifiPassword, self.ipTuple)
-            await self.statusLed.blinkOnce(rgb.blue, rgb.off)
+        try:
+            while ip == defaultIp:
+                self.log("Getting IP...")
+                ip = self.netUtil.connectWlan(self.wifiSsid, self.wifiPassword, self.ipTuple)
+                await self.statusLed.blinkOnce(rgb.blue, rgb.off)
+        except Exception as e:
+            self.log("setupLan exception:")
+            self.log(str(e))
+            self.statusLed.blink(rgb.blue, rgb.red)
             
         self.log(f"Connected on IP: {ip}")
         return ip
@@ -106,19 +114,22 @@ class DumbDoor:
         while not tickMsOffset:
             try:
                 self.log(f"Initializing datetime...")
-                headers = { "User-Agent": self.http.basicUserHeader }
-                datetimeJson = urequests.get(datetimeSourceUrl, headers = headers).json()
+                datetimeRequest = urequests.get(self.datetimeSourceUrl)
+                
+                datetimeJson = datetimeRequest.json()
                 datetime = datetimeJson["datetime"]
                 tickMsOffset = utime.ticks_ms()
+                
+                datetimeRequest.close()
                 
                 self.logger.datetimeInitiated = datetime
                 self.logger.tickMsInitiated = tickMsOffset
                 
                 self.log(f"datetime ({datetime}) and tickMsOffset ({tickMsOffset}) initialized")
             except Exception as e:
-                self.log("PICO connected to LAN, but there was an error with setting datetimeJson:")
+                self.log("PICO connected to LAN, but there was an error with setting datetimeInitiated:")
                 self.log(str(e))
-                self.statusLed.blinkOnce(rgb.blue, rgb.red) # Built-in wait, 1000 ms
+                await self.statusLed.blinkOnce(rgb.blue, rgb.red) # Built-in wait, 1000 ms
 
         return tickMsOffset
         
@@ -141,20 +152,18 @@ class DumbDoor:
         self.log(f"Lock status updating: {doorStatus} -> {newStatus}")
         return newStatus
         
-    async def toggleLock(self, doorStatus: int, ledQueue: Queue) -> int:
+    async def toggleLock(self, lockInput: tuple, doorStatus: int, ledQueue: Queue) -> int:
         # Toggle lock, opening if status is locked, locking if status is open.
         
-        toggleSource = "unknown"
-        toggleBy = "unknown"
         newStatus = await self.toggleLockStatus(doorStatus, ledQueue)
         if(newStatus == LockStatus.locked):
-            await self.mainMotor.move(200, 5)
+            await self.mainMotor.move(lockInput.steps, 5)
             self.mainMotor.deInit()
-            self.log(f"{toggleSource} - {toggleBy} - Locked")
+            self.log(f"{lockInput.source} - {lockInput.caller} - Locked")
         elif(newStatus == LockStatus.unlocked):
-            await self.mainMotor.move(-200, 5)
+            await self.mainMotor.move(0 - lockInput.steps, 5)
             self.mainMotor.deInit()
-            self.log(f"{toggleSource} - {toggleBy} - Unlocked")
+            self.log(f"{lockInput.source} - {lockInput.caller} - Unlocked")
         else:
             self.log(f"toggleLock - Invalid status: {newStatus}, defaulting to old status: {doorStatus}")
             return doorStatus
@@ -171,17 +180,22 @@ class DumbDoor:
                 request = str(connection.recv(1024))
                 #print(request) # Verbose
             
-                action = 0
+                lockInput = LockInput(0, 0, "socket", "unknown")
                 if(request.find("/toggleLock") == 6):
-                    action = LockAction.lockToggle
+                    lockInput.action = LockAction.lockToggle
                 elif(request.find("/toggleStatus") == 6):
-                    action = LockAction.statusToggle
+                    lockInput.action = LockAction.statusToggle
+                    
+                if(request.find("steps=") > 6):
+                    stepsArgStart = request.split("steps=")[-1]
+                    steps = stepsArgStart.split(" ")[0].split("&")[0]
+                    lockInput.steps = steps
 
                 code = 200
                 status = "SUCCESS"
                 message = f"+{self.logger.tickMsInitiated} ms after initialization"
                 data = None
-                if(not action):
+                if(not lockInput.action):
                     code = 404
                     status = "FAIL"
                     message = "Path was not valid"
@@ -189,8 +203,8 @@ class DumbDoor:
                 connection.send(self.http.getHtmlHeader(code, status))
                 connection.send(self.http.getJsonWrapper(code, status, message, data))
                 
-                if(action):
-                    self.inputQueue.put_nowait(action)
+                if(lockInput.action):
+                    self.inputQueue.put_nowait(lockInput)
             except Exception as e:
                 print(str(e))
                 utime.sleep_ms(100)
@@ -214,9 +228,9 @@ class DumbDoor:
                 
             pressEndMs = utime.ticks_ms()
             if((pressEndMs - pressStartMs) > 5000): # > 5 second press will toggle status but not unlock the door
-                await self.inputQueue.put(LockAction.statusToggle)
+                await self.inputQueue.put(LockInput(LockAction.statusToggle, self.defaultLockSteps, "mainButton", "unknown"))
             else:
-                await self.inputQueue.put(LockAction.lockToggle)
+                await self.inputQueue.put(LockInput(LockAction.lockToggle, self.defaultLockSteps, "mainButton", "unknown"))
 
     def runMainLoop(self) -> None:
         # Run mainLoop using uasyncio for the async functionality.
@@ -235,10 +249,10 @@ class DumbDoor:
         self.log("Main loop started")
         while 1:
             if(not self.inputQueue.empty()):
-                action = await self.inputQueue.get()
-                if(action == LockAction.lockToggle):
-                    doorStatus = await self.toggleLock(doorStatus, self.ledQueue)
-                elif(action == LockAction.statusToggle):
+                lockInput = await self.inputQueue.get()
+                if(lockInput.action == LockAction.lockToggle):
+                    doorStatus = await self.toggleLock(lockInput, doorStatus, self.ledQueue)
+                elif(lockInput.action == LockAction.statusToggle):
                     doorStatus = await self.toggleLockStatus(doorStatus, self.ledQueue)
                 
             await uasyncio.sleep_ms(100)
@@ -255,7 +269,7 @@ class DumbDoor:
             self.log(f"Sys info: {str(uos.uname())}")
             
             ip = await self.setupLan()
-            self.setupDatetime()
+            await self.setupDatetime()
             listenerSocket = self.netUtil.setupTcpSocketConnection(ip, port = 80, maxClients = 2)
             
             self.log("Initialize complete")
