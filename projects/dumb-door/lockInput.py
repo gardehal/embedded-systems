@@ -2,12 +2,14 @@
 class LockInput:
     
     action: int
+    source: str
+    caller: str
     steps: int
-    source: int
-    caller: int
+    stepSleepMs: int
     
-    def __init__(self, action: int, steps: int, source: str, caller: str):
+    def __init__(self, action: int, source: str, caller: str, steps: int, stepSleepMs: int):
         self.action = action
-        self.steps = steps
         self.source = source
         self.caller = caller
+        self.steps = steps
+        self.stepSleepMs = stepSleepMs

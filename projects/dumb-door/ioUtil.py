@@ -84,7 +84,7 @@ class Stepper:
         
         return True
     
-    async def move(self, steps: int, msDelay: float) -> bool:
+    async def move(self, steps: int, msDelay: int) -> bool:
         # Move shaft, rotating the shaft in direction and number of steps given by steps (positive steps = clockwise).
         
         if(steps == 0):
@@ -108,7 +108,7 @@ class Stepper:
         
         return True
     
-    async def moveDegrees(self, degrees: float, msDelay: float) -> bool:
+    async def moveDegrees(self, degrees: float, msDelay: int) -> bool:
         # Move shaft, rotating the shaft in direction and degrees given (positive degrees = clockwise).
         
         if(degrees == 0):

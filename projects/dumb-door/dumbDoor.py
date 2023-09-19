@@ -34,6 +34,7 @@ class DumbDoor:
     mainButton = None
     mainMotor = None
     defaultLockSteps = 200
+    defaultLockStepSleepMs = 5
 
     statusLed = None
     logger = None
@@ -157,11 +158,11 @@ class DumbDoor:
         
         newStatus = await self.toggleLockStatus(doorStatus, ledQueue)
         if(newStatus == LockStatus.locked):
-            await self.mainMotor.move(lockInput.steps, 5)
+            await self.mainMotor.move(lockInput.steps, lockInput.stepSleepMs)
             self.mainMotor.deInit()
             self.log(f"{lockInput.source} - {lockInput.caller} - Locked")
         elif(newStatus == LockStatus.unlocked):
-            await self.mainMotor.move(0 - lockInput.steps, 5)
+            await self.mainMotor.move(0 - lockInput.steps, lockInput.stepSleepMs)
             self.mainMotor.deInit()
             self.log(f"{lockInput.source} - {lockInput.caller} - Unlocked")
         else:
@@ -180,16 +181,20 @@ class DumbDoor:
                 request = str(connection.recv(1024))
                 #print(request) # Verbose
             
-                lockInput = LockInput(0, 0, "socket", "unknown")
+                lockInput = LockInput(0, "socket", "unknown", self.defaultLockSteps, self.defaultLockStepSleepMs)
                 if(request.find("/toggleLock") == 6):
                     lockInput.action = LockAction.lockToggle
                 elif(request.find("/toggleStatus") == 6):
                     lockInput.action = LockAction.statusToggle
                     
                 if(request.find("steps=") > 6):
-                    stepsArgStart = request.split("steps=")[-1]
-                    steps = stepsArgStart.split(" ")[0].split("&")[0]
-                    lockInput.steps = steps
+                    argStart = request.split("steps=")[-1]
+                    arg = argStart.split(" ")[0].split("&")[0]
+                    lockInput.steps = int(arg)
+                if(request.find("stepsleepms=") > 6):
+                    argStart = request.split("stepsleepms=")[-1]
+                    arg = argStart.split(" ")[0].split("&")[0]
+                    lockInput.stepSleepMs = int(arg)
 
                 code = 200
                 status = "SUCCESS"
@@ -206,7 +211,8 @@ class DumbDoor:
                 if(lockInput.action):
                     self.inputQueue.put_nowait(lockInput)
             except Exception as e:
-                print(str(e))
+                self.log("listenSocket exception:")
+                self.log(str(e))
                 utime.sleep_ms(100)
                 continue
             finally:
@@ -228,9 +234,9 @@ class DumbDoor:
                 
             pressEndMs = utime.ticks_ms()
             if((pressEndMs - pressStartMs) > 5000): # > 5 second press will toggle status but not unlock the door
-                await self.inputQueue.put(LockInput(LockAction.statusToggle, self.defaultLockSteps, "mainButton", "unknown"))
+                await self.inputQueue.put(LockInput(LockAction.statusToggle, "mainButton", "unknown", self.defaultLockSteps, self.defaultLockStepSleepMs))
             else:
-                await self.inputQueue.put(LockInput(LockAction.lockToggle, self.defaultLockSteps, "mainButton", "unknown"))
+                await self.inputQueue.put(LockInput(LockAction.lockToggle, "mainButton", "unknown", self.defaultLockSteps, self.defaultLockStepSleepMs))
 
     def runMainLoop(self) -> None:
         # Run mainLoop using uasyncio for the async functionality.
