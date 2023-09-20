@@ -11,8 +11,6 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - Authentication (e.g. key on pico, auth API on home server)
   - Log who made the call when over network, button = "[button press]"
 - Charts and final documentation.
-- final adjustments for stepper steps to lock/unlock door and some way to calibrate (e.g. move lock to one extreme or other)
-  - Number of steps to take as argument for network call?
 - Accelerator which can detect when door moves, if status is locked and door moves, it's likely unlocked (or broken into) from outside (depends on speed of acceleration maybe? should probably just flag fast door openings as suspicious)
   - Integrate accepelrator into circuits and diagram
   - buy one an test https://www.digitalimpuls.no/adafruit/144438/lis3dh-trippel-axe-akselerometer--plus-2g-4g-8g-16g
@@ -22,6 +20,7 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
   - logging potential issue reading/writing to file across threads still (specifically during startup, OS code ?? and/or similar ENOENT error)
     - Yes, Still getting ENOENT (error no entry, error no entity, likley due to other thread accessing the file despite thread lock)
   - Motor not capable of turning lock at the moment the mechanism bites. Larger gear? step slower for torque?
+  - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
 
 ## Circuit Diagram
 
@@ -122,6 +121,16 @@ NB: The first part of this relates to 3D printed parts over at [this repo](https
     - Test functionality
     - Ctrl+C, X + Enter (abort current program)
     - Ctrl+Shift+P + "MicroPython: Reset > Soft" (soft reset machine)
+
+## Help
+
+- Plugging in PICO yelds "Access Denied" and resetting/replugging/disableing and enableing COM ports doesn't help
+  - Unknown what caused it (_thread lock?)
+  - Can be fixed by: [ref](https://github.com/orgs/micropython/discussions/10257)
+    1. Unplugging, pressing BOOTSEL, plugging in PICO, then release BOOTSEL to prepare PICO for install
+    2. Install (circuitpython)[https://circuitpython.org/board/raspberry_pi_pico_w/], this will wipe anything stuck on PICO
+    3. Repeat step 1
+    4. Install Circuit Python
 
 ## Retrospect
 

@@ -84,10 +84,10 @@ class DumbDoor:
             try:
                 self.logger.log(message, logToFile, doPrint, encoding)
             except Exception as e:
-                self.log("log exception:")
-                self.log(str(e))
+                print("log exception:")
+                print(str(e))
                 self.statusLed.blink(rgb.yellow, rgb.red)
-            
+                
     async def setupLan(self) -> str:
         # Connect to the internet using secrets from secrets.py file.
         
