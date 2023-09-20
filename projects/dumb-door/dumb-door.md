@@ -21,6 +21,7 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
     - Yes, Still getting ENOENT (error no entry, error no entity, likley due to other thread accessing the file despite thread lock)
   - Motor not capable of turning lock at the moment the mechanism bites. Larger gear? step slower for torque?
   - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
+  - timeout for IP and/or get datetime, slow and unpredicatble. Could use internal clock but not reliable
 
 ## Circuit Diagram
 

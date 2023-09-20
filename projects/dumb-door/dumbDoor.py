@@ -43,6 +43,7 @@ class DumbDoor:
 
     ledQueue = None
     inputQueue = None
+    lock = _thread.allocate_lock()
     
     def __init__(self, wifiSsid: str,
                  wifiPassword: str,
@@ -79,13 +80,14 @@ class DumbDoor:
     def log(self, message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
         # Log message safely for threads.
         
-        lock = _thread.allocate_lock()
-        with lock:
+        with self.lock:
             try:
                 self.logger.log(message, logToFile, doPrint, encoding)
             except Exception as e:
                 print("log exception:")
                 print(str(e))
+                print("tolog:")
+                print(message)
                 self.statusLed.blink(rgb.yellow, rgb.red)
                 
     async def setupLan(self) -> str:
