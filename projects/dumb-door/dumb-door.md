@@ -17,7 +17,9 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
   - Where does it sit physically in the brain? Breadboard full. Add small breadboard due to pins? otherwise just wires tied to board
 - Bugs:
   - Status LED should continue to blink during setup (blue = network, yellow = log/datetime, white = misc, errors should blink red plus other colour depending on what failed, eg. red + blue for network)
-  - Motor not capable of turning lock at the moment the mechanism bites. gear and geat-rest works fine, still not enough torque. 12v not enough, try gear ratio
+  - Motor not capable of turning lock at the moment the mechanism bites
+    - gear ratio helped, but due to sag, new gears aren't connect unless gear-test is used
+      - increase teeth of lock-gear and fix peg-holes + pegs
   - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
   - timeout for IP and/or get datetime, slow and unpredicatble. Could use internal clock but not reliable
 
