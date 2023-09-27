@@ -23,4 +23,8 @@ door = DumbDoor(wifiSsid, wifiPassword, wifiIps,
                 datetimeSourceUrl, logFilename, logFileMaxSizeByte,
                 statusLedPins, mainButtonPin, mainMotorPins,
                 mainMotorSequence, mainMotorMaxSteps)
+
+door.defaultLockSteps = 600
+door.defaultLockStepSleepMs = 1
+
 uasyncio.run(door.run())
