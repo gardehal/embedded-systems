@@ -13,13 +13,9 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - Charts and final documentation.
 - Accelerator which can detect when door moves, if status is locked and door moves, it's likely unlocked (or broken into) from outside (depends on speed of acceleration maybe? should probably just flag fast door openings as suspicious)
   - Integrate accepelrator into circuits and diagram
-  - buy one an test https://www.digitalimpuls.no/adafruit/144438/lis3dh-trippel-axe-akselerometer--plus-2g-4g-8g-16g
-  - Where does it sit physically in the brain? Breadboard full. Add small breadboard due to pins? otherwise just wires tied to board
+  - LIS3DH breakout doesn't play well with micropython..
 - Bugs:
   - Status LED should continue to blink during setup (blue = network, yellow = log/datetime, white = misc, errors should blink red plus other colour depending on what failed, eg. red + blue for network)
-  - Motor not capable of turning lock at the moment the mechanism bites
-    - gear ratio helped, but due to sag, new gears aren't connect unless gear-test is used
-      - increase teeth of lock-gear and fix peg-holes + pegs
   - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
   - timeout for IP and/or get datetime, slow and unpredicatble. Could use internal clock but not reliable
 
