@@ -11,9 +11,9 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - Authentication (e.g. key on pico, auth API on home server)
   - Log who made the call when over network, button = "[button press]"
 - Charts and final documentation.
-- Accelerator which can detect when door moves, if status is locked and door moves, it's likely unlocked (or broken into) from outside (depends on speed of acceleration maybe? should probably just flag fast door openings as suspicious)
+- Sensor which can detect when door moves, if status is locked and door moves, it's likely unlocked (or broken into) from outside (depends on speed of acceleration maybe? should probably just flag fast door openings as suspicious)
   - Integrate accepelrator into circuits and diagram
-  - LIS3DH breakout doesn't play well with micropython..
+  - Testing with accelerator, can be tricked with door shaking or hard knocking. Try ultrasonic
 - Bugs:
   - Status LED should continue to blink during setup (blue = network, yellow = log/datetime, white = misc, errors should blink red plus other colour depending on what failed, eg. red + blue for network)
   - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
