@@ -103,6 +103,7 @@ NB: The first part of this relates to 3D printed parts over at [this repo](https
 - lock-gear (dark green)
 - lock-gear-pins (light green)
 - motor-gear (light pink)
+- gear-align (brown), optional but useful if the frame or motor sags a little and the gears don't bite
 
 ## Useful links
 
