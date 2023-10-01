@@ -11,13 +11,17 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - Authentication (e.g. key on pico, auth API on home server)
   - Log who made the call when over network, button = "[button press]"
 - Charts and final documentation.
-- Sensor which can detect when door moves, if status is locked and door moves, it's likely unlocked (or broken into) from outside (depends on speed of acceleration maybe? should probably just flag fast door openings as suspicious)
-  - Integrate accepelrator into circuits and diagram
-  - Testing with accelerator, can be tricked with door shaking or hard knocking. Try ultrasonic
 - Bugs:
   - Status LED should continue to blink during setup (blue = network, yellow = log/datetime, white = misc, errors should blink red plus other colour depending on what failed, eg. red + blue for network)
   - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
   - timeout for IP and/or get datetime, slow and unpredicatble. Could use internal clock but not reliable
+  
+- V2
+  - Redesign frame for ambidexterous brain/battery mounting
+  - Use screw attachment for NEMA-17, not custom base and brackets
+  - Open for use of ultrasonic/light range sensor/magnet to detect door opening
+  - Better 3-battery case (slightly longer in case/new stacked)
+  - Guide/sub-parts to make gears 
 
 ## Circuit Diagram
 
@@ -25,7 +29,7 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 
 ## Part list
 
-- 2x 18650 Lithium-Ion rechargeable batteries (with tip)
+- 3x 18650 Lithium-Ion rechargeable batteries (with tip)
 - 1x NEMA-17 sized stepper motor (and cables if not included)
 - 1x stepper motor driver
 - 1x Raspberry Pi Pico W
