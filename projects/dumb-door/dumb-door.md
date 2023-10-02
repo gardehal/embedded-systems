@@ -21,7 +21,8 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
   - Use screw attachment for NEMA-17, not custom base and brackets
   - Open for use of ultrasonic/light range sensor/magnet to detect door opening
   - Better 3-battery case (slightly longer in case/new stacked)
-  - Guide/sub-parts to make gears 
+  - Guide/sub-parts to make gears
+  - Improve brain-lid and how it attaches, improve holes for wires/USB
 
 ## Circuit Diagram
 
