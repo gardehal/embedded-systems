@@ -94,6 +94,8 @@ class DumbDoor:
         # Connect to the internet using secrets from secrets.py file.
         
         self.log("Connecting to LAN...")
+        await self.ledQueue.put(rgb.pink)
+        await self.ledQueue.put(rgb.off)
         
         defaultIp = "0.0.0.0"
         ip = defaultIp
@@ -105,7 +107,10 @@ class DumbDoor:
         except Exception as e:
             self.log("setupLan exception:")
             self.log(str(e))
-            self.statusLed.blink(rgb.blue, rgb.red)
+            await self.ledQueue.put(rgb.blue)
+            await self.ledQueue.put(rgb.red)
+            # infinite timeout.. TODO better way
+            await uasyncio.sleep_ms(10000000)
             
         self.log(f"Connected on IP: {ip}")
         return ip
@@ -113,6 +118,8 @@ class DumbDoor:
     async def setupDatetime(self) -> int:
         # Fetch datetime and more basics for logging.
         
+        await self.ledQueue.put(rgb.yellow)
+        await self.ledQueue.put(rgb.off)
         tickMsOffset = 0
         while not tickMsOffset:
             try:
@@ -240,32 +247,18 @@ class DumbDoor:
             else:
                 await self.inputQueue.put(LockInput(LockAction.lockToggle, "mainButton", "unknown", self.defaultLockSteps, self.defaultLockStepSleepMs))
 
-    def runMainLoop(self) -> None:
+    def startListeners(self, listenerSocket) -> None:
         # Run mainLoop using uasyncio for the async functionality.
         
-        uasyncio.run(self.mainLoop())
+        uasyncio.run(self.startListenersAsync(listenerSocket))
         
-    async def mainLoop(self) -> None:
+    async def startListenersAsync(self, listenerSocket) -> None:
         # Set up outputs; status LED and main loop for motor handleing
         
-        # Default to locked state and create async LED status blink
-        doorStatus = LockStatus.locked
-        await self.ledQueue.put(rgb.green)
-        await self.ledQueue.put(rgb.off)
-        uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
-        
-        self.log("Main loop started")
-        while 1:
-            if(not self.inputQueue.empty()):
-                lockInput = await self.inputQueue.get()
-                if(lockInput.action == LockAction.lockToggle):
-                    doorStatus = await self.toggleLock(lockInput, doorStatus, self.ledQueue)
-                elif(lockInput.action == LockAction.statusToggle):
-                    doorStatus = await self.toggleLockStatus(doorStatus, self.ledQueue)
-                
-            await uasyncio.sleep_ms(100)
-            
-        self.log("Main loop completed")
+        self.log("Input listeners starting...")
+        uasyncio.create_task(self.listenMainButton())
+        uasyncio.create_task(self.listenSocket(listenerSocket))    
+        self.log("Input listeners started")
         
     async def run(self) -> None:
         # Entry point
@@ -273,24 +266,38 @@ class DumbDoor:
         try:
             self.log("")
             self.log("Initializing...")
-            self.log(f"Mem info: {str(micropython.mem_info())}")
             self.log(f"Sys info: {str(uos.uname())}")
+            self.log(f"Mem info: {str(micropython.mem_info())}")
+            
+            uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
+            await self.ledQueue.put(rgb.white)
+            await self.ledQueue.put(rgb.off)
             
             ip = await self.setupLan()
             await self.setupDatetime()
             listenerSocket = self.netUtil.setupTcpSocketConnection(ip, port = 80, maxClients = 2)
+            _thread.start_new_thread(self.startListeners(listenerSocket), (listenerSocket))
             
             self.log("Initialize complete")
             
-            # Start main loop in a new thread and set up input listeners on main thread
-            # Note: this is done because sockets seem to have issues when not on the first/main thread
-            _thread.start_new_thread(self.runMainLoop, ())
+            # Default to locked state and create async LED status blink
+            doorStatus = LockStatus.locked
+            await self.ledQueue.put(rgb.green)
+            await self.ledQueue.put(rgb.off)
             
-            self.log("Input listeners starting...")
-            uasyncio.create_task(self.listenMainButton())
-            uasyncio.create_task(self.listenSocket(listenerSocket))    
-            self.log("Input listeners started")
-            
+            self.log("Main loop started")
+            while 1:
+                if(not self.inputQueue.empty()):
+                    lockInput = await self.inputQueue.get()
+                    if(lockInput.action == LockAction.lockToggle):
+                        doorStatus = await self.toggleLock(lockInput, doorStatus, self.ledQueue)
+                    elif(lockInput.action == LockAction.statusToggle):
+                        doorStatus = await self.toggleLockStatus(doorStatus, self.ledQueue)
+                    
+                await uasyncio.sleep_ms(100)
+                
+            self.log("Main loop completed")
+                 
         except KeyboardInterrupt:
             self.log("Keyboard interrupt")
             reset()
