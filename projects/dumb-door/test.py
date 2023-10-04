@@ -36,7 +36,6 @@ while 0:
    ultra()
    utime.sleep_ms(2000)
    
-   
 async def blink():
     print("blink start")
     statusLed = RgbLedUtil(RGBLED(red = 1, green = 2, blue = 3))

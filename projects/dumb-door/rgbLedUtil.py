@@ -34,8 +34,7 @@ class RgbLedUtil:
         while 1:
             if(not queue.empty()):
                 a = await queue.get()
+            if(not queue.empty()):
                 b = await queue.get()
             
             await self.blinkOnce(a, b, aMs, bMs)
-
-
