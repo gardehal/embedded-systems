@@ -86,15 +86,16 @@ class DumbDoor:
             except Exception as e:
                 print("log exception:")
                 print(str(e))
-                print("tolog:")
+                print("message:")
                 print(message)
-                self.statusLed.blink(rgb.yellow, rgb.red)
+                await self.ledQueue.put(rgb.yellow)
+                await self.ledQueue.put(rgb.red)
                 
     async def setupLan(self) -> str:
         # Connect to the internet using secrets from secrets.py file.
         
         self.log("Connecting to LAN...")
-        await self.ledQueue.put(rgb.pink)
+        await self.ledQueue.put(rgb.blue)
         await self.ledQueue.put(rgb.off)
         
         defaultIp = "0.0.0.0"
@@ -103,14 +104,12 @@ class DumbDoor:
             while ip == defaultIp:
                 self.log("Getting IP...")
                 ip = self.netUtil.connectWlan(self.wifiSsid, self.wifiPassword, self.ipTuple)
-                await self.statusLed.blinkOnce(rgb.blue, rgb.off)
         except Exception as e:
             self.log("setupLan exception:")
             self.log(str(e))
             await self.ledQueue.put(rgb.blue)
             await self.ledQueue.put(rgb.red)
-            # infinite timeout.. TODO better way
-            await uasyncio.sleep_ms(10000000)
+            raise e
             
         self.log(f"Connected on IP: {ip}")
         return ip
