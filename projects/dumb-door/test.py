@@ -1,5 +1,8 @@
 from machine import Pin
 import utime
+import uasyncio
+from rgbLedUtil import RgbLedUtil
+from rgbColor import RgbColor as rgb
 
 trigger = Pin(3, Pin.OUT)
 echo = Pin(2, Pin.IN)
@@ -27,6 +30,21 @@ def ultra():
     else:
         print("door closed")
    
-while True:
+while 0:
    ultra()
    utime.sleep_ms(2000)
+   
+   
+async def blink():
+    print("blink")
+    statusLed = RgbLedUtil(RGBLED(red = 1, green = 2, blue = 3))
+    ledQueue = Queue()
+    print("queue")
+    uasyncio.create_task(statusLed.blinkQueue(ledQueue, 200, 2000))
+    await ledQueue.put(rgb.white)
+    await ledQueue.put(rgb.off)
+    
+    await uasyncio.sleep_ms(1000000)
+  
+print("bbb")  
+uasyncio.create_task(blink())
