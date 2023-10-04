@@ -2,7 +2,9 @@ from machine import Pin
 import utime
 import uasyncio
 from rgbLedUtil import RgbLedUtil
+from picozero import RGBLED
 from rgbColor import RgbColor as rgb
+from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 
 trigger = Pin(3, Pin.OUT)
 echo = Pin(2, Pin.IN)
@@ -36,15 +38,17 @@ while 0:
    
    
 async def blink():
-    print("blink")
+    print("blink start")
     statusLed = RgbLedUtil(RGBLED(red = 1, green = 2, blue = 3))
     ledQueue = Queue()
     print("queue")
-    uasyncio.create_task(statusLed.blinkQueue(ledQueue, 200, 2000))
     await ledQueue.put(rgb.white)
     await ledQueue.put(rgb.off)
+    uasyncio.create_task(statusLed.blinkQueue(ledQueue, 200, 2000))
     
-    await uasyncio.sleep_ms(1000000)
+    await uasyncio.sleep_ms(100000000)
+    print("blink over")
   
-print("bbb")  
-uasyncio.create_task(blink())
+print("test blink")  
+uasyncio.run(blink())
+    
