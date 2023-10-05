@@ -117,8 +117,6 @@ class DumbDoor:
     async def setupDatetime(self) -> int:
         # Fetch datetime and more basics for logging.
         
-        await self.ledQueue.put(rgb.yellow)
-        await self.ledQueue.put(rgb.off)
         tickMsOffset = 0
         while not tickMsOffset:
             try:
@@ -246,12 +244,33 @@ class DumbDoor:
             else:
                 await self.inputQueue.put(LockInput(LockAction.lockToggle, "mainButton", "unknown", self.defaultLockSteps, self.defaultLockStepSleepMs))
 
-    def startListeners(self, listenerSocket) -> None:
+    def runMainLoop(self) -> None:
         # Run mainLoop using uasyncio for the async functionality.
+
+        uasyncio.run(self.mainLoop())
+
+    async def mainLoop(self) -> None:
+        # Set up outputs; status LED and main loop for motor handleing
+            
+        # Default to locked state and create async LED status blink
+        doorStatus = LockStatus.locked
+        await self.ledQueue.put(rgb.green)
+        await self.ledQueue.put(rgb.off)
+
+        self.log("Main loop started")
+        while 1:
+            if(not self.inputQueue.empty()):
+                lockInput = await self.inputQueue.get()
+                if(lockInput.action == LockAction.lockToggle):
+                    doorStatus = await self.toggleLock(lockInput, doorStatus, self.ledQueue)
+                elif(lockInput.action == LockAction.statusToggle):
+                    doorStatus = await self.toggleLockStatus(doorStatus, self.ledQueue)
+
+            await uasyncio.sleep_ms(100)
+
+        self.log("Main loop completed")
         
-        uasyncio.run(self.startListenersAsync(listenerSocket))
-        
-    async def startListenersAsync(self, listenerSocket) -> None:
+    def startListeners(self, listenerSocket) -> None:
         # Set up outputs; status LED and main loop for motor handleing
         
         self.log("Input listeners starting...")
@@ -268,34 +287,23 @@ class DumbDoor:
             self.log(f"Sys info: {str(uos.uname())}")
             self.log(f"Mem info: {str(micropython.mem_info())}")
             
-            uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
-            await self.ledQueue.put(rgb.white)
-            await self.ledQueue.put(rgb.off)
             
             ip = await self.setupLan()
             await self.setupDatetime()
             listenerSocket = self.netUtil.setupTcpSocketConnection(ip, port = 80, maxClients = 2)
-            _thread.start_new_thread(self.startListeners(listenerSocket), (listenerSocket))
+            _thread.start_new_thread(self.runMainLoop, ())
             
+            uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
+            await self.ledQueue.put(rgb.white)
+            await self.ledQueue.put(rgb.off)
+            await uasyncio.sleep_ms(1200)
             self.log("Initialize complete")
             
-            # Default to locked state and create async LED status blink
-            doorStatus = LockStatus.locked
-            await self.ledQueue.put(rgb.green)
-            await self.ledQueue.put(rgb.off)
-            
-            self.log("Main loop started")
-            while 1:
-                if(not self.inputQueue.empty()):
-                    lockInput = await self.inputQueue.get()
-                    if(lockInput.action == LockAction.lockToggle):
-                        doorStatus = await self.toggleLock(lockInput, doorStatus, self.ledQueue)
-                    elif(lockInput.action == LockAction.statusToggle):
-                        doorStatus = await self.toggleLockStatus(doorStatus, self.ledQueue)
-                    
-                await uasyncio.sleep_ms(100)
-                
-            self.log("Main loop completed")
+            # Start main loop in a new thread and set up input listeners on main thread
+            # Note: this is done because sockets seem to have issues when not on the first/main thread
+            _thread.start_new_thread(self.mainLoop, ())
+
+            self.startListeners(listenerSocket)
                  
         except KeyboardInterrupt:
             self.log("Keyboard interrupt")
