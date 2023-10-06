@@ -287,22 +287,19 @@ class DumbDoor:
             self.log(f"Sys info: {str(uos.uname())}")
             self.log(f"Mem info: {str(micropython.mem_info())}")
             
+            uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
+            await self.ledQueue.put(rgb.white)
+            await self.ledQueue.put(rgb.off)
             
             ip = await self.setupLan()
             await self.setupDatetime()
             listenerSocket = self.netUtil.setupTcpSocketConnection(ip, port = 80, maxClients = 2)
-            _thread.start_new_thread(self.runMainLoop, ())
             
-            uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
-            await self.ledQueue.put(rgb.white)
-            await self.ledQueue.put(rgb.off)
-            await uasyncio.sleep_ms(1200)
             self.log("Initialize complete")
             
             # Start main loop in a new thread and set up input listeners on main thread
             # Note: this is done because sockets seem to have issues when not on the first/main thread
-            _thread.start_new_thread(self.mainLoop, ())
-
+            _thread.start_new_thread(self.runMainLoop, ())
             self.startListeners(listenerSocket)
                  
         except KeyboardInterrupt:
