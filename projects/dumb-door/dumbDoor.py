@@ -72,6 +72,8 @@ class DumbDoor:
         
         self.statusLed = RgbLedUtil(self.rgbLed)
         self.logger = LogUtil(self.logFilename, self.logFileMaxSizeByte)
+        print("log")
+        self.log("test")
         self.netUtil = NetworkUtil()
         self.http = HttpUtil()
         self.ledQueue = Queue()
@@ -80,9 +82,12 @@ class DumbDoor:
     def log(self, message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
         # Log message safely for threads.
         
+        print("logging")
         with self.lock:
             try:
+                print("logging1")
                 self.logger.log(message, logToFile, doPrint, encoding)
+                print("logging2")
             except Exception as e:
                 print("log exception:")
                 print(str(e))
@@ -283,6 +288,7 @@ class DumbDoor:
         
         try:
             self.log("")
+            print("Initializing")
             self.log("Initializing...")
             self.log(f"Sys info: {str(uos.uname())}")
             self.log(f"Mem info: {str(micropython.mem_info())}")
@@ -291,8 +297,11 @@ class DumbDoor:
             await self.ledQueue.put(rgb.white)
             await self.ledQueue.put(rgb.off)
             
+            print("setup")
             ip = await self.setupLan()
+            print("datetime")
             await self.setupDatetime()
+            print("listenerSocket")
             listenerSocket = self.netUtil.setupTcpSocketConnection(ip, port = 80, maxClients = 2)
             
             self.log("Initialize complete")
