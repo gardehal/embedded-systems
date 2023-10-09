@@ -88,8 +88,6 @@ class DumbDoor:
                 print(str(e))
                 print("message:")
                 print(message)
-                #await self.ledQueue.put(rgb.yellow)
-                #await self.ledQueue.put(rgb.red)
                 
     async def setupLan(self) -> str:
         # Connect to the internet using secrets from secrets.py file.
