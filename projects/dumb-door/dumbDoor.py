@@ -42,6 +42,7 @@ class DumbDoor:
     http = None
 
     ledQueue = None
+    ledTimerQueue = None
     inputQueue = None
     lock = _thread.allocate_lock()
     
@@ -75,6 +76,7 @@ class DumbDoor:
         self.netUtil = NetworkUtil()
         self.http = HttpUtil()
         self.ledQueue = Queue()
+        self.ledTimerQueue = Queue()
         self.inputQueue = Queue()
         
     def log(self, message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
@@ -254,6 +256,8 @@ class DumbDoor:
         doorStatus = LockStatus.locked
         await self.ledQueue.put(rgb.green)
         await self.ledQueue.put(rgb.off)
+        await self.ledTimerQueue.put(200)
+        await self.ledTimerQueue.put(2000)
 
         self.log("Main loop started")
         while 1:
@@ -285,9 +289,11 @@ class DumbDoor:
             self.log(f"Sys info: {str(uos.uname())}")
             self.log(f"Mem info: {str(micropython.mem_info())}")
             
-            uasyncio.create_task(self.statusLed.blinkQueue(self.ledQueue, 200, 2000))
+            uasyncio.create_task(self.statusLed.blinkQueues(self.ledQueue, self.ledTimerQueue))
             await self.ledQueue.put(rgb.white)
             await self.ledQueue.put(rgb.off)
+            await self.ledTimerQueue.put(250)
+            await self.ledTimerQueue.put(250)
             
             ip = await self.setupLan()
             await self.setupDatetime()
