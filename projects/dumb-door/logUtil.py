@@ -1,28 +1,20 @@
 import os
 import utime
-import machine
+from machine import RTC
 
 class LogUtil:
-    datetimeInitiated: str = None
-    tickMsInitiated: int = None
-    
-    rtc = machine.RTC()
+    logFilename: str = None
+    logFileMaxSizeByte: int = None
+    rtc: tuple = RTC()
+    chunkSize: int = None
     
     def __init__(self,
                  logFilename: str,
                  logFileMaxSizeByte: int,
-                 #datetimeInitiated: tuple, # Datetime UTC YYYY-MM-DDThh:mm:ssZ as tuple (YYYY, MM, DD, hh, mm, ss), this will be used for internal RTC
-                 datetimeInitiated: str = "[datetime not initialized]",
-                 tickMsInitiated: int = 0,
                  chunkSize: int = 16384): # 16 kb, capped to 264 kb RAM on standard PICO
-        self.logFilename: str = logFilename
-        self.logFileMaxSizeByte: int = logFileMaxSizeByte
-        self.datetimeInitiated: str = datetimeInitiated
-        self.tickMsInitiated: int = tickMsInitiated
-        self.chunkSize: int = chunkSize
-        
-        #if(datetimeInitiated):
-        #    rtc.datetime(())
+        self.logFilename = logFilename
+        self.logFileMaxSizeByte = logFileMaxSizeByte
+        self.chunkSize = chunkSize
         
         if(not self.logFilename in os.listdir()):
             with open(self.logFilename, "a") as file:
@@ -65,7 +57,7 @@ class LogUtil:
     def getPrefix(self) -> str:
         # Get prefix for simple log line.
         
-        return f"{self.datetimeInitiated} +{utime.ticks_ms() - self.tickMsInitiated}:"
+        return f"{self.rtc.datetime()}:"
     
     def getFormattedLine(self, message: str) -> str:
         # Get line used in simple logs.

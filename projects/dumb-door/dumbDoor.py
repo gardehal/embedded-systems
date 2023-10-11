@@ -6,7 +6,7 @@ import uos
 import micropython
 
 from picozero import RGBLED
-from machine import Pin, reset
+from machine import Pin, reset, RTC
 
 from queue import Queue  # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/queue.py
 
@@ -41,6 +41,7 @@ class DumbDoor:
     netUtil = None
     http = None
 
+    rtc = RTC()
     ledQueue = None
     ledTimerQueue = None
     inputQueue = None
@@ -125,21 +126,33 @@ class DumbDoor:
                 
                 datetimeJson = datetimeRequest.json()
                 datetime = datetimeJson["datetime"]
-                tickMsOffset = utime.ticks_ms()
+                datetimeTuple = self.utcToDateTimeTuple(datetime)
                 
                 datetimeRequest.close()
                 
-                self.logger.datetimeInitiated = datetime
-                self.logger.tickMsInitiated = tickMsOffset
+                self.rtc.datetime(datetimeTuple)
+                self.logger.rtc = self.rtc
                 
-                self.log(f"datetime ({datetime}) and tickMsOffset ({tickMsOffset}) initialized")
+                self.log(f"datetime ({datetime}) initialized")
             except Exception as e:
-                self.log("PICO connected to LAN, but there was an error with setting datetimeInitiated:")
+                self.log("Error setting logger RTC:")
                 self.log(str(e))
                 await self.statusLed.blinkOnce(rgb.blue, rgb.red) # Built-in wait, 1000 ms
 
         return tickMsOffset
         
+    def utcToDateTimeTuple(self, utcString: str) -> tuple:
+        # Get RTC datetime tuple from UTC string (2023-10-10T21:49:40Z).
+        
+        year = int(utcString[0,4])
+        month = int(utcString[5,7])
+        day = int(utcString[8,10])
+        hour = int(utcString[11,13])
+        minute = int(utcString[14,16])
+        seconds = int(utcString[17,19])
+        
+        return (year, month, day, hour, minute, second)
+    
     async def toggleLockStatus(self, doorStatus: int, ledQueue: Queue) -> int:
         # Toggle lock status only, not the physical door lock. Updates LED: Green = locked, red = open.
         
