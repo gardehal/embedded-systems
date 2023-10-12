@@ -5,8 +5,9 @@ from machine import RTC
 class LogUtil:
     logFilename: str = None
     logFileMaxSizeByte: int = None
-    rtc: tuple = RTC()
     chunkSize: int = None
+    rtc: tuple = RTC()
+    rtcOffset: int = 0
     
     def __init__(self,
                  logFilename: str,
@@ -57,7 +58,15 @@ class LogUtil:
     def getPrefix(self) -> str:
         # Get prefix for simple log line.
         
-        return f"{self.rtc.datetime()}:"
+        return f"{self.nowUtc()}:"
+        
+    def nowUtc(self) -> str:
+        # Convert rtc.datetime() into  UTC string.
+        
+        # (YYYY, MM, DD, ww, hh, mm, ss, s)
+        dt = self.rtc.datetime()
+        offsetString = if(rtcOffset != 0) f"+0{rtcOffset}:00" else "Z"
+        return f"{dt[0]}-{dt[1]}-{dt[2]}T{dt[4]}:{dt[5]}:{dt[6]}{offsetString}"
     
     def getFormattedLine(self, message: str) -> str:
         # Get line used in simple logs.
