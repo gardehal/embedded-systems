@@ -6,8 +6,8 @@ class LogUtil:
     logFilename: str = None
     logFileMaxSizeByte: int = None
     chunkSize: int = None
-    rtc: tuple = RTC()
-    rtcOffset: int = 0
+    rtc: tuple = None
+    utcOffset: int = None
     
     def __init__(self,
                  logFilename: str,
@@ -16,6 +16,8 @@ class LogUtil:
         self.logFilename = logFilename
         self.logFileMaxSizeByte = logFileMaxSizeByte
         self.chunkSize = chunkSize
+        self.rtc = RTC()
+        self.utcOffset = 0
         
         if(not self.logFilename in os.listdir()):
             with open(self.logFilename, "a") as file:
@@ -25,7 +27,7 @@ class LogUtil:
         # Rotate logfile, removing the first portion (logFileSize * logfileDeleteMultiplier) of the log file.
         
         prefix = self.getPrefix()
-        print(f"{prefix} Logfile size exceeds logFileMaxSizeByte ({logFileSize}/{self.logFileMaxSizeByte} bytes), triggered clean up...")
+        print(f"{prefix}Logfile size exceeds logFileMaxSizeByte ({logFileSize}/{self.logFileMaxSizeByte} bytes), triggered clean up...")
         tmpLogFilename = f"tmp_{self.logFilename}"
         tmpLogFileSize = 0
         skipBytes = int(logFileSize * logDeleteMultiplier)
@@ -36,7 +38,7 @@ class LogUtil:
                 break
                 
             chunk = ""
-            print(f"{prefix} Cleaning up (logfile size {skipBytes + (self.chunkSize * i)}/{logFileSize} bytes)...")
+            print(f"{prefix}Cleaning up (logfile size {skipBytes + (self.chunkSize * i)}/{logFileSize} bytes)...")
             with open(self.logFilename, "rb") as readFile:
                 readFile.seek(skipBytes + (self.chunkSize * i), 0)
                 chunk = readFile.read(self.chunkSize)
@@ -58,20 +60,22 @@ class LogUtil:
     def getPrefix(self) -> str:
         # Get prefix for simple log line.
         
-        return f"{self.nowUtc()}:"
+        return f"{self.nowUtc()}: "
         
     def nowUtc(self) -> str:
         # Convert rtc.datetime() into  UTC string.
         
-        # (YYYY, MM, DD, ww, hh, mm, ss, s)
+        # (YYYY, MM, DD, w, hh, mm, ss, s)
         dt = self.rtc.datetime()
-        offsetString = if(rtcOffset != 0) f"+0{rtcOffset}:00" else "Z"
-        return f"{dt[0]}-{dt[1]}-{dt[2]}T{dt[4]}:{dt[5]}:{dt[6]}{offsetString}"
+        # TODO could set and store as const, would need method to update self.utcOffset to also set this. Saves some computing speed for each log line
+        direction = "+" if(self.utcOffset > 0) else "-"
+        offsetString = "Z" if(self.utcOffset == 0) else f"{direction}{self.utcOffset:02}:00"
+        return f"{dt[0]:02}-{dt[1]:02}-{dt[2]:02}T{dt[4]:02}:{dt[5]:02}:{dt[6]:02}{offsetString}"
     
     def getFormattedLine(self, message: str) -> str:
         # Get line used in simple logs.
         
-        return f"{self.getPrefix()} {message}"
+        return f"{self.getPrefix()}{message}"
         
     def log(self, message: str, logToFile: bool = True, doPrint: bool = True, encoding: str = "utf-8") -> None:
         # Print and log message in a given format.
