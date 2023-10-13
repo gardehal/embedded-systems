@@ -118,28 +118,27 @@ class DumbDoor:
     async def setupDatetime(self) -> int:
         # Fetch datetime and more basics for logging.
         
-        tickMsOffset = 0
-        while not tickMsOffset:
-            try:
-                self.log(f"Initializing datetime...")
-                datetimeRequest = urequests.get(self.datetimeSourceUrl)
-                
-                datetimeJson = datetimeRequest.json()
-                datetime = datetimeJson["datetime"]
-                datetimeTuple = self.utcToDateTimeTuple(datetime)
-                
-                datetimeRequest.close()
-                
-                self.rtc.datetime(datetimeTuple)
-                self.logger.rtc = self.rtc
-                
-                self.log(f"datetime ({datetime}) initialized")
-            except Exception as e:
-                self.log("Error setting logger RTC:")
-                self.log(str(e))
-                await self.statusLed.blinkOnce(rgb.blue, rgb.red) # Built-in wait, 1000 ms
+        try:
+            self.log(f"Initializing datetime...")
+            datetimeRequest = urequests.get(self.datetimeSourceUrl, timeout = (5,5))
+            
+            datetimeJson = datetimeRequest.json()
+            datetime = datetimeJson["datetime"]
+            datetimeTuple = self.utcToDateTimeTuple(datetime)
+            
+            datetimeRequest.close()
+            tickMsOffset = 1
+            self.rtc.datetime(datetimeTuple)
+            self.logger.rtc = self.rtc
+            self.logger.utcOffset = 2
+            
+            self.log(f"datetime ({datetime}) initialized")
+        except Exception as e:
+            self.log("Error setting logger RTC:")
+            self.log(str(e))
+            await self.statusLed.blinkOnce(rgb.blue, rgb.red) # Built-in wait, 1000 ms
 
-        return tickMsOffset
+        return 1
         
     def utcToDateTimeTuple(self, utcString: str) -> tuple:
         # Get RTC datetime tuple from UTC string (2023-10-10T21:49:40Z).
