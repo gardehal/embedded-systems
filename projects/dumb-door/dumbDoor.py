@@ -1,5 +1,5 @@
 import uasyncio
-import urequests
+import requests as requests
 import utime
 import _thread
 import uos
@@ -118,25 +118,27 @@ class DumbDoor:
     async def setupDatetime(self) -> int:
         # Fetch datetime and more basics for logging.
         
-        try:
-            self.log(f"Initializing datetime...")
-            datetimeRequest = urequests.get(self.datetimeSourceUrl, timeout = (5,5))
-            
-            datetimeJson = datetimeRequest.json()
-            datetime = datetimeJson["datetime"]
-            datetimeTuple = self.utcToDateTimeTuple(datetime)
-            
-            datetimeRequest.close()
-            tickMsOffset = 1
-            self.rtc.datetime(datetimeTuple)
-            self.logger.rtc = self.rtc
-            self.logger.utcOffset = 2
-            
-            self.log(f"datetime ({datetime}) initialized")
-        except Exception as e:
-            self.log("Error setting logger RTC:")
-            self.log(str(e))
-            await self.statusLed.blinkOnce(rgb.blue, rgb.red) # Built-in wait, 1000 ms
+        initiated = False
+        while not initiated:
+            try:
+                self.log(f"Initializing datetime...")
+                datetimeRequest = requests.get(self.datetimeSourceUrl, timeout = (5,5))
+                
+                datetimeJson = datetimeRequest.json()
+                datetime = datetimeJson["datetime"]
+                datetimeTuple = self.utcToDateTimeTuple(datetime)
+                
+                datetimeRequest.close()
+                self.rtc.datetime(datetimeTuple)
+                self.logger.rtc = self.rtc
+                self.logger.utcOffset = 2
+                
+                initiated = True
+                self.log(f"datetime ({datetime}) initialized")
+            except Exception as e:
+                self.log("Error setting logger RTC:")
+                self.log(str(e))
+
 
         return 1
         
