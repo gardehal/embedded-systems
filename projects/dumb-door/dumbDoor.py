@@ -122,7 +122,7 @@ class DumbDoor:
         while not initiated:
             try:
                 self.log(f"Initializing datetime...")
-                datetimeRequest = requests.get(self.datetimeSourceUrl, timeout = (5,5))
+                datetimeRequest = requests.get(self.datetimeSourceUrl, timeout = 5)
                 
                 datetimeJson = datetimeRequest.json()
                 datetime = datetimeJson["datetime"]
@@ -131,28 +131,30 @@ class DumbDoor:
                 datetimeRequest.close()
                 self.rtc.datetime(datetimeTuple)
                 self.logger.rtc = self.rtc
-                self.logger.utcOffset = 2
                 
                 initiated = True
                 self.log(f"datetime ({datetime}) initialized")
             except Exception as e:
                 self.log("Error setting logger RTC:")
                 self.log(str(e))
-
+                await self.ledQueue.put(rgb.blue)
+                await self.ledQueue.put(rgb.red)
+                utime.sleep_ms(2000)
 
         return 1
         
     def utcToDateTimeTuple(self, utcString: str) -> tuple:
         # Get RTC datetime tuple from UTC string (2023-10-10T21:49:40Z).
         
-        year = int(utcString[0,4])
-        month = int(utcString[5,7])
-        day = int(utcString[8,10])
-        hour = int(utcString[11,13])
-        minute = int(utcString[14,16])
-        seconds = int(utcString[17,19])
+        year = int(utcString[0:4])
+        month = int(utcString[5:7])
+        day = int(utcString[8:10])
+        hour = int(utcString[11:13])
+        minute = int(utcString[14:16])
+        second = int(utcString[17:19])
+        milliSecond = int(utcString[21:23])
         
-        return (year, month, day, hour, minute, second)
+        return (year, month, day, None, hour, minute, second, milliSecond)
     
     async def toggleLockStatus(self, doorStatus: int, ledQueue: Queue) -> int:
         # Toggle lock status only, not the physical door lock. Updates LED: Green = locked, red = open.
