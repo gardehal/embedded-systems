@@ -305,11 +305,11 @@ class DumbDoor:
             self.log(f"Sys info: {str(uos.uname())}")
             self.log(f"Mem info: {str(micropython.mem_info())}")
             
-            uasyncio.create_task(self.statusLed.blinkQueues(self.ledQueue, self.ledTimerQueue))
             await self.ledQueue.put(rgb.white)
             await self.ledQueue.put(rgb.off)
             await self.ledTimerQueue.put(250)
             await self.ledTimerQueue.put(250)
+            uasyncio.create_task(self.statusLed.blinkQueues(self.ledQueue, self.ledTimerQueue))
             
             ip = await self.setupLan()
             await self.setupDatetime()
