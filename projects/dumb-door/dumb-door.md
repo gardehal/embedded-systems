@@ -14,8 +14,7 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - Bugs:
   - Status LED should continue to blink during setup (blue = network, yellow = log/datetime, white = misc, errors should blink red plus other colour depending on what failed, eg. red + blue for network)
   - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
-  - timeout for IP and/or get datetime, slow and unpredicatble. Could use internal clock but not reliable
-  
+
 - V2
   - Redesign frame for ambidexterous brain/battery mounting
   - Use screw attachment for NEMA-17, not custom base and brackets
@@ -36,12 +35,12 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - 1x Raspberry Pi Pico W
 - 1x on/off switch
 - 1x button (optional)
-- 1x multicolour LED + 3x 220 Ohm resistors (all optional)
+- 1x multicolour LED + 3x 220 Ohm resistors
 - 1x half-size breadboard (optional)
 - 2x zip ties 3mm x 1mm x 80mm+
 - 3x M4 x 12mm bolts/screws + nuts
-- 4x M5 x 12mm bolts/screws + nuts (2x is fine)
-- 1x push spring (7.5mm x 13mm), cut in half
+- 2-4x M5 x 12mm bolts/screws + nuts
+- 1x push spring (ca. 7.5mm x 13mm)
 - 1x LD1117 3.3V voltage regulator
 - 1x Schottky diode (optional)
 
@@ -152,3 +151,4 @@ NB: The first part of this relates to 3D printed parts over at [this repo](https
 - Initial design was bad and relied on impossible physics, did not think it through.
 - The brain-case module could've been better designed, the face plate with components should be removable for easier access to sensors on the face of the case (e.g. make face and bottom a single piece). Making it a little flatter and wider it could include a battery and make for an OK remote controller while still including the half-sized breadboard. Alternatively longer and thinner with a micro breadboard.
 - NEMA 17 is rated for 12V, currently runs on 8.4V (2x 18650 batteries). Ideally a third one should be added to bump up voltage to 11.1 but it seems to be OK. This could and should have been predicated and incorporated from the start, since redesigns will include changes to the frame which currently is not worth the cost-benefit.
+- Lots of issues with code, specially threads and async (bugs, PICO refusing USB and needs reset, functionality breaking constantly). Maybe CircuitPython would've been better?
