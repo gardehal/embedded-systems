@@ -10,9 +10,9 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 
 - Authentication (e.g. key on pico, auth API on home server)
   - Log who made the call when over network, button = "[button press]"
-- Charts and final documentation.
 - Bugs:
-  - Status LED should continue to blink during setup (blue = network, yellow = log/datetime, white = misc, errors should blink red plus other colour depending on what failed, eg. red + blue for network)
+  - Status LED colors + error blinks
+  - No LED blink or button response
   - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
 
 - V2
