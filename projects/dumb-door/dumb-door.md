@@ -12,8 +12,8 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
   - Log who made the call when over network, button = "[button press]"
 - Bugs:
   - Status LED colors + error blinks
-  - No LED blink or button response, async issues?
-  - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
+  - toggleLock runs sync, which can cause status LED to misscycles on blink. Looks a bit odd.
+  - Logging not working when running on battery? - other discrepancies when running from Thonny/USB
 
 - V2
   - Redesign frame for ambidexterous brain/battery mounting
