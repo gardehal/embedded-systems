@@ -18,10 +18,10 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
 - V2
   - Redesign frame for ambidexterous brain/battery mounting
   - Use screw attachment for NEMA-17, not custom base and brackets
-  - Open for use of ultrasonic/light range sensor/magnet to detect door opening
+  - Include possibility for ultrasonic/light range sensor/magnet to detect door opening
   - Better 3-battery case (slightly longer in case/new stacked)
-  - Guide/sub-parts to make gears
-  - Improve brain-lid and how it attaches, improve holes for wires/USB
+  - Guide to make gears (using existing gear objects and provided gear attachments)
+  - Improve brain-lid and how it attaches, better hole for wires/USB, separate holes for wires
 
 ## Circuit Diagram
 
