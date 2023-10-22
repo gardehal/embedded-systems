@@ -1,7 +1,8 @@
 # Dumb door
 
 Like a smart door, but dumb. Does not require invasive installation. 
-Related to [3D printed dumb door project](https://github.com/gardehal/3d-printing/tree/main/created/dumb-door).
+Related to [3D printed dumb door project](https://github.com/gardehal/3d-printing/tree/main/created/dumb-door)
+and [Authentication API](https://github.com/gardehal/kotlin-auth-api).
 
 > [!NOTE]  
 > Work in progress
@@ -12,8 +13,8 @@ Related to [3D printed dumb door project](https://github.com/gardehal/3d-printin
   - Log who made the call when over network, button = "[button press]"
 - Bugs:
   - Status LED colors + error blinks
-  - toggleLock runs sync, which can cause status LED to misscycles on blink. Looks a bit odd.
-  - Logging not working when running on battery? - other discrepancies when running from Thonny/USB
+  - toggleLock runs sync, which can cause status LED to miss cycles on blink. Looks a bit odd.
+  - Logging not working when running on battery? - other discrepancies when running from Thonny/USB vs. batteries
 
 - V2
   - Redesign frame for ambidexterous brain/battery mounting
